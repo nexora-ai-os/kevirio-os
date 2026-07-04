@@ -5,8 +5,11 @@ box-sizing: border-box;
 }
 
 body {
-background: #0f172a;
-color: white;
+background:
+radial-gradient(circle at top left, rgba(0, 220, 255, 0.18), transparent 32%),
+radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.28), transparent 36%),
+#050b18;
+color: #eaf6ff;
 font-family: Arial, sans-serif;
 }
 
@@ -16,50 +19,199 @@ min-height: 100vh;
 }
 
 .sidebar {
-width: 240px;
-background: #111827;
-padding: 24px;
-border-right: 1px solid #334155;
+width: 260px;
+padding: 28px 20px;
+background: rgba(5, 14, 32, 0.78);
+border-right: 1px solid rgba(125, 211, 252, 0.18);
+backdrop-filter: blur(18px);
+}
+
+.brand {
+display: flex;
+align-items: center;
+gap: 14px;
+margin-bottom: 36px;
+}
+
+.logo {
+width: 46px;
+height: 46px;
+border-radius: 15px;
+display: grid;
+place-items: center;
+background: linear-gradient(135deg, #22d3ee, #2563eb);
+color: #ffffff;
+font-weight: 900;
+box-shadow: 0 0 28px rgba(34, 211, 238, 0.45);
 }
 
 .brand h2 {
-font-size: 22px;
+font-size: 24px;
+letter-spacing: 1px;
 }
 
-.brand p {
-color: #94a3b8;
-margin-top: 4px;
+.brand p,
+.muted {
+color: #8fb6d9;
 }
 
 .nav {
-display: flex;
-flex-direction: column;
+display: grid;
 gap: 12px;
-margin-top: 40px;
 }
 
 .nav button {
-background: #1e293b;
-color: white;
-border: none;
-padding: 12px;
-border-radius: 8px;
+border: 1px solid rgba(148, 163, 184, 0.16);
+border-radius: 14px;
+padding: 13px 14px;
+background: rgba(15, 23, 42, 0.72);
+color: #c8e7ff;
 text-align: left;
+font-weight: 700;
 cursor: pointer;
 }
 
+.nav button:hover,
 .nav button.active {
-background: #2563eb;
+background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(34, 211, 238, 0.72));
+color: #ffffff;
+box-shadow: 0 0 24px rgba(34, 211, 238, 0.28);
 }
 
 .content {
 flex: 1;
-padding: 40px;
+padding: 42px;
+}
+
+.hero,
+.panel,
+.card,
+.stat-card {
+border: 1px solid rgba(125, 211, 252, 0.16);
+background: rgba(8, 20, 44, 0.72);
+border-radius: 24px;
+box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+backdrop-filter: blur(16px);
+}
+
+.hero {
+padding: 34px;
+margin-bottom: 24px;
+}
+
+.eyebrow {
+color: #67e8f9;
+font-size: 13px;
+font-weight: 900;
+letter-spacing: 2px;
+margin-bottom: 12px;
+}
+
+.hero h1 {
+max-width: 850px;
+font-size: 42px;
+line-height: 1.18;
+}
+
+.lead {
+max-width: 740px;
+margin-top: 16px;
+color: #b7d7ee;
+font-size: 17px;
+line-height: 1.8;
+}
+
+.stats,
+.grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+gap: 18px;
+margin: 24px 0;
+}
+
+.stat-card,
+.card,
+.panel {
+padding: 24px;
+}
+
+.stat-card span,
+.badge {
+color: #67e8f9;
+font-size: 13px;
+font-weight: 800;
+}
+
+.stat-card strong {
+display: block;
+margin: 10px 0;
+font-size: 34px;
+}
+
+.stat-card p,
+.card p,
+.card li {
+color: #bdd7ec;
+}
+
+.panel h1,
+.panel h2,
+.card h2 {
+margin-bottom: 12px;
+}
+
+.mission-list {
+display: grid;
+gap: 12px;
+margin-top: 16px;
+}
+
+.mission-list div {
+padding: 14px 16px;
+border-radius: 14px;
+background: rgba(15, 23, 42, 0.76);
+color: #dff6ff;
 }
 
 .card {
-margin-top: 24px;
-background: #1e293b;
-padding: 24px;
-border-radius: 12px;
+margin-bottom: 18px;
+}
+
+.card-header {
+display: flex;
+justify-content: space-between;
+gap: 14px;
+align-items: center;
+}
+
+.badge {
+display: inline-block;
+padding: 6px 10px;
+border-radius: 999px;
+background: rgba(34, 211, 238, 0.12);
+border: 1px solid rgba(34, 211, 238, 0.22);
+}
+
+.card ul {
+margin-top: 14px;
+padding-left: 18px;
+line-height: 1.8;
+}
+
+@media (max-width: 800px) {
+.app-shell {
+flex-direction: column;
+}
+
+.sidebar {
+width: 100%;
+}
+
+.content {
+padding: 22px;
+}
+
+.hero h1 {
+font-size: 30px;
+}
 }
