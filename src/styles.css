@@ -72,7 +72,9 @@ button, input, select, textarea {
 .actions button,
 .icon-btn,
 .profile-btn,
-.wide-btn {
+.wide-btn,
+.floating-ai,
+.chat-input button {
   border: 1px solid rgba(125, 211, 252, 0.26);
   color: #eaf6ff;
   background: rgba(255, 255, 255, 0.08);
@@ -93,7 +95,9 @@ button, input, select, textarea {
 .actions button:hover,
 .icon-btn:hover,
 .profile-btn:hover,
-.wide-btn:hover {
+.wide-btn:hover,
+.floating-ai:hover,
+.chat-input button:hover {
   background: linear-gradient(135deg, #06b6d4, #2563eb);
   box-shadow: 0 0 18px rgba(34, 211, 238, 0.38);
   transform: translateY(-1px);
@@ -260,7 +264,8 @@ button, input, select, textarea {
   margin-top: 16px;
 }
 
-.search {
+.search,
+.chat-input input {
   width: 100%;
   min-height: 48px;
   border-radius: 14px;
@@ -293,12 +298,33 @@ button, input, select, textarea {
   resize: vertical;
 }
 
+.chat-window {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
 .chat-bubble {
-  margin: 12px 0;
   padding: 16px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.08);
   line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.chat-bubble.user {
+  border: 1px solid rgba(94, 234, 212, 0.35);
+}
+
+.chat-bubble.assistant {
+  border: 1px solid rgba(125, 211, 252, 0.22);
+}
+
+.chat-input {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .floating-ai {
@@ -307,8 +333,8 @@ button, input, select, textarea {
   bottom: 22px;
   width: min(360px, calc(100vw - 44px));
   padding: 16px;
+  text-align: left;
   border-radius: 18px;
-  border: 1px solid rgba(125, 211, 252, 0.28);
   background: rgba(3, 13, 32, 0.88);
   backdrop-filter: blur(14px);
   box-shadow: 0 0 24px rgba(34, 211, 238, 0.22);
@@ -343,5 +369,9 @@ button, input, select, textarea {
   .topbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .chat-input {
+    grid-template-columns: 1fr;
   }
 }
