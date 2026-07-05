@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./styles.css";
 
 const initialPrograms = [
@@ -11,17 +11,37 @@ const initialPrograms = [
 ];
 
 const initialApprovals = [
-{ id: 1, title: "ChatGPT便利機能3選", channel: "Instagram / Threads", asp: "PLAUD", time: "20:15", status: "承認待ち", value: 1200 },
-{ id: 2, title: "AI画像生成で時短する方法", channel: "TikTok / Shorts", asp: "ConoHa AI Canvas", time: "19:40", status: "修正待ち", value: 900 },
-{ id: 3, title: "ブログ記事をAIで量産する方法", channel: "Blog / X", asp: "Value AI Writer", time: "明日 09:00", status: "保留", value: 1500 },
+{ id: 1, title: "ChatGPT便利機能3選", channel: "Instagram / Threads", asp: "PLAUD", time: "20:15", status: "承認待ち", value: 1200, counted: false },
+{ id: 2, title: "AI画像生成で時短する方法", channel: "TikTok / Shorts", asp: "ConoHa AI Canvas", time: "19:40", status: "修正待ち", value: 900, counted: false },
+{ id: 3, title: "ブログ記事をAIで量産する方法", channel: "Blog / X", asp: "Value AI Writer", time: "明日 09:00", status: "保留", value: 1500, counted: false },
 ];
 
-function TopBar({ notifications }) {
+const initialAnalytics = { clicks: 0, cv: 0, revenue: 0 };
+
+const initialDraft = {
+title: "ChatGPT便利機能3選",
+channel: "Instagram / Threads / Blog",
+asp: "PLAUD",
+value: 1000,
+body: "Affiliate Hubから投稿ネタを送ると、ここに反映されます。",
+};
+
+const loadStorage = (key, fallback) => {
+try {
+const saved = localStorage.getItem(key);
+return saved ? JSON.parse(saved) : fallback;
+} catch {
+return fallback;
+}
+};
+
+function TopBar({ notifications, savedAt }) {
 return (
 <div className="topbar">
 <div>
 <p className="eyebrow">NEXORA COMMAND CENTER</p>
 <strong>Good Morning, 健さん</strong>
+<p className="muted">保存状態：{savedAt || "準備中"}</p>
 </div>
 <div className="top-actions">
 <button className="icon-btn">🔔 {notifications}</button>
@@ -31,7 +51,7 @@ return (
 );
 }
 
-function Dashboard({ approvals, programs, analytics }) {
+function Dashboard({ approvals, programs, analytics, savedAt }) {
 const waiting = approvals.filter((a) => a.status === "承認待ち").length;
 const approved = approvals.filter((a) => a.status === "承認済み").length;
 const favorites = programs.filter((p) => p.favorite).length;
@@ -39,7 +59,7 @@ const predicted = programs.filter((p) => p.favorite).reduce((sum, p) => sum + p.
 
 return (
 <main className="content">
-<TopBar notifications={waiting} />
+<TopBar notifications={waiting} savedAt={savedAt} />
 
 <div className="hero">
 <p className="eyebrow">AI BUSINESS OPERATING SYSTEM</p>
@@ -67,7 +87,7 @@ return (
 );
 }
 
-function AffiliateHub({ programs, setPrograms, setDraft, setPage }) {
+function AffiliateHub({ programs, setPrograms, setDraft, setPage, savedAt }) {
 const [query, setQuery] = useState("");
 
 const filtered = useMemo(() => {
@@ -105,7 +125,7 @@ setPage("content");
 
 return (
 <main className="content">
-<TopBar notifications={0} />
+<TopBar notifications={0} savedAt={savedAt} />
 
 <div className="panel">
 <h1>Affiliate Hub</h1>
@@ -144,13 +164,19 @@ return (
 );
 }
 
-function ContentStudio({ draft, setDraft, setApprovals, setPage }) {
+function ContentStudio({ draft, setDraft, setApprovals, setPage, savedAt }) {
 const [title, setTitle] = useState(draft.title);
 const [channel, setChannel] = useState(draft.channel);
 const [body, setBody] = useState(draft.body);
 
+useEffect(() => {
+setTitle(draft.title);
+setChannel(draft.channel);
+setBody(draft.body);
+}, [draft]);
+
 const regenerate = () => {
-setBody(`テーマ：${title}
+const nextBody = `テーマ：${title}
 媒体：${channel}
 
 Instagram構成：
@@ -169,10 +195,15 @@ H2：なぜ今このテーマが重要か
 H2：初心者向けの使い方
 H2：おすすめ案件
 H2：注意点
-H2：まとめ`);
+H2：まとめ`;
+
+setBody(nextBody);
+setDraft((prev) => ({ ...prev, title, channel, body: nextBody }));
 };
 
 const addToApproval = () => {
+setDraft((prev) => ({ ...prev, title, channel, body }));
+
 setApprovals((prev) => [
 {
 id: Date.now(),
@@ -182,15 +213,17 @@ asp: draft.asp || "未設定",
 time: "今日 20:00",
 status: "承認待ち",
 value: draft.value || 1000,
+counted: false,
 },
 ...prev,
 ]);
+
 setPage("approval");
 };
 
 return (
 <main className="content">
-<TopBar notifications={0} />
+<TopBar notifications={0} savedAt={savedAt} />
 
 <div className="panel">
 <h1>Content Studio</h1>
@@ -211,13 +244,19 @@ return (
 );
 }
 
-function ApprovalCenter({ approvals, setApprovals, setAnalytics }) {
+function ApprovalCenter({ approvals, setApprovals, setAnalytics, savedAt }) {
 const updateStatus = (id, status) => {
 const target = approvals.find((a) => a.id === id);
 
-setApprovals((prev) => prev.map((a) => a.id === id ? { ...a, status } : a));
+setApprovals((prev) =>
+prev.map((a) => {
+if (a.id !== id) return a;
+if (status === "承認済み") return { ...a, status, counted: true };
+return { ...a, status };
+})
+);
 
-if (status === "承認済み" && target?.status !== "承認済み") {
+if (status === "承認済み" && target && !target.counted) {
 setAnalytics((prev) => ({
 clicks: prev.clicks + 38,
 cv: prev.cv + 1,
@@ -228,7 +267,7 @@ revenue: prev.revenue + target.value,
 
 return (
 <main className="content">
-<TopBar notifications={approvals.filter((a) => a.status === "承認待ち").length} />
+<TopBar notifications={approvals.filter((a) => a.status === "承認待ち").length} savedAt={savedAt} />
 
 <div className="panel">
 <h1>Approval Center</h1>
@@ -256,13 +295,13 @@ return (
 );
 }
 
-function Analytics({ analytics, approvals }) {
+function Analytics({ analytics, approvals, savedAt }) {
 const approved = approvals.filter((a) => a.status === "承認済み").length;
 const ctr = analytics.clicks ? "4.8%" : "0%";
 
 return (
 <main className="content">
-<TopBar notifications={0} />
+<TopBar notifications={0} savedAt={savedAt} />
 
 <div className="panel">
 <h1>Analytics</h1>
@@ -279,27 +318,28 @@ return (
 );
 }
 
-function Assistant({ programs, approvals }) {
+function Assistant({ programs, approvals, savedAt }) {
 const top = [...programs].sort((a, b) => b.score - a.score)[0];
 const waiting = approvals.filter((a) => a.status === "承認待ち").length;
 
 return (
 <main className="content">
-<TopBar notifications={waiting} />
+<TopBar notifications={waiting} savedAt={savedAt} />
 
 <div className="panel assistant-panel">
 <h1>AI Assistant</h1>
 <div className="chat-bubble">健さん、本日の最優先案件は「{top.name}」です。Revenue Scoreが{top.score}で最も高いです。</div>
 <div className="chat-bubble">承認待ちは{waiting}件あります。まずApproval Centerで確認しましょう。</div>
+<div className="chat-bubble">次の一手：Affiliate Hub → Content Studio → Approval Center の順に進めると最短です。</div>
 </div>
 </main>
 );
 }
 
-function Settings() {
+function Settings({ resetAll, savedAt }) {
 return (
 <main className="content">
-<TopBar notifications={0} />
+<TopBar notifications={0} savedAt={savedAt} />
 <div className="panel">
 <h1>Settings / Profile</h1>
 <div className="mission-list">
@@ -307,6 +347,10 @@ return (
 <div>Notifications｜承認待ち・投稿予定・売上通知</div>
 <div>User Management｜v1は疑似ログイン</div>
 <div>Security｜Basic認証稼働中</div>
+<div>Storage｜localStorage保存対応</div>
+</div>
+<div className="actions">
+<button onClick={resetAll}>🧹 データ初期化</button>
 </div>
 </div>
 </main>
@@ -326,25 +370,70 @@ return (
 
 export default function App() {
 const [page, setPage] = useState("dashboard");
-const [programs, setPrograms] = useState(initialPrograms);
-const [approvals, setApprovals] = useState(initialApprovals);
-const [analytics, setAnalytics] = useState({ clicks: 0, cv: 0, revenue: 0 });
-const [draft, setDraft] = useState({
-title: "ChatGPT便利機能3選",
-channel: "Instagram / Threads / Blog",
-asp: "PLAUD",
-value: 1000,
-body: "Affiliate Hubから投稿ネタを送ると、ここに反映されます。",
-});
+
+const [programs, setPrograms] = useState(() =>
+loadStorage("nexora-programs", initialPrograms)
+);
+
+const [approvals, setApprovals] = useState(() =>
+loadStorage("nexora-approvals", initialApprovals)
+);
+
+const [analytics, setAnalytics] = useState(() =>
+loadStorage("nexora-analytics", initialAnalytics)
+);
+
+const [draft, setDraft] = useState(() =>
+loadStorage("nexora-draft", initialDraft)
+);
+
+const [savedAt, setSavedAt] = useState("未保存");
+
+useEffect(() => {
+localStorage.setItem("nexora-programs", JSON.stringify(programs));
+setSavedAt(new Date().toLocaleTimeString("ja-JP"));
+}, [programs]);
+
+useEffect(() => {
+localStorage.setItem("nexora-approvals", JSON.stringify(approvals));
+setSavedAt(new Date().toLocaleTimeString("ja-JP"));
+}, [approvals]);
+
+useEffect(() => {
+localStorage.setItem("nexora-analytics", JSON.stringify(analytics));
+setSavedAt(new Date().toLocaleTimeString("ja-JP"));
+}, [analytics]);
+
+useEffect(() => {
+localStorage.setItem("nexora-draft", JSON.stringify(draft));
+setSavedAt(new Date().toLocaleTimeString("ja-JP"));
+}, [draft]);
+
+const resetAll = () => {
+const ok = window.confirm("保存データを初期化しますか？");
+if (!ok) return;
+
+localStorage.removeItem("nexora-programs");
+localStorage.removeItem("nexora-approvals");
+localStorage.removeItem("nexora-analytics");
+localStorage.removeItem("nexora-draft");
+
+setPrograms(initialPrograms);
+setApprovals(initialApprovals);
+setAnalytics(initialAnalytics);
+setDraft(initialDraft);
+setPage("dashboard");
+setSavedAt("初期化済み");
+};
 
 const pages = {
-dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} />,
-affiliate: <AffiliateHub programs={programs} setPrograms={setPrograms} setDraft={setDraft} setPage={setPage} />,
-content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} />,
-approval: <ApprovalCenter approvals={approvals} setApprovals={setApprovals} setAnalytics={setAnalytics} />,
-analytics: <Analytics analytics={analytics} approvals={approvals} />,
-assistant: <Assistant programs={programs} approvals={approvals} />,
-settings: <Settings />,
+dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} savedAt={savedAt} />,
+affiliate: <AffiliateHub programs={programs} setPrograms={setPrograms} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,
+content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} savedAt={savedAt} />,
+approval: <ApprovalCenter approvals={approvals} setApprovals={setApprovals} setAnalytics={setAnalytics} savedAt={savedAt} />,
+analytics: <Analytics analytics={analytics} approvals={approvals} savedAt={savedAt} />,
+assistant: <Assistant programs={programs} approvals={approvals} savedAt={savedAt} />,
+settings: <Settings resetAll={resetAll} savedAt={savedAt} />,
 };
 
 return (
@@ -352,7 +441,7 @@ return (
 <aside className="sidebar">
 <div className="brand">
 <div className="logo">N</div>
-<div><h2>NEXORA</h2><p>AI OS v1.4</p></div>
+<div><h2>NEXORA</h2><p>AI OS v1.5</p></div>
 </div>
 
 <nav className="nav">
