@@ -1,19 +1,11 @@
-# NEXORA AI OS v2 Final Upload
+# NEXORA AI OS v1.7
 
-## 必要ファイル
-- index.html
-- package.json
-- middleware.js
-- README.md
-- src/App.jsx
-- src/styles.css
+Componentized AI Business OS prototype.
 
-## Vercel Environment Variables
-- BASIC_AUTH_USER
-- BASIC_AUTH_PASSWORD
-
-## Build Command
-npm run build
-
-## Output Directory
-dist
+## v1.7 additions
+- AI Assistant chat UI
+- Chat history persistence
+- Assistant can create draft and send to Content Studio
+- Dashboard ToDo can be toggled
+- Floating AI button opens Assistant
+- LocalStorage persistence
