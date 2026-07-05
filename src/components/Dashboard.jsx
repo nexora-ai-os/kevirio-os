@@ -1,6 +1,17 @@
 import TopBar from "./TopBar";
 
-export default function Dashboard({ approvals, programs, analytics, todos, setTodos, notifications, opportunities, savedAt, setPage }) {
+export default function Dashboard({
+  approvals,
+  programs,
+  analytics,
+  todos,
+  setTodos,
+  notifications,
+  opportunities,
+  pipelineRuns,
+  savedAt,
+  setPage,
+}) {
   const waiting = approvals.filter((a) => a.status === "承認待ち").length;
   const approved = approvals.filter((a) => a.status === "承認済み").length;
   const predicted = programs.filter((p) => p.favorite).reduce((sum, p) => sum + p.predicted, 0);
@@ -18,7 +29,7 @@ export default function Dashboard({ approvals, programs, analytics, todos, setTo
       <div className="hero">
         <p className="eyebrow">AI BUSINESS OPERATING SYSTEM</p>
         <h1>今日やる仕事は、NEXORAが整理します。</h1>
-        <p className="lead">案件入力 → AI分析 → 投稿生成 → 承認 → 分析まで、1つの流れで進めます。</p>
+        <p className="lead">案件入力 → AI分析 → 投稿生成 → 承認待ち追加 → 分析まで、1つの流れで進めます。</p>
         <div className="actions">
           <button onClick={() => setPage("work")}>AIに仕事を渡す</button>
           <button onClick={() => setPage("affiliate")}>案件を選ぶ</button>
@@ -29,7 +40,7 @@ export default function Dashboard({ approvals, programs, analytics, todos, setTo
       <div className="stats">
         <div className="stat-card"><span>予測売上</span><strong>{predicted.toLocaleString()}円</strong><p>お気に入り案件ベース</p></div>
         <div className="stat-card"><span>承認待ち</span><strong>{waiting}件</strong><p>投稿候補</p></div>
-        <div className="stat-card"><span>Work Queue</span><strong>{opportunities.length}件</strong><p>AI分析候補</p></div>
+        <div className="stat-card"><span>Pipeline</span><strong>{pipelineRuns.length}件</strong><p>一括処理履歴</p></div>
         <div className="stat-card"><span>ToDo進捗</span><strong>{done}/{todos.length}</strong><p>今日の作業</p></div>
       </div>
 
@@ -45,21 +56,21 @@ export default function Dashboard({ approvals, programs, analytics, todos, setTo
       </section>
 
       <section className="panel">
+        <h2>Workflow Summary</h2>
+        <div className="mission-list">
+          <div>Work Queue：{opportunities.length}件</div>
+          <div>Pipeline Runs：{pipelineRuns.length}件</div>
+          <div>承認済み：{approved}件</div>
+          <div>AI経由売上：{analytics.revenue.toLocaleString()}円</div>
+        </div>
+      </section>
+
+      <section className="panel">
         <h2>Notification Center</h2>
         <div className="mission-list">
           {notifications.map((n) => (
             <div key={n.id}>{n.read ? "既読" : "未読"}｜{n.title}</div>
           ))}
-        </div>
-      </section>
-
-      <section className="panel">
-        <h2>Analytics Summary</h2>
-        <div className="mission-list">
-          <div>承認済み：{approved}</div>
-          <div>クリック：{analytics.clicks}</div>
-          <div>CV：{analytics.cv}</div>
-          <div>AI経由売上：{analytics.revenue.toLocaleString()}円</div>
         </div>
       </section>
     </main>
