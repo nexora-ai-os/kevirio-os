@@ -2,69 +2,72 @@ import { useMemo, useState } from "react";
 import "./styles.css";
 
 const initialPrograms = [
-{ name: "PLAUD", asp: "A8.net", category: "AIボイスレコーダー", reward: "購入10%", status: "提携済み", score: 95, favorite: true },
-{ name: "ConoHa AI Canvas", asp: "A8.net", category: "AI画像生成", reward: "500円〜4,000円", status: "提携済み", score: 93, favorite: true },
-{ name: "Value AI Writer", asp: "A8.net", category: "SEO記事生成AI", reward: "有料40%", status: "提携済み", score: 90, favorite: true },
-{ name: "Twomi", asp: "A8.net", category: "AI × SNS", reward: "300円", status: "提携済み", score: 89, favorite: false },
-{ name: "Doraverse", asp: "A8.net", category: "AI SaaS", reward: "62円〜", status: "提携済み", score: 84, favorite: false },
-{ name: "RingConn", asp: "A8.net", category: "AIスマートリング", reward: "購入7%", status: "提携済み", score: 82, favorite: false },
+{ name: "PLAUD", asp: "A8.net", category: "AIボイスレコーダー", reward: "購入10%", status: "提携済み", score: 95, favorite: true, predicted: 4500 },
+{ name: "ConoHa AI Canvas", asp: "A8.net", category: "AI画像生成", reward: "500円〜4,000円", status: "提携済み", score: 93, favorite: true, predicted: 3800 },
+{ name: "Value AI Writer", asp: "A8.net", category: "SEO記事生成AI", reward: "有料40%", status: "提携済み", score: 90, favorite: true, predicted: 3200 },
+{ name: "Twomi", asp: "A8.net", category: "AI × SNS", reward: "300円", status: "提携済み", score: 89, favorite: false, predicted: 1800 },
+{ name: "Doraverse", asp: "A8.net", category: "AI SaaS", reward: "62円〜", status: "提携済み", score: 84, favorite: false, predicted: 1200 },
+{ name: "RingConn", asp: "A8.net", category: "AIスマートリング", reward: "購入7%", status: "提携済み", score: 82, favorite: false, predicted: 2200 },
 ];
 
 const initialApprovals = [
-{ id: 1, title: "ChatGPT便利機能3選", channel: "Instagram / Threads", asp: "PLAUD", time: "20:15", status: "承認待ち" },
-{ id: 2, title: "AI画像生成で時短する方法", channel: "TikTok / Shorts", asp: "ConoHa AI Canvas", time: "19:40", status: "修正待ち" },
-{ id: 3, title: "ブログ記事をAIで量産する方法", channel: "Blog / X", asp: "Value AI Writer", time: "明日 09:00", status: "保留" },
+{ id: 1, title: "ChatGPT便利機能3選", channel: "Instagram / Threads", asp: "PLAUD", time: "20:15", status: "承認待ち", value: 1200 },
+{ id: 2, title: "AI画像生成で時短する方法", channel: "TikTok / Shorts", asp: "ConoHa AI Canvas", time: "19:40", status: "修正待ち", value: 900 },
+{ id: 3, title: "ブログ記事をAIで量産する方法", channel: "Blog / X", asp: "Value AI Writer", time: "明日 09:00", status: "保留", value: 1500 },
 ];
 
-function TopBar() {
+function TopBar({ notifications }) {
 return (
 <div className="topbar">
 <div>
-<p className="eyebrow">TODAY / REVENUE MODE</p>
+<p className="eyebrow">NEXORA COMMAND CENTER</p>
 <strong>Good Morning, 健さん</strong>
 </div>
 <div className="top-actions">
-<button className="icon-btn">🔔 3</button>
+<button className="icon-btn">🔔 {notifications}</button>
 <button className="profile-btn">KEN</button>
 </div>
 </div>
 );
 }
 
-function Dashboard({ approvals, programs }) {
+function Dashboard({ approvals, programs, analytics }) {
 const waiting = approvals.filter((a) => a.status === "承認待ち").length;
+const approved = approvals.filter((a) => a.status === "承認済み").length;
 const favorites = programs.filter((p) => p.favorite).length;
+const predicted = programs.filter((p) => p.favorite).reduce((sum, p) => sum + p.predicted, 0);
 
 return (
 <main className="content">
-<TopBar />
+<TopBar notifications={waiting} />
 
 <div className="hero">
-<p className="eyebrow">NEXORA COMMAND CENTER</p>
-<h1>AIが稼ぐ準備を進める。健さんは承認するだけ。</h1>
-<p className="lead">今日のテーマ・案件・投稿・承認・分析をここから始めます。</p>
+<p className="eyebrow">AI BUSINESS OPERATING SYSTEM</p>
+<h1>今日やる仕事は、NEXORAが整理します。</h1>
+<p className="lead">案件選定 → 投稿生成 → 承認 → 分析まで、1つの流れで進めます。</p>
 </div>
 
 <div className="stats">
-<div className="stat-card"><span>今月目標</span><strong>30,000円</strong><p>Phase1：月3万円</p></div>
-<div className="stat-card"><span>承認待ち</span><strong>{waiting}件</strong><p>確認して投稿へ</p></div>
-<div className="stat-card"><span>お気に入り案件</span><strong>{favorites}件</strong><p>優先運用候補</p></div>
-<div className="stat-card"><span>今日の予測</span><strong>2,400円</strong><p>AI予測・仮データ</p></div>
+<div className="stat-card"><span>予測売上</span><strong>{predicted.toLocaleString()}円</strong><p>お気に入り案件ベース</p></div>
+<div className="stat-card"><span>承認待ち</span><strong>{waiting}件</strong><p>投稿候補</p></div>
+<div className="stat-card"><span>承認済み</span><strong>{approved}件</strong><p>Analytics反映済み</p></div>
+<div className="stat-card"><span>AI経由売上</span><strong>{analytics.revenue.toLocaleString()}円</strong><p>承認で加算</p></div>
 </div>
 
 <section className="panel">
-<h2>AI Revenue Brief</h2>
+<h2>今日のAI指示</h2>
 <div className="mission-list">
-<div>01｜PLAUD：ChatGPT便利機能ネタと相性が高い</div>
-<div>02｜ConoHa AI Canvas：AI画像生成ネタで展開しやすい</div>
-<div>03｜Value AI Writer：ブログ・SEO系導線に向いている</div>
+<div>01｜Affiliate Hubで高スコア案件を選ぶ</div>
+<div>02｜投稿ネタを生成してContent Studioへ送る</div>
+<div>03｜生成した投稿をApproval Centerへ追加する</div>
+<div>04｜承認後、Analyticsで数値を見る</div>
 </div>
 </section>
 </main>
 );
 }
 
-function AffiliateHub({ programs, setPrograms, setGenerated, setPage }) {
+function AffiliateHub({ programs, setPrograms, setDraft, setPage }) {
 const [query, setQuery] = useState("");
 
 const filtered = useMemo(() => {
@@ -77,8 +80,13 @@ const toggleFavorite = (name) => {
 setPrograms((prev) => prev.map((p) => p.name === name ? { ...p, favorite: !p.favorite } : p));
 };
 
-const generateIdea = (item, type) => {
-const text = `【${type}】
+const sendToStudio = (item, type) => {
+setDraft({
+title: `${item.name}を使った${type}`,
+channel: "Instagram / Threads / Blog",
+asp: item.name,
+value: Math.round(item.predicted / 3),
+body: `【${type}】
 案件：${item.name}
 カテゴリ：${item.category}
 報酬：${item.reward}
@@ -90,19 +98,18 @@ Revenue Score：${item.score}
 3. 副業・仕事効率化に${item.name}が向いている理由
 
 CTA：
-詳しくはプロフィールリンクから確認。`;
-
-setGenerated(text);
+詳しくはプロフィールリンクから確認。`
+});
 setPage("content");
 };
 
 return (
 <main className="content">
-<TopBar />
+<TopBar notifications={0} />
 
 <div className="panel">
 <h1>Affiliate Hub</h1>
-<p className="muted">案件管理・検索・お気に入り・優先度確認。</p>
+<p className="muted">案件管理・検索・お気に入り・Content Studio連携。</p>
 <input className="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="案件名・ASP・カテゴリで検索" />
 </div>
 
@@ -120,15 +127,15 @@ return (
 <ul>
 <li>ASP：{item.asp}</li>
 <li>報酬：{item.reward}</li>
-<li>状態：{item.status}</li>
+<li>予測：{item.predicted.toLocaleString()}円</li>
 <li>お気に入り：{item.favorite ? "YES" : "NO"}</li>
 </ul>
 
 <div className="actions">
 <button onClick={() => toggleFavorite(item.name)}>{item.favorite ? "★ 解除" : "★ 追加"}</button>
-<button onClick={() => generateIdea(item, "投稿ネタ")}>📝 投稿ネタ</button>
-<button onClick={() => generateIdea(item, "記事ネタ")}>📖 記事ネタ</button>
-<button onClick={() => generateIdea(item, "動画台本")}>🎬 動画台本</button>
+<button onClick={() => sendToStudio(item, "投稿ネタ")}>📝 投稿ネタ</button>
+<button onClick={() => sendToStudio(item, "記事ネタ")}>📖 記事ネタ</button>
+<button onClick={() => sendToStudio(item, "動画台本")}>🎬 動画台本</button>
 </div>
 </div>
 ))}
@@ -137,69 +144,95 @@ return (
 );
 }
 
-function ContentStudio({ generated, setGenerated }) {
-const [theme, setTheme] = useState("ChatGPT便利機能3選");
-const [media, setMedia] = useState("Instagram / Threads / Blog");
+function ContentStudio({ draft, setDraft, setApprovals, setPage }) {
+const [title, setTitle] = useState(draft.title);
+const [channel, setChannel] = useState(draft.channel);
+const [body, setBody] = useState(draft.body);
 
-const createPrompt = () => {
-setGenerated(`テーマ：${theme}
-媒体：${media}
+const regenerate = () => {
+setBody(`テーマ：${title}
+媒体：${channel}
 
 Instagram構成：
 1枚目：結論
 2枚目：悩み
-3枚目：便利機能3選
+3枚目：解決策
 4枚目：使い方
-5枚目：おすすめ案件導線
+5枚目：案件導線
 6枚目：保存CTA
 
 Threads投稿：
-AIを使って作業時間を減らしたい人は、まず「${theme}」から試すのがおすすめです。
+${title}は、作業効率化・副業導線・AI活用と相性が高いテーマです。
 
 ブログ構成：
-H2：なぜ今${theme}が重要か
+H2：なぜ今このテーマが重要か
 H2：初心者向けの使い方
-H2：おすすめツール
+H2：おすすめ案件
 H2：注意点
 H2：まとめ`);
 };
 
+const addToApproval = () => {
+setApprovals((prev) => [
+{
+id: Date.now(),
+title,
+channel,
+asp: draft.asp || "未設定",
+time: "今日 20:00",
+status: "承認待ち",
+value: draft.value || 1000,
+},
+...prev,
+]);
+setPage("approval");
+};
+
 return (
 <main className="content">
-<TopBar />
+<TopBar notifications={0} />
 
 <div className="panel">
 <h1>Content Studio</h1>
-<p className="muted">SNS・ブログ・動画台本の生成拠点。</p>
+<p className="muted">Affiliate Hubから受け取った案件情報をもとに投稿を作成。</p>
 
-<input className="search" value={theme} onChange={(e) => setTheme(e.target.value)} />
-<input className="search" value={media} onChange={(e) => setMedia(e.target.value)} />
+<input className="search" value={title} onChange={(e) => setTitle(e.target.value)} />
+<input className="search" value={channel} onChange={(e) => setChannel(e.target.value)} />
 
 <div className="actions">
-<button onClick={createPrompt}>✨ 生成する</button>
-<button onClick={() => navigator.clipboard.writeText(generated)}>📋 コピー</button>
-<button>💾 保存</button>
-<button>📅 予約へ</button>
+<button onClick={regenerate}>✨ 再生成</button>
+<button onClick={() => navigator.clipboard.writeText(body)}>📋 コピー</button>
+<button onClick={addToApproval}>✅ 承認待ちへ追加</button>
 </div>
 
-<pre className="prompt-box">{generated || "ここに生成結果が表示されます。"}</pre>
+<pre className="prompt-box">{body || "Affiliate Hubから投稿ネタを送るか、ここで生成してください。"}</pre>
 </div>
 </main>
 );
 }
 
-function ApprovalCenter({ approvals, setApprovals }) {
+function ApprovalCenter({ approvals, setApprovals, setAnalytics }) {
 const updateStatus = (id, status) => {
+const target = approvals.find((a) => a.id === id);
+
 setApprovals((prev) => prev.map((a) => a.id === id ? { ...a, status } : a));
+
+if (status === "承認済み" && target?.status !== "承認済み") {
+setAnalytics((prev) => ({
+clicks: prev.clicks + 38,
+cv: prev.cv + 1,
+revenue: prev.revenue + target.value,
+}));
+}
 };
 
 return (
 <main className="content">
-<TopBar />
+<TopBar notifications={approvals.filter((a) => a.status === "承認待ち").length} />
 
 <div className="panel">
 <h1>Approval Center</h1>
-<p className="muted">AI生成物を確認・承認・修正・保留する画面。</p>
+<p className="muted">承認するとAnalyticsとDashboardへ反映されます。</p>
 </div>
 
 <div className="grid">
@@ -210,6 +243,7 @@ return (
 <p>{a.channel}</p>
 <p>案件：{a.asp}</p>
 <p>投稿予定：{a.time}</p>
+<p>予測価値：{a.value.toLocaleString()}円</p>
 <div className="actions">
 <button onClick={() => updateStatus(a.id, "承認済み")}>✅ 承認</button>
 <button onClick={() => updateStatus(a.id, "修正待ち")}>🟡 修正</button>
@@ -222,29 +256,41 @@ return (
 );
 }
 
-function Analytics() {
+function Analytics({ analytics, approvals }) {
+const approved = approvals.filter((a) => a.status === "承認済み").length;
+const ctr = analytics.clicks ? "4.8%" : "0%";
+
 return (
 <main className="content">
-<TopBar />
-<div className="panel"><h1>Analytics</h1><p className="muted">売上・クリック・CV・成果分析。</p></div>
+<TopBar notifications={0} />
+
+<div className="panel">
+<h1>Analytics</h1>
+<p className="muted">承認済み投稿をもとに仮数値を連動表示。</p>
+</div>
+
 <div className="stats">
-<div className="stat-card"><span>クリック</span><strong>0</strong><p>計測準備中</p></div>
-<div className="stat-card"><span>CV</span><strong>0</strong><p>成果待ち</p></div>
-<div className="stat-card"><span>CTR</span><strong>0%</strong><p>投稿後に記録</p></div>
-<div className="stat-card"><span>AI経由売上</span><strong>0円</strong><p>初月計測</p></div>
+<div className="stat-card"><span>クリック</span><strong>{analytics.clicks}</strong><p>承認ごとに加算</p></div>
+<div className="stat-card"><span>CV</span><strong>{analytics.cv}</strong><p>成果待ち</p></div>
+<div className="stat-card"><span>CTR</span><strong>{ctr}</strong><p>投稿後に記録</p></div>
+<div className="stat-card"><span>AI経由売上</span><strong>{analytics.revenue.toLocaleString()}円</strong><p>{approved}件承認済み</p></div>
 </div>
 </main>
 );
 }
 
-function Assistant() {
+function Assistant({ programs, approvals }) {
+const top = [...programs].sort((a, b) => b.score - a.score)[0];
+const waiting = approvals.filter((a) => a.status === "承認待ち").length;
+
 return (
 <main className="content">
-<TopBar />
+<TopBar notifications={waiting} />
+
 <div className="panel assistant-panel">
 <h1>AI Assistant</h1>
-<div className="chat-bubble">健さん、今日はPLAUD・ConoHa AI Canvas・Value AI Writerを優先します。</div>
-<div className="chat-bubble">Content Studioで投稿を作り、Approval Centerで承認してください。</div>
+<div className="chat-bubble">健さん、本日の最優先案件は「{top.name}」です。Revenue Scoreが{top.score}で最も高いです。</div>
+<div className="chat-bubble">承認待ちは{waiting}件あります。まずApproval Centerで確認しましょう。</div>
 </div>
 </main>
 );
@@ -253,7 +299,7 @@ return (
 function Settings() {
 return (
 <main className="content">
-<TopBar />
+<TopBar notifications={0} />
 <div className="panel">
 <h1>Settings / Profile</h1>
 <div className="mission-list">
@@ -267,11 +313,13 @@ return (
 );
 }
 
-function FloatingAssistant() {
+function FloatingAssistant({ approvals }) {
+const waiting = approvals.filter((a) => a.status === "承認待ち").length;
+
 return (
 <div className="floating-ai">
 <strong>🤖 NEXORA AI</strong>
-<p>今日の優先：PLAUD投稿 → Content生成 → 承認</p>
+<p>承認待ち {waiting}件。次はApproval Centerへ。</p>
 </div>
 );
 }
@@ -280,15 +328,22 @@ export default function App() {
 const [page, setPage] = useState("dashboard");
 const [programs, setPrograms] = useState(initialPrograms);
 const [approvals, setApprovals] = useState(initialApprovals);
-const [generated, setGenerated] = useState("");
+const [analytics, setAnalytics] = useState({ clicks: 0, cv: 0, revenue: 0 });
+const [draft, setDraft] = useState({
+title: "ChatGPT便利機能3選",
+channel: "Instagram / Threads / Blog",
+asp: "PLAUD",
+value: 1000,
+body: "Affiliate Hubから投稿ネタを送ると、ここに反映されます。",
+});
 
 const pages = {
-dashboard: <Dashboard approvals={approvals} programs={programs} />,
-affiliate: <AffiliateHub programs={programs} setPrograms={setPrograms} setGenerated={setGenerated} setPage={setPage} />,
-content: <ContentStudio generated={generated} setGenerated={setGenerated} />,
-approval: <ApprovalCenter approvals={approvals} setApprovals={setApprovals} />,
-analytics: <Analytics />,
-assistant: <Assistant />,
+dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} />,
+affiliate: <AffiliateHub programs={programs} setPrograms={setPrograms} setDraft={setDraft} setPage={setPage} />,
+content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} />,
+approval: <ApprovalCenter approvals={approvals} setApprovals={setApprovals} setAnalytics={setAnalytics} />,
+analytics: <Analytics analytics={analytics} approvals={approvals} />,
+assistant: <Assistant programs={programs} approvals={approvals} />,
 settings: <Settings />,
 };
 
@@ -297,7 +352,7 @@ return (
 <aside className="sidebar">
 <div className="brand">
 <div className="logo">N</div>
-<div><h2>NEXORA</h2><p>AI OS v1.3</p></div>
+<div><h2>NEXORA</h2><p>AI OS v1.4</p></div>
 </div>
 
 <nav className="nav">
@@ -312,7 +367,7 @@ return (
 </aside>
 
 {pages[page]}
-<FloatingAssistant />
+<FloatingAssistant approvals={approvals} />
 </div>
 );
 }
