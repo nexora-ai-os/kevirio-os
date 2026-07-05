@@ -1,11 +1,15 @@
 import TopBar from "./TopBar";
 
-export default function Dashboard({ approvals, programs, analytics, todos, notifications, savedAt, setPage }) {
+export default function Dashboard({ approvals, programs, analytics, todos, setTodos, notifications, savedAt, setPage }) {
   const waiting = approvals.filter((a) => a.status === "承認待ち").length;
   const approved = approvals.filter((a) => a.status === "承認済み").length;
   const predicted = programs.filter((p) => p.favorite).reduce((sum, p) => sum + p.predicted, 0);
   const done = todos.filter((t) => t.done).length;
   const unread = notifications.filter((n) => !n.read).length;
+
+  const toggleTodo = (id) => {
+    setTodos((prev) => prev.map((todo) => todo.id === id ? { ...todo, done: !todo.done } : todo));
+  };
 
   return (
     <main className="content">
@@ -17,7 +21,7 @@ export default function Dashboard({ approvals, programs, analytics, todos, notif
         <p className="lead">案件選定 → 投稿生成 → 承認 → 分析まで、1つの流れで進めます。</p>
         <div className="actions">
           <button onClick={() => setPage("affiliate")}>案件を選ぶ</button>
-          <button onClick={() => setPage("content")}>投稿を作る</button>
+          <button onClick={() => setPage("assistant")}>AIに指示する</button>
           <button onClick={() => setPage("approval")}>承認する</button>
         </div>
       </div>
@@ -33,7 +37,9 @@ export default function Dashboard({ approvals, programs, analytics, todos, notif
         <h2>今日のRevenue Mission</h2>
         <div className="mission-list">
           {todos.map((todo) => (
-            <div key={todo.id}>{todo.done ? "✅" : "□"} {todo.text}</div>
+            <button className="wide-btn" key={todo.id} onClick={() => toggleTodo(todo.id)}>
+              {todo.done ? "✅" : "□"} {todo.text}
+            </button>
           ))}
         </div>
       </section>

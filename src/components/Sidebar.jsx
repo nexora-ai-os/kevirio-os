@@ -15,7 +15,7 @@ export default function Sidebar({ page, setPage }) {
         <div className="logo">N</div>
         <div>
           <h2>NEXORA</h2>
-          <p>AI OS v1.6</p>
+          <p>AI OS v1.7</p>
         </div>
       </div>
 
