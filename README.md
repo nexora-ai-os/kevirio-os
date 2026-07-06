@@ -1,16 +1,17 @@
-# KEVIRIO OS v2.7
+# KEVIRIO OS v2.8
 
-## v2.7 Work Flow Bridge
-- Work Engine → Mission Control
-- Work Engine → Content Studio
-- Work Engine → Approval Center
-- Work Engine → AI Companion
-- Notifications on workflow actions
+## v2.8 Auto Flow Engine
+- Auto Flow from Work Engine to Mission / Content / Approval
+- AI Thinking Log
+- ROI Ranking
+- Compliance checks
+- Risk label
+- Auto Flow completion status
 
 ## Replace files
 ```txt
 src/components/WorkEngine.jsx
-src/App.jsx
+src/styles.css
 README.md
 ```
 
