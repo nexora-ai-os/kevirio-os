@@ -3,6 +3,7 @@ import "./styles.css";
 
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
+import AICEO from "./components/AICEO";
 import WorkCommand from "./components/WorkCommand";
 import WorkEngine from "./components/WorkEngine";
 import AffiliateHub from "./components/AffiliateHub";
@@ -72,6 +73,7 @@ export default function App() {
   };
 
   const pages = {
+    ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} notifications={notifications} opportunities={opportunities} pipelineRuns={pipelineRuns} missionTasks={missionTasks} setMissionTasks={setMissionTasks} savedAt={savedAt} setPage={setPage} />,
     workEngine: <WorkEngine workItems={workItems} setWorkItems={setWorkItems} setMissionTasks={setMissionTasks} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} />,
     work: <WorkCommand opportunities={opportunities} setOpportunities={setOpportunities} pipelineRuns={pipelineRuns} setPipelineRuns={setPipelineRuns} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} savedAt={savedAt} />,
