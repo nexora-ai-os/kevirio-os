@@ -1,6 +1,7 @@
 import BrandMark from "./BrandMark";
 
 const navItems = [
+  ["ceo", "👑 AI CEO"],
   ["dashboard", "🌿 Mission Control"],
   ["workEngine", "🧬 Work Engine"],
   ["work", "🧠 Work Command"],
