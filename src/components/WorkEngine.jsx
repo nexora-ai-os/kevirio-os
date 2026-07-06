@@ -21,6 +21,7 @@ export default function WorkEngine({
     description: "",
   });
 
+  const [loadingId, setLoadingId] = useState(null);
   const analyzed = analyzeWorkItems(workItems);
   const top = analyzed[0];
 
@@ -38,7 +39,11 @@ export default function WorkEngine({
         strategicFit: Number(draft.strategicFit || 1),
         complianceRisk: Number(draft.complianceRisk || 1),
         status: "analysis",
-        recommendedOutputs: draft.type === "affiliate" ? ["SEO記事", "SNS投稿", "比較記事"] : ["応募文", "営業文", "質問テンプレート"],
+        aiReport: "",
+        recommendedOutputs:
+          draft.type === "affiliate"
+            ? ["SEO記事", "SNS投稿", "比較記事"]
+            : ["応募文", "営業文", "質問テンプレート"],
       },
       ...prev,
     ]);
@@ -68,13 +73,66 @@ export default function WorkEngine({
     setPage("assistant");
   };
 
+  const analyzeWithAI = async (item) => {
+    setLoadingId(item.id);
+
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `次の仕事をKEVIRIO Work Engineとして分析してください。\n\n仕事名:${item.title}\n種類:${item.type}\nカテゴリ:${item.category}\n内容:${item.description}\n報酬:${item.reward}円\n想定時間:${item.estimatedHours}時間\nROI:${item.roiPerHour}円/h\nスコア:${item.score}\nリスク:${item.riskComment}\n\n必ず以下の形式で返してください。\n【事実】\n【推測】\n【意見】\n【優先順位】\n【法務・コンプラ注意】\n【今日やる作業3つ】`,
+          context: {
+            provider: "auto",
+            mode: "work-engine",
+            revenue: 0,
+            monthlyGoal: 300000,
+            todos: [item.title],
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI analysis failed.");
+
+      setWorkItems((prev) =>
+        prev.map((work) =>
+          work.id === item.id
+            ? { ...work, aiReport: data.text, aiProvider: data.provider || "auto" }
+            : work
+        )
+      );
+    } catch (error) {
+      setWorkItems((prev) =>
+        prev.map((work) =>
+          work.id === item.id
+            ? {
+                ...work,
+                aiReport:
+                  "AI解析に失敗しました。\n要確認: OPENAI_API_KEY / GEMINI_API_KEY / GEMINI_MODEL の設定とRedeploy状況を確認してください。\n詳細: " +
+                  error.message,
+                aiProvider: "error",
+              }
+            : work
+        )
+      );
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const removeWorkItem = (id) => {
+    if (!window.confirm("この仕事を削除しますか？")) return;
+    setWorkItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
   return (
     <main className="content">
       <section className="hero">
-        <p className="eyebrow">AI WORK ENGINE v2.5</p>
-        <h1>仕事を入れる。AIが分解する。</h1>
+        <p className="eyebrow">AI WORK ENGINE v2.6</p>
+        <h1>仕事を入れる。AIが分析する。</h1>
         <p className="lead">
-          案件・A8・営業タスクを登録すると、KEVIRIOがROI・優先順位・リスク・実行タスクを生成します。
+          案件・A8・営業タスクを登録すると、ROI・優先順位・リスクに加えて、AIが実行計画まで作成します。
         </p>
       </section>
 
@@ -103,6 +161,7 @@ export default function WorkEngine({
               <option value="affiliate">アフィリエイト</option>
               <option value="content">コンテンツ</option>
             </select>
+            <input className="search small" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} placeholder="カテゴリ" />
             <input className="search small" type="number" value={draft.reward} onChange={(e) => setDraft({ ...draft, reward: e.target.value })} placeholder="報酬" />
             <input className="search small" type="number" step="0.25" value={draft.estimatedHours} onChange={(e) => setDraft({ ...draft, estimatedHours: e.target.value })} placeholder="時間" />
             <input className="search small" type="number" min="1" max="5" value={draft.urgency} onChange={(e) => setDraft({ ...draft, urgency: e.target.value })} placeholder="緊急度" />
@@ -118,12 +177,12 @@ export default function WorkEngine({
             <p className="eyebrow">ANALYSIS QUEUE</p>
             <h2>Work Engine判断</h2>
           </div>
-          <span className="badge">ROI First</span>
+          <span className="badge">ROI + AI</span>
         </div>
 
         <div className="grid">
           {analyzed.map((item) => (
-            <div className="card" key={item.id}>
+            <div className="card work-card" key={item.id}>
               <div className="card-header">
                 <span className="badge">Score {item.score}</span>
                 <span className="badge">{item.decision}</span>
@@ -136,12 +195,25 @@ export default function WorkEngine({
                 <li>ROI：{item.roiPerHour.toLocaleString()}円/h</li>
                 <li>リスク：{item.riskComment}</li>
               </ul>
+
               <div className="mission-list">
                 {item.nextActions.map((action) => <div key={action}>{action}</div>)}
               </div>
+
+              {item.aiReport && (
+                <div className="ai-report">
+                  <strong>AI解析結果（{item.aiProvider || "auto"}）</strong>
+                  <p>{item.aiReport}</p>
+                </div>
+              )}
+
               <div className="actions">
+                <button onClick={() => analyzeWithAI(item)} disabled={loadingId === item.id}>
+                  {loadingId === item.id ? "AI解析中..." : "AI解析"}
+                </button>
                 <button onClick={() => pushToMission(item)}>Missionへ送る</button>
                 <button onClick={() => sendToAI(item)}>AIに実行計画</button>
+                <button onClick={() => removeWorkItem(item.id)}>削除</button>
               </div>
             </div>
           ))}
