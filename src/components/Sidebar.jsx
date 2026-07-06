@@ -2,6 +2,7 @@ import BrandMark from "./BrandMark";
 
 const navItems = [
   ["dashboard", "🌿 Mission Control"],
+  ["workEngine", "🧬 Work Engine"],
   ["work", "🧠 Work Command"],
   ["affiliate", "💠 Affiliate Hub"],
   ["content", "✍️ Content Studio"],

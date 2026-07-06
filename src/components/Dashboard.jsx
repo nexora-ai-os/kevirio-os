@@ -51,7 +51,7 @@ export default function Dashboard({
           <p className="lead">{summary.focus}</p>
           <div className="actions">
             <button onClick={askMissionAI}>AIに今日の作戦を聞く</button>
-            <button onClick={() => setPage("work")}>新しい仕事を登録</button>
+            <button onClick={() => setPage("workEngine")}>新しい仕事を登録</button>
             <button onClick={addQuickTask}>タスク追加</button>
           </div>
         </div>
