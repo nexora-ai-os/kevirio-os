@@ -1,12 +1,12 @@
-# KEVIRIO OS v2.5
+# KEVIRIO OS v2.6
 
-## v2.5 AI Work Engine
-- Work Engine page
-- Work item registration
-- ROI / score / priority decision
-- Auto-generated next actions
-- Push generated tasks to Mission Control
-- Send execution plan to KEVIRIO Core
+## v2.6 AI Work Analysis
+- Work Engine now calls `/api/ai`
+- AI analysis for each work item
+- Fact / assumption / opinion / priority / compliance / next actions
+- AI report is saved into each work item
+- Work item deletion
+- Better work registration fields
 
 ## Required Environment Variables
 
