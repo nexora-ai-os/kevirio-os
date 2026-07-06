@@ -31,7 +31,7 @@ export default function AIAssistant({ programs, approvals, chatMessages, setChat
       <TopBar notifications={waiting} savedAt={savedAt} />
 
       <div className="panel assistant-panel">
-        <h1>AI Assistant</h1>
+        <h1>AI Companion</h1>
         <p className="muted">v1.7では疑似AIです。次フェーズでOpenAI / Geminiへ接続します。</p>
 
         <div className="actions">
@@ -44,7 +44,7 @@ export default function AIAssistant({ programs, approvals, chatMessages, setChat
         <div className="chat-window">
           {chatMessages.map((m) => (
             <div className={`chat-bubble ${m.role}`} key={m.id}>
-              <strong>{m.role === "user" ? "健さん" : "NEXORA AI"}</strong>
+              <strong>{m.role === "user" ? "健さん" : "KEVIRIO AI"}</strong>
               <p>{m.text}</p>
             </div>
           ))}

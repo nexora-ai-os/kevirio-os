@@ -3,8 +3,8 @@ export default function FloatingAssistant({ approvals, setPage }) {
 
   return (
     <button className="floating-ai" onClick={() => setPage("assistant")}>
-      <strong>🤖 NEXORA AI</strong>
-      <p>承認待ち {waiting}件。AIに相談する</p>
+      <strong>✨ KEVIRIO AI</strong>
+      <p>承認待ち {waiting}件。AI Companionに相談する</p>
     </button>
   );
 }

@@ -80,7 +80,7 @@ export default function WorkCommand({
       <TopBar savedAt={savedAt} />
 
       <div className="hero">
-        <p className="eyebrow">NEXORA WORK COMMAND</p>
+        <p className="eyebrow">KEVIRIO WORK COMMAND</p>
         <h1>案件・ネタ・指示を入れると、AIが仕事化します。</h1>
         <p className="lead">v1.9では、分析 → 投稿生成 → 承認待ち追加まで一括実行できます。</p>
       </div>

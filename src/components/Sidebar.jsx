@@ -1,11 +1,13 @@
+import BrandMark from "./BrandMark";
+
 const navItems = [
-  ["dashboard", "🏠 Dashboard"],
+  ["dashboard", "🌿 Mission Control"],
   ["work", "🧠 Work Command"],
-  ["affiliate", "💰 Affiliate Hub"],
+  ["affiliate", "💠 Affiliate Hub"],
   ["content", "✍️ Content Studio"],
   ["approval", "✅ Approval Center"],
   ["analytics", "📊 Analytics"],
-  ["assistant", "🤖 AI Assistant"],
+  ["assistant", "✨ AI Companion"],
   ["settings", "⚙️ Settings"],
 ];
 
@@ -13,13 +15,12 @@ export default function Sidebar({ page, setPage }) {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="logo">N</div>
+        <BrandMark size={48} />
         <div>
-          <h2>NEXORA</h2>
-          <p>AI OS v1.8</p>
+          <h2>KEVIRIO</h2>
+          <p>AI Business OS v2.0</p>
         </div>
       </div>
-
       <nav className="nav">
         {navItems.map(([key, label]) => (
           <button key={key} className={page === key ? "active" : ""} onClick={() => setPage(key)}>
