@@ -276,3 +276,50 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .mission-task p { color: #65717A; margin-bottom: 4px; }
 .mission-task small { color: #718087; display: block; line-height: 1.6; }
+
+
+.brain-panel {
+  border-color: rgba(87, 184, 255, 0.2);
+}
+
+.brain-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 16px;
+  margin: 18px 0;
+}
+
+.brain-score {
+  min-height: 180px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,0.95), transparent 32%),
+    conic-gradient(from 180deg, var(--emerald), var(--aurora), var(--sky), var(--emerald));
+  box-shadow: 0 22px 54px rgba(87, 184, 255, 0.18);
+}
+
+.brain-score span {
+  display: block;
+  font-size: 64px;
+  font-weight: 950;
+  color: #20252B;
+}
+
+.brain-score p {
+  font-weight: 900;
+  color: #2D3137;
+  padding: 0 18px;
+}
+
+.brain-cards {
+  margin-top: 16px;
+}
+
+@media (max-width: 980px) {
+  .brain-grid {
+    grid-template-columns: 1fr;
+  }
+}
