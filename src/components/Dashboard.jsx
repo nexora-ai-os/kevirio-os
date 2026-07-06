@@ -1,4 +1,5 @@
 import TopBar from "./TopBar";
+import MissionBrainPanel from "./MissionBrainPanel";
 import { buildMissionSummary, priorityIcon, priorityLabel } from "../services/missionEngine";
 
 export default function Dashboard({
@@ -66,6 +67,14 @@ export default function Dashboard({
         <div className="stat-card"><span>未完了タスク</span><strong>{summary.openTasksCount}件</strong><p>最優先 {summary.highTasksCount}件</p></div>
         <div className="stat-card"><span>リスク</span><strong>{summary.riskLevel}</strong><p>承認待ち {summary.waiting}件</p></div>
       </div>
+
+      <MissionBrainPanel
+        tasks={missionTasks}
+        approvals={approvals}
+        analytics={analytics}
+        pipelineRuns={pipelineRuns}
+        setPage={setPage}
+      />
 
       <section className="panel">
         <div className="section-head">
