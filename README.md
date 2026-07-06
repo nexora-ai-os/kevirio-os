@@ -1,23 +1,25 @@
-# KEVIRIO OS v2.8
+# KEVIRIO v2.9 AI CEO Patch
 
-## v2.8 Auto Flow Engine
-- Auto Flow from Work Engine to Mission / Content / Approval
-- AI Thinking Log
-- ROI Ranking
-- Compliance checks
-- Risk label
-- Auto Flow completion status
-
-## Replace files
+## 置き換えるファイル
 ```txt
-src/components/WorkEngine.jsx
+src/App.jsx
+src/components/Sidebar.jsx
 src/styles.css
-README.md
 ```
 
-## Required Environment Variables
+## 新しく追加するファイル
 ```txt
-OPENAI_API_KEY=sk-...
-GEMINI_API_KEY=AQ...
-GEMINI_MODEL=gemini-2.5-flash
+src/components/AICEO.jsx
+src/services/ceoEngine.js
+CHANGELOG.md
+```
+
+## 変更不要
+```txt
+その他すべて
+```
+
+## Commit message
+```txt
+Build KEVIRIO v2.9 AI CEO
 ```
