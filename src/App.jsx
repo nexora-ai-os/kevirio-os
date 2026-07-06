@@ -22,6 +22,7 @@ import { initialTodos } from "./data/todos";
 import { initialChatMessages } from "./data/chat";
 import { initialOpportunities } from "./data/opportunities";
 import { initialPipelineRuns } from "./data/pipeline";
+import { initialMissionTasks } from "./data/tasks";
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
@@ -35,7 +36,8 @@ export default function App() {
   const [todos, setTodos] = useLocalStorage("nexora-todos", initialTodos, setSavedAt);
   const [chatMessages, setChatMessages] = useLocalStorage("nexora-chat", initialChatMessages, setSavedAt);
   const [opportunities, setOpportunities] = useLocalStorage("nexora-opportunities", initialOpportunities, setSavedAt);
-  const [pipelineRuns, setPipelineRuns] = useLocalStorage("nexora-pipeline-runs", initialPipelineRuns, setSavedAt);
+  const [pipelineRuns, setPipelineRuns] = useLocalStorage("kevirio-pipeline-runs", initialPipelineRuns, setSavedAt);
+  const [missionTasks, setMissionTasks] = useLocalStorage("kevirio-mission-tasks", initialMissionTasks, setSavedAt);
 
   const resetAll = () => {
     const ok = window.confirm("保存データを初期化しますか？");
@@ -60,12 +62,13 @@ export default function App() {
     setChatMessages(initialChatMessages);
     setOpportunities(initialOpportunities);
     setPipelineRuns(initialPipelineRuns);
+    setMissionTasks(initialMissionTasks);
     setPage("dashboard");
     setSavedAt("初期化済み");
   };
 
   const pages = {
-    dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} todos={todos} setTodos={setTodos} notifications={notifications} opportunities={opportunities} pipelineRuns={pipelineRuns} savedAt={savedAt} setPage={setPage} />,
+    dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} notifications={notifications} opportunities={opportunities} pipelineRuns={pipelineRuns} missionTasks={missionTasks} setMissionTasks={setMissionTasks} savedAt={savedAt} setPage={setPage} />,
     work: <WorkCommand opportunities={opportunities} setOpportunities={setOpportunities} pipelineRuns={pipelineRuns} setPipelineRuns={setPipelineRuns} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} savedAt={savedAt} />,
     affiliate: <AffiliateHub programs={programs} setPrograms={setPrograms} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,
     content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} savedAt={savedAt} />,

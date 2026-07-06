@@ -253,3 +253,26 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .topbar, .section-head { flex-direction: column; align-items: flex-start; }
   .chat-input { grid-template-columns: 1fr; }
 }
+
+
+.mission-task.done { opacity: 0.62; }
+
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.task-row span {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(101, 210, 138, 0.16);
+  color: #2D8B57;
+  font-weight: 900;
+}
+
+.mission-task p { color: #65717A; margin-bottom: 4px; }
+.mission-task small { color: #718087; display: block; line-height: 1.6; }
