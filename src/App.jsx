@@ -49,7 +49,7 @@ export default function App() {
   const [workItems, setWorkItems] = useLocalStorage("kevirio-work-items", initialWorkItems, setSavedAt);
   const [trendItems, setTrendItems] = useLocalStorage("kevirio-trend-items", initialTrendItems, setSavedAt);
   const [workflows, setWorkflows] = useLocalStorage("kevirio-workflows", [], setSavedAt);
-  const [opportunities, setOpportunities] = useLocalStorage("kevirio-opportunities", initialOpportunities, setSavedAt);
+  const [revenueOpportunities, setRevenueOpportunities] = useLocalStorage("kevirio-revenue-opportunities", initialOpportunities, setSavedAt);
   const [businessMemory, setBusinessMemory] = useLocalStorage("kevirio-business-memory", initialBusinessMemory, setSavedAt);
 
   const resetAll = () => {
@@ -73,13 +73,13 @@ export default function App() {
     setNotifications(initialNotifications);
     setTodos(initialTodos);
     setChatMessages(initialChatMessages);
-    setOpportunities(initialOpportunities);
+    setRevenueOpportunities(initialOpportunities);
     setPipelineRuns(initialPipelineRuns);
     setMissionTasks(initialMissionTasks);
     setWorkItems(initialWorkItems);
     setTrendItems(initialTrendItems);
     setWorkflows([]);
-    setOpportunities(initialOpportunities);
+    setRevenueOpportunities(initialOpportunities);
     setBusinessMemory(initialBusinessMemory);
     setPage("dashboard");
     setSavedAt("初期化済み");
@@ -88,7 +88,7 @@ export default function App() {
   const pages = {
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} />,
-    opportunity: <OpportunityEngine opportunities={opportunities} setOpportunities={setOpportunities} businessMemory={businessMemory} setBusinessMemory={setBusinessMemory} analytics={analytics} setWorkflows={setWorkflows} setDraft={setDraft} setPage={setPage} />,
+    opportunity: <OpportunityEngine opportunities={revenueOpportunities} setOpportunities={setRevenueOpportunities} businessMemory={businessMemory} setBusinessMemory={setBusinessMemory} analytics={analytics} setWorkflows={setWorkflows} setDraft={setDraft} setPage={setPage} />,
     trends: <TrendIntelligence trendItems={trendItems} setTrendItems={setTrendItems} setDraft={setDraft} setPage={setPage} />,
     workflows: <WorkflowAutomation workflows={workflows} setWorkflows={setWorkflows} trendItems={trendItems} workItems={workItems} setMissionTasks={setMissionTasks} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} />,
     dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} notifications={notifications} opportunities={opportunities} pipelineRuns={pipelineRuns} missionTasks={missionTasks} setMissionTasks={setMissionTasks} savedAt={savedAt} setPage={setPage} />,
