@@ -429,3 +429,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   height: 10px;
   accent-color: var(--emerald);
 }
+
+
+.workflow-card .ai-report {
+  margin-top: 14px;
+}
+
+.workflow-card .actions {
+  flex-wrap: wrap;
+}

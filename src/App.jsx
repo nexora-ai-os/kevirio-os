@@ -5,6 +5,7 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import AICEO from "./components/AICEO";
 import TrendIntelligence from "./components/TrendIntelligence";
+import WorkflowAutomation from "./components/WorkflowAutomation";
 import WorkCommand from "./components/WorkCommand";
 import WorkEngine from "./components/WorkEngine";
 import AffiliateHub from "./components/AffiliateHub";
@@ -45,6 +46,7 @@ export default function App() {
   const [missionTasks, setMissionTasks] = useLocalStorage("kevirio-mission-tasks", initialMissionTasks, setSavedAt);
   const [workItems, setWorkItems] = useLocalStorage("kevirio-work-items", initialWorkItems, setSavedAt);
   const [trendItems, setTrendItems] = useLocalStorage("kevirio-trend-items", initialTrendItems, setSavedAt);
+  const [workflows, setWorkflows] = useLocalStorage("kevirio-workflows", [], setSavedAt);
 
   const resetAll = () => {
     const ok = window.confirm("保存データを初期化しますか？");
@@ -72,6 +74,7 @@ export default function App() {
     setMissionTasks(initialMissionTasks);
     setWorkItems(initialWorkItems);
     setTrendItems(initialTrendItems);
+    setWorkflows([]);
     setPage("dashboard");
     setSavedAt("初期化済み");
   };
@@ -79,6 +82,7 @@ export default function App() {
   const pages = {
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     trends: <TrendIntelligence trendItems={trendItems} setTrendItems={setTrendItems} setDraft={setDraft} setPage={setPage} />,
+    workflows: <WorkflowAutomation workflows={workflows} setWorkflows={setWorkflows} trendItems={trendItems} workItems={workItems} setMissionTasks={setMissionTasks} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} />,
     dashboard: <Dashboard approvals={approvals} programs={programs} analytics={analytics} notifications={notifications} opportunities={opportunities} pipelineRuns={pipelineRuns} missionTasks={missionTasks} setMissionTasks={setMissionTasks} savedAt={savedAt} setPage={setPage} />,
     workEngine: <WorkEngine workItems={workItems} setWorkItems={setWorkItems} setMissionTasks={setMissionTasks} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} />,
     work: <WorkCommand opportunities={opportunities} setOpportunities={setOpportunities} pipelineRuns={pipelineRuns} setPipelineRuns={setPipelineRuns} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} savedAt={savedAt} />,
