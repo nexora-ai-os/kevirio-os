@@ -31,6 +31,7 @@ import { initialPipelineRuns } from "./data/pipeline";
 import { initialMissionTasks } from "./data/tasks";
 import { initialWorkItems } from "./data/workItems";
 import { initialTrendItems } from "./services/trendEngine";
+import { initialBusinessMemory, initialOpportunities } from "./services/opportunityEngine";
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
