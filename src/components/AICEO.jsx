@@ -146,6 +146,20 @@ export default function AICEO({
       <section className="panel">
         <div className="section-head">
           <div>
+            <p className="eyebrow">BUSINESS MEMORY</p>
+            <h2>学習ループ</h2>
+          </div>
+          <span className="badge">v4.0</span>
+        </div>
+        <div className="mission-list">
+          <div>AI提案 → オーナー決裁 → 結果 → 学びを記録します。</div>
+          <div>次の判断精度を上げるため、Business Memoryへ意思決定を残してください。</div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="section-head">
+          <div>
             <p className="eyebrow">RISK RADAR</p>
             <h2>リスク</h2>
           </div>
