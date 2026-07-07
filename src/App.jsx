@@ -31,7 +31,7 @@ import { initialPipelineRuns } from "./data/pipeline";
 import { initialMissionTasks } from "./data/tasks";
 import { initialWorkItems } from "./data/workItems";
 import { initialTrendItems } from "./services/trendEngine";
-import { initialBusinessMemory, initialOpportunities } from "./services/opportunityEngine";
+import { initialBusinessMemory, initialOpportunities as initialRevenueOpportunities } from "./services/opportunityEngine";
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
@@ -50,7 +50,7 @@ export default function App() {
   const [workItems, setWorkItems] = useLocalStorage("kevirio-work-items", initialWorkItems, setSavedAt);
   const [trendItems, setTrendItems] = useLocalStorage("kevirio-trend-items", initialTrendItems, setSavedAt);
   const [workflows, setWorkflows] = useLocalStorage("kevirio-workflows", [], setSavedAt);
-  const [revenueOpportunities, setRevenueOpportunities] = useLocalStorage("kevirio-revenue-opportunities", initialOpportunities, setSavedAt);
+  const [revenueOpportunities, setRevenueOpportunities] = useLocalStorage("kevirio-revenue-opportunities", initialRevenueOpportunities, setSavedAt);
   const [businessMemory, setBusinessMemory] = useLocalStorage("kevirio-business-memory", initialBusinessMemory, setSavedAt);
 
   const resetAll = () => {
@@ -74,13 +74,13 @@ export default function App() {
     setNotifications(initialNotifications);
     setTodos(initialTodos);
     setChatMessages(initialChatMessages);
-    setRevenueOpportunities(initialOpportunities);
+    setRevenueOpportunities(initialRevenueOpportunities);
     setPipelineRuns(initialPipelineRuns);
     setMissionTasks(initialMissionTasks);
     setWorkItems(initialWorkItems);
     setTrendItems(initialTrendItems);
     setWorkflows([]);
-    setRevenueOpportunities(initialOpportunities);
+    setRevenueOpportunities(initialRevenueOpportunities);
     setBusinessMemory(initialBusinessMemory);
     setPage("dashboard");
     setSavedAt("初期化済み");
