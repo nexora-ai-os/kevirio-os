@@ -197,3 +197,85 @@ export function holdWorkflow(workflow) {
     decidedAt: new Date().toISOString(),
   };
 }
+
+// Legacy compatibility for WorkCommand.jsx
+// These functions existed before Workflow Automation and are still imported by Work Command.
+// Keep them exported so older modules continue to build.
+
+export function analyzeOpportunity(opportunity = {}) {
+  const reward = Number(opportunity.reward || opportunity.value || opportunity.expectedRevenue || 0);
+  const estimatedHours = Number(opportunity.estimatedHours || opportunity.hours || 1);
+  const urgency = Number(opportunity.urgency || 3);
+  const strategicFit = Number(opportunity.strategicFit || opportunity.fit || 4);
+  const risk = Number(opportunity.risk || opportunity.complianceRisk || 2);
+
+  const roiPerHour = Math.round(reward / Math.max(estimatedHours, 0.25));
+  const score = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(
+        Math.min(35, reward / 400) +
+          urgency * 10 +
+          strategicFit * 10 -
+          risk * 6 +
+          Math.min(20, roiPerHour / 1000)
+      )
+    )
+  );
+
+  return {
+    ...opportunity,
+    score,
+    roiPerHour,
+    decision: score >= 80 ? "優先実行" : score >= 60 ? "検証" : "後回し",
+    reason:
+      score >= 80
+        ? "ROIと戦略相性が高いため優先候補です。"
+        : score >= 60
+          ? "一定の収益性があります。小さく検証してください。"
+          : "現時点では優先度が低めです。",
+    riskComment:
+      risk >= 4
+        ? "法務・ブランド・広告表現の確認が必要です。"
+        : risk >= 3
+          ? "表現チェックを挟んで進めてください。"
+          : "大きなリスクは低めです。",
+  };
+}
+
+export function buildContentFromAnalysis(analysis = {}) {
+  const title = analysis.title || analysis.name || analysis.theme || "KEVIRIO案件";
+  const value = Number(analysis.reward || analysis.value || analysis.expectedRevenue || 1000);
+
+  return {
+    title: `${title}｜KEVIRIO下書き`,
+    channel: analysis.channel || "Blog / Instagram / Threads",
+    asp: analysis.source || analysis.asp || "KEVIRIO",
+    value,
+    body: `テーマ：${title}
+想定価値：${value.toLocaleString()}円
+Score：${analysis.score || "-"}
+ROI：${analysis.roiPerHour ? analysis.roiPerHour.toLocaleString() + "円/h" : "要確認"}
+
+【事実】
+この下書きはWork Command / Workflow Engineから生成されました。
+
+【推測】
+${analysis.reason || "収益化につながる可能性があります。"}
+
+【提案】
+1. 読者の課題を明確にする
+2. 解決策を提示する
+3. 収益導線を自然に設計する
+4. 誇大表現を避ける
+5. Approval Centerで確認する
+
+【リスク】
+${analysis.riskComment || "公開前に表現・法務・ブランド確認が必要です。"}
+
+【最終決裁】
+公開・投稿・契約・支払いはオーナー承認後に行うこと。
+`,
+  };
+}
