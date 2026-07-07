@@ -52,6 +52,8 @@ export default function App() {
   const [workflows, setWorkflows] = useLocalStorage("kevirio-workflows", [], setSavedAt);
   const [revenueOpportunities, setRevenueOpportunities] = useLocalStorage("kevirio-revenue-opportunities", initialRevenueOpportunities, setSavedAt);
   const [businessMemory, setBusinessMemory] = useLocalStorage("kevirio-business-memory", initialBusinessMemory, setSavedAt);
+  const [memoryRecords, setMemoryRecords] = useLocalStorage("kevirio-memory-records", initialMemoryRecords, setSavedAt);
+  const [decisionJournal, setDecisionJournal] = useLocalStorage("kevirio-decision-journal", initialDecisionJournal, setSavedAt);
 
   const resetAll = () => {
     const ok = window.confirm("保存データを初期化しますか？");
@@ -80,6 +82,8 @@ export default function App() {
     setWorkItems(initialWorkItems);
     setTrendItems(initialTrendItems);
     setWorkflows([]);
+    setMemoryRecords(initialMemoryRecords);
+    setDecisionJournal(initialDecisionJournal);
     setRevenueOpportunities(initialRevenueOpportunities);
     setBusinessMemory(initialBusinessMemory);
     setPage("dashboard");
@@ -89,6 +93,7 @@ export default function App() {
   const pages = {
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} />,
+    memory: <BusinessMemory memoryRecords={memoryRecords} setMemoryRecords={setMemoryRecords} decisionJournal={decisionJournal} setDecisionJournal={setDecisionJournal} setPage={setPage} />,
     opportunity: <OpportunityEngine opportunities={revenueOpportunities} setOpportunities={setRevenueOpportunities} businessMemory={businessMemory} setBusinessMemory={setBusinessMemory} analytics={analytics} setWorkflows={setWorkflows} setDraft={setDraft} setPage={setPage} />,
     trends: <TrendIntelligence trendItems={trendItems} setTrendItems={setTrendItems} setDraft={setDraft} setPage={setPage} />,
     workflows: <WorkflowAutomation workflows={workflows} setWorkflows={setWorkflows} trendItems={trendItems} workItems={workItems} setMissionTasks={setMissionTasks} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} />,
