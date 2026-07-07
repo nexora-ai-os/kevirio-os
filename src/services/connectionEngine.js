@@ -142,3 +142,42 @@ export function buildCEOBriefFromConnection({ approvals = [], missionTasks = [],
     message: `承認待ち${pendingApprovals}件、未完了タスク${openTasks}件、Workflow${workflowCount}件。月間目標まで残り${remaining.toLocaleString()}円です。`,
   };
 }
+
+
+export function buildAutomationStatus({ workflows = [], missionTasks = [], approvals = [], draft = null }) {
+  const pendingWorkflows = workflows.filter((item) => item.status === "pending-owner").length;
+  const reviewWorkflows = workflows.filter((item) => item.status === "owner-review").length;
+  const approvedWorkflows = workflows.filter((item) => item.status === "approved-by-owner").length;
+  const openMissions = missionTasks.filter((item) => item.status !== "done").length;
+  const pendingApprovals = approvals.filter((item) => item.status === "承認待ち").length;
+
+  const readinessScore = Math.max(
+    0,
+    Math.min(
+      100,
+      50 +
+        Math.min(workflows.length, 10) * 3 +
+        Math.min(openMissions, 10) * 2 +
+        Math.min(pendingApprovals, 10) * 2 +
+        (draft ? 8 : 0)
+    )
+  );
+
+  return {
+    pendingWorkflows,
+    reviewWorkflows,
+    approvedWorkflows,
+    openMissions,
+    pendingApprovals,
+    hasDraft: Boolean(draft?.title),
+    readinessScore,
+    nextBestAction:
+      pendingWorkflows > 0
+        ? "Workflowを実行してMission・Content・Approvalへ流す"
+        : pendingApprovals > 0
+          ? "Approval Centerで承認待ちを処理する"
+          : openMissions > 0
+            ? "Mission Controlで未完了タスクを処理する"
+            : "Opportunity Engineで新しい収益機会を作る",
+  };
+}
