@@ -1,13 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { aiOrchestratorModes, runAIOrchestrator } from "../services/aiOrchestrator";
+import { apiGroups, apiMilestones, buildClientApiReadiness } from "../services/apiRegistry";
+import { aiDepartments, buildAgentActionMap, buildAgentCompanySummary } from "../services/agentCompany";
 
-const defaultStatus = {
-  ok: false,
-  automationReady: false,
-  readyCount: 0,
-  providers: [],
-  principles: [],
-};
+const defaultStatus = { ok: false, automationReady: false, readyCount: 0, totalProviders: 0, providers: [], groups: [], principles: [] };
 
 export default function APIControlCenter({ setPage }) {
   const [status, setStatus] = useState(defaultStatus);
@@ -15,205 +11,49 @@ export default function APIControlCenter({ setPage }) {
   const [error, setError] = useState("");
   const [orchestratorResult, setOrchestratorResult] = useState(null);
   const [orchestratorLoading, setOrchestratorLoading] = useState(false);
+  const agentSummary = buildAgentCompanySummary();
+  const actionMap = buildAgentActionMap();
+  const readiness = useMemo(() => buildClientApiReadiness(status.providers || []), [status.providers]);
 
   const loadStatus = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/status");
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "API status check failed");
-      }
-
-      setStatus(data);
-    } catch (err) {
-      setError(err.message);
-      setStatus(defaultStatus);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true); setError("");
+    try { const res = await fetch("/api/status"); const data = await res.json(); if (!res.ok) throw new Error(data.error || "API status check failed"); setStatus(data); }
+    catch (err) { setError(err.message); setStatus(defaultStatus); }
+    finally { setLoading(false); }
   };
-
-  useEffect(() => {
-    loadStatus();
-  }, []);
+  useEffect(() => { loadStatus(); }, []);
 
   const testOrchestrator = async (mode = "general") => {
-    setOrchestratorLoading(true);
-    setOrchestratorResult(null);
-
-    try {
-      const result = await runAIOrchestrator({
-        mode,
-        provider: "auto",
-        message:
-          "KEVIRIOのAI Orchestrator接続テストです。事実・推測・意見・要確認を分け、最終決裁はオーナーであることを明記してください。",
-      });
-
-      setOrchestratorResult(result);
-    } catch (err) {
-      setOrchestratorResult({
-        ok: false,
-        error: err.message,
-      });
-    } finally {
-      setOrchestratorLoading(false);
-    }
+    setOrchestratorLoading(true); setOrchestratorResult(null);
+    try { const result = await runAIOrchestrator({ mode, provider: "auto", message: "KEVIRIO v5.1のAI Orchestrator接続テストです。事実・推測・意見・要確認を分け、最終決裁はオーナーであることを明記してください。" }); setOrchestratorResult(result); }
+    catch (err) { setOrchestratorResult({ ok: false, error: err.message }); }
+    finally { setOrchestratorLoading(false); }
   };
 
-  const configured = status.providers.filter((provider) => provider.configured);
-  const future = status.providers.filter((provider) => !provider.configured);
+  const groups = status.groups?.length ? status.groups : apiGroups.map((group) => ({ ...group, providers: group.providers.map((provider) => ({ ...provider, configured: false, model: provider.status, secretVisible: false })) }));
 
   return (
     <main className="content">
       <section className="hero">
-        <p className="eyebrow">AI / API CONTROL CENTER v3.2</p>
-        <h1>AI自動化の土台を安定させる。</h1>
-        <p className="lead">
-          KEVIRIOのAIプロバイダー状態を確認し、自動化に必要なAPI基盤を管理します。APIキーの値は表示しません。
-        </p>
-        <div className="actions">
-          <button onClick={loadStatus}>{loading ? "確認中..." : "再確認"}</button>
-          <button onClick={() => setPage("assistant")}>AI Companionへ</button>
-          <button onClick={() => setPage("workflows")}>Workflow Automationへ</button>
-        </div>
+        <p className="eyebrow">API / AI CONTROL CENTER v5.1</p>
+        <h1>APIは増やす。操作は増やさない。</h1>
+        <p className="lead">Claude、Perplexity、Google、Canva、SNS、ASPまで見据えた接続基盤です。APIキーの値は表示しません。</p>
+        <div className="actions"><button onClick={loadStatus}>{loading ? "確認中..." : "再確認"}</button><button onClick={() => setPage("home")}>Homeへ</button><button onClick={() => setPage("campaign")}>Campaignへ</button></div>
       </section>
-
       <div className="stats">
-        <div className="stat-card">
-          <span>AI Ready</span>
-          <strong>{status.readyCount}件</strong>
-          <p>設定済みプロバイダー</p>
-        </div>
-        <div className="stat-card">
-          <span>Automation</span>
-          <strong>{status.automationReady ? "Ready" : "Setup"}</strong>
-          <p>OpenAI + Gemini</p>
-        </div>
-        <div className="stat-card">
-          <span>Primary</span>
-          <strong>{configured[0]?.name || "-"}</strong>
-          <p>主力AI</p>
-        </div>
-        <div className="stat-card">
-          <span>Security</span>
-          <strong>Safe</strong>
-          <p>キー非表示</p>
-        </div>
+        <div className="stat-card"><span>API Ready</span><strong>{status.readyCount}件</strong><p>{status.totalProviders || status.providers.length}件中</p></div>
+        <div className="stat-card"><span>Readiness</span><strong>{readiness.score}%</strong><p>接続準備率</p></div>
+        <div className="stat-card"><span>AI Staff</span><strong>{agentSummary.uniqueAgents}人</strong><p>{agentSummary.departments}部門</p></div>
+        <div className="stat-card"><span>Automation</span><strong>{status.automationReady ? "Ready" : "Setup"}</strong><p>Owner Final</p></div>
       </div>
-
-      {error && (
-        <section className="panel danger-panel">
-          <p className="eyebrow">ERROR</p>
-          <h2>API状態を取得できませんでした</h2>
-          <p>{error}</p>
-        </section>
-      )}
-
-      <section className="panel">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">PROVIDERS</p>
-            <h2>AIプロバイダー状態</h2>
-          </div>
-          <span className="badge">{loading ? "Checking" : "Updated"}</span>
-        </div>
-
-        <div className="grid">
-          {status.providers.map((provider) => (
-            <div className="card" key={provider.id}>
-              <div className="card-header">
-                <span className="badge">{provider.configured ? "Ready" : "Not Set"}</span>
-                <span className="badge">{provider.priority}</span>
-              </div>
-              <h2>{provider.name}</h2>
-              <p>{provider.role}</p>
-              <ul>
-                <li>Model：{provider.model}</li>
-                <li>Status：{provider.configured ? "設定済み" : "未設定"}</li>
-                <li>Secret：非表示</li>
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="panel">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">AUTOMATION READINESS</p>
-            <h2>自動化準備状況</h2>
-          </div>
-        </div>
-
-        <div className="mission-list">
-          <div>{status.automationReady ? "✅ OpenAI + Gemini が設定済みです。" : "□ OpenAI / Gemini のどちらかが未設定です。"}</div>
-          <div>{configured.length > 0 ? `✅ 利用可能AI：${configured.map((item) => item.name).join(" / ")}` : "□ 利用可能AIがありません。"}</div>
-          <div>{future.length > 0 ? `将来追加候補：${future.map((item) => item.name).join(" / ")}` : "すべての候補AIが設定済みです。"}</div>
-          <div>次の優先：Workflow Automation → Opportunity Engine → Revenue OS</div>
-        </div>
-      </section>
-
-      <section className="panel">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">AI ORCHESTRATOR</p>
-            <h2>AIルーティング基盤</h2>
-          </div>
-          <span className="badge">{orchestratorLoading ? "Testing" : "Ready"}</span>
-        </div>
-
-        <div className="grid">
-          {aiOrchestratorModes.map((mode) => (
-            <div className="card" key={mode.id}>
-              <span className="badge">{mode.provider}</span>
-              <h2>{mode.name}</h2>
-              <p>{mode.role}</p>
-              <div className="actions">
-                <button onClick={() => testOrchestrator(mode.id)} disabled={orchestratorLoading}>
-                  {orchestratorLoading ? "確認中..." : "接続テスト"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {orchestratorResult && (
-          <div className="ai-report orchestrator-result">
-            <strong>
-              Orchestrator Result：
-              {orchestratorResult.ok ? `${orchestratorResult.provider} / ${orchestratorResult.model}` : "Error"}
-            </strong>
-            <p>
-              {orchestratorResult.ok
-                ? orchestratorResult.text
-                : orchestratorResult.error || "AI Orchestrator failed"}
-            </p>
-            {orchestratorResult.fallbackUsed && <small>Fallback used: yes</small>}
-          </div>
-        )}
-      </section>
-
-      <section className="panel">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">GOVERNANCE</p>
-            <h2>AI実行ルール</h2>
-          </div>
-          <span className="badge">Owner Final</span>
-        </div>
-
-        <div className="mission-list">
-          {status.principles.map((principle) => (
-            <div key={principle}>✅ {principle}</div>
-          ))}
-          <div>✅ 事実・推測・意見・要確認を分ける</div>
-          <div>✅ コンプライアンス・ブランド・長期価値を考慮する</div>
-        </div>
-      </section>
+      {error && <section className="panel danger-panel"><p className="eyebrow">ERROR</p><h2>API状態を取得できませんでした</h2><p>{error}</p></section>}
+      <section className="panel"><div className="section-head"><div><p className="eyebrow">NEXT BEST ACTION</p><h2>次に接続すべきAPI</h2></div><span className="badge">Phase Based</span></div><div className="mission-list"><div>{status.nextBestAction || readiness.nextBestAction}</div><div>原則：APIは増やすが、ユーザーの操作は増やさない。</div><div>最優先：Claude / Perplexity / Google OAuth / Canva / SNS API準備。</div></div></section>
+      <section className="panel"><div className="section-head"><div><p className="eyebrow">PROVIDER GROUPS</p><h2>API接続マップ</h2></div><span className="badge">Secrets Hidden</span></div>{groups.map((group) => <div className="api-group" key={group.id}><div className="section-head compact"><div><p className="eyebrow">{group.id}</p><h2>{group.name}</h2></div></div><div className="grid">{group.providers.map((provider) => <div className="card" key={provider.id}><div className="card-header"><span className="badge">{provider.configured ? "Ready" : "Not Set"}</span><span className="badge">{provider.model || provider.status || "planned"}</span></div><h2>{provider.name}</h2><p>{provider.role}</p><ul><li>Status：{provider.configured ? "設定済み" : "未設定"}</li><li>Secret：非表示</li><li>Keys：{provider.envKeys?.join(" / ") || "要確認"}</li></ul></div>)}</div></div>)}</section>
+      <section className="panel"><div className="section-head"><div><p className="eyebrow">AI ORCHESTRATOR</p><h2>用途別AIルーティング</h2></div><span className="badge">{orchestratorLoading ? "Testing" : "Ready"}</span></div><div className="grid">{aiOrchestratorModes.map((mode) => <div className="card" key={mode.id}><span className="badge">{mode.provider}</span><h2>{mode.name}</h2><p>{mode.role}</p><div className="actions"><button onClick={() => testOrchestrator(mode.id)} disabled={orchestratorLoading}>{orchestratorLoading ? "確認中..." : "接続テスト"}</button></div></div>)}</div>{orchestratorResult && <div className="ai-report orchestrator-result"><strong>Orchestrator Result：{orchestratorResult.ok ? `${orchestratorResult.provider} / ${orchestratorResult.model}` : "Error"}</strong><p>{orchestratorResult.ok ? orchestratorResult.text : orchestratorResult.error || "AI Orchestrator failed"}</p>{orchestratorResult.fallbackUsed && <small>Fallback used: yes</small>}</div>}</section>
+      <section className="panel"><div className="section-head"><div><p className="eyebrow">AI COMPANY</p><h2>AI社員・部署構成</h2></div><span className="badge">{agentSummary.uniqueAgents} Agents</span></div><div className="grid">{aiDepartments.map((department) => <div className="card" key={department.id}><span className="badge">{department.name}</span><h2>{department.mission}</h2><p>{department.agents.join(" / ")}</p></div>)}</div></section>
+      <section className="panel"><div className="section-head"><div><p className="eyebrow">ACTION MAP</p><h2>見える画面は少なく、裏側は強く</h2></div></div><div className="mission-list">{actionMap.map((item) => <div key={item.action}>{item.action}｜{item.visiblePage}｜{item.agents.join(" / ")}</div>)}</div></section>
+      <section className="panel"><div className="section-head"><div><p className="eyebrow">ROADMAP</p><h2>API拡張フェーズ</h2></div></div><div className="mission-list">{apiMilestones.map((item) => <div key={item.phase}>{item.phase}｜{item.title}｜{item.goal}</div>)}</div></section>
+      <section className="panel"><div className="section-head"><div><p className="eyebrow">GOVERNANCE</p><h2>AI実行ルール</h2></div><span className="badge">Owner Final</span></div><div className="mission-list">{(status.principles || []).map((principle) => <div key={principle}>✅ {principle}</div>)}<div>✅ SNS投稿・DM・コメント返信・広告出稿は承認後のみ。</div><div>✅ APIは接続しても、危険な外部実行は自動化しない。</div></div></section>
     </main>
   );
 }

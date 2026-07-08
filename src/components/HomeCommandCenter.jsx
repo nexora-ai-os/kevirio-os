@@ -1,5 +1,6 @@
 import { buildAgentBoardReport } from "../services/agentEngine";
 import { analyzeMemory } from "../services/memoryEngine";
+import { buildAgentCompanySummary } from "../services/agentCompany";
 
 export default function HomeCommandCenter({
   approvals,
@@ -22,6 +23,7 @@ export default function HomeCommandCenter({
   });
 
   const memory = analyzeMemory({ memoryRecords, decisionJournal });
+  const agentCompany = buildAgentCompanySummary();
   const pendingApprovals = approvals.filter((item) => item.status === "承認待ち");
   const openMissions = missionTasks.filter((item) => item.status !== "done");
   const revenue = Number(analytics.revenue || 0);
@@ -47,7 +49,7 @@ export default function HomeCommandCenter({
         <div className="stat-card"><span>承認待ち</span><strong>{pendingApprovals.length}件</strong><p>人間の1割作業</p></div>
         <div className="stat-card"><span>未完了Mission</span><strong>{openMissions.length}件</strong><p>AI準備済み作業</p></div>
         <div className="stat-card"><span>月目標まで</span><strong>{remaining.toLocaleString()}円</strong><p>Revenue OS</p></div>
-        <div className="stat-card"><span>Memory</span><strong>{memory.learningScore}</strong><p>学習スコア</p></div>
+        <div className="stat-card"><span>AI Staff</span><strong>{agentCompany.uniqueAgents}人</strong><p>裏側で稼働</p></div>
       </div>
 
       <section className="panel">
@@ -96,6 +98,15 @@ export default function HomeCommandCenter({
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="panel">
+        <div className="section-head">
+          <div><p className="eyebrow">API EXPANSION</p><h2>次に強化する接続</h2></div>
+          <span className="badge">v5.1</span>
+        </div>
+        <div className="connection-flow"><span>Claude</span><span>Perplexity</span><span>Google</span><span>Canva</span><span>Meta</span><span>X</span><span>TikTok</span><span>YouTube</span><span>海外ASP</span></div>
+        <div className="mission-list"><div>目的｜APIは増やしても、操作はHome / Campaign / Approval中心に集約します。</div><div>次アクション｜API / AI画面で接続状態を確認してください。</div></div>
       </section>
 
       <section className="panel">
