@@ -1,6 +1,7 @@
 import { buildAgentBoardReport } from "../services/agentEngine";
 import { analyzeMemory } from "../services/memoryEngine";
 import { buildAgentCompanySummary } from "../services/agentCompany";
+import SocialRevenuePanel from "./SocialRevenuePanel";
 
 export default function HomeCommandCenter({
   approvals,
@@ -79,6 +80,8 @@ export default function HomeCommandCenter({
           </button>
         </div>
       </section>
+
+      <SocialRevenuePanel campaigns={campaigns} approvals={approvals} analytics={analytics} setPage={setPage} compact />
 
       <section className="panel">
         <div className="section-head">

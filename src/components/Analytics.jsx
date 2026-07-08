@@ -1,11 +1,13 @@
 import TopBar from "./TopBar";
+import SocialRevenuePanel from "./SocialRevenuePanel";
 
-export default function Analytics({ analytics, approvals, savedAt }) {
+export default function Analytics({ analytics, approvals, savedAt, setPage }) {
   const approved = approvals.filter((a) => a.status === "承認済み").length;
   const ctr = analytics.clicks ? "4.8%" : "0%";
 
   return (
     <main className="content">
+      <SocialRevenuePanel campaigns={[]} approvals={approvals || []} analytics={analytics || {}} setPage={setPage} />
       <section className="panel"><p className="eyebrow">CONNECTION CORE</p><h2>承認・売上・ROIをここで確認</h2><div className="mission-list"><div>Approvalで承認した案件の成果を記録し、AI CEOの判断材料にします。</div></div></section>
       <TopBar savedAt={savedAt} />
 
