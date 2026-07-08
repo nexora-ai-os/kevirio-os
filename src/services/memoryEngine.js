@@ -1,4 +1,3 @@
-
 export const initialDecisionJournal = [
   {
     id: 1,
