@@ -644,3 +644,11 @@ nav.sidebar::-webkit-scrollbar-track {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* KEVIRIO v5.1 API Expansion Core */
+.api-group { margin-top: 22px; }
+.section-head.compact { margin-bottom: 12px; }
+.api-group .card ul li { line-height: 1.55; }
+.orchestrator-result { margin-top: 18px; }
+.orchestrator-result small { display: block; margin-top: 8px; font-weight: 900; color: #2D8B57; }
