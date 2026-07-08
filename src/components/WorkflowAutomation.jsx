@@ -22,17 +22,20 @@ export default function WorkflowAutomation({
   setNotifications,
   setPage,
 }) {
-  const analyzedTrends = analyzeTrends(trendItems);
-  const analyzedWork = analyzeWorkItems(workItems);
+  const safeWorkflows = Array.isArray(workflows) ? workflows : [];
+  const safeTrendItems = Array.isArray(trendItems) ? trendItems : [];
+  const safeWorkItems = Array.isArray(workItems) ? workItems : [];
+  const analyzedTrends = analyzeTrends(safeTrendItems);
+  const analyzedWork = analyzeWorkItems(safeWorkItems);
 
   const addTrendWorkflow = (item) => {
-    const workflow = buildWorkflowFromTrend(item);
-    setWorkflows((prev) => [workflow, ...prev]);
+    const workflow = buildWorkflowFromTrend(item || {});
+    setWorkflows((prev) => [workflow, ...(Array.isArray(prev) ? prev : [])]);
   };
 
   const addWorkWorkflow = (item) => {
-    const workflow = buildWorkflowFromWork(item);
-    setWorkflows((prev) => [workflow, ...prev]);
+    const workflow = buildWorkflowFromWork(item || {});
+    setWorkflows((prev) => [workflow, ...(Array.isArray(prev) ? prev : [])]);
   };
 
   const runWorkflow = (workflow) => {
@@ -44,7 +47,7 @@ export default function WorkflowAutomation({
       setNotifications,
     });
 
-    setWorkflows((prev) => prev.map((item) => (item.id === workflow.id ? updated : item)));
+    setWorkflows((prev) => (Array.isArray(prev) ? prev.map((item) => (item.id === workflow.id ? updated : item)) : []));
   };
 
   const updateDecision = (workflow, decision) => {
@@ -55,7 +58,7 @@ export default function WorkflowAutomation({
           ? rejectWorkflow(workflow)
           : holdWorkflow(workflow);
 
-    setWorkflows((prev) => prev.map((item) => (item.id === workflow.id ? updated : item)));
+    setWorkflows((prev) => (Array.isArray(prev) ? prev.map((item) => (item.id === workflow.id ? updated : item)) : []));
   };
 
   const askCEO = (workflow) => {
@@ -74,13 +77,13 @@ Confidence:${workflow.confidence}%
     setPage("assistant");
   };
 
-  const connectionStatus = buildConnectionStatus({ workflows, missionTasks: [], approvals: [], draft: null });
+  const connectionStatus = buildConnectionStatus({ workflows: safeWorkflows, missionTasks: [], approvals: [], draft: null });
 
   const stats = {
-    total: workflows.length,
-    pending: workflows.filter((item) => item.status === "pending-owner").length,
-    review: workflows.filter((item) => item.status === "owner-review").length,
-    approved: workflows.filter((item) => item.status === "approved-by-owner").length,
+    total: safeWorkflows.length,
+    pending: safeWorkflows.filter((item) => item.status === "pending-owner").length,
+    review: safeWorkflows.filter((item) => item.status === "owner-review").length,
+    approved: safeWorkflows.filter((item) => item.status === "approved-by-owner").length,
   };
 
   return (
@@ -138,7 +141,7 @@ Confidence:${workflow.confidence}%
               <h2>{template.name}</h2>
               <p>{template.description}</p>
               <div className="mission-list">
-                {template.steps.map((step) => <div key={step}>□ {step}</div>)}
+                {(Array.isArray(template.steps) ? template.steps : []).map((step) => <div key={step}>□ {step}</div>)}
               </div>
             </div>
           ))}
@@ -209,14 +212,14 @@ Confidence:${workflow.confidence}%
         </div>
 
         <div className="grid">
-          {workflows.length === 0 && (
+          {safeWorkflows.length === 0 && (
             <div className="card">
               <h2>Workflow未登録</h2>
               <p>TrendまたはWorkからWorkflowを作成してください。</p>
             </div>
           )}
 
-          {workflows.map((workflow) => (
+          {safeWorkflows.map((workflow) => (
             <div className="card workflow-card" key={workflow.id}>
               <div className="card-header">
                 <span className="badge">{workflow.source}</span>
@@ -232,7 +235,7 @@ Confidence:${workflow.confidence}%
               </ul>
 
               <div className="mission-list">
-                {workflow.steps.map((step) => (
+                {(Array.isArray(workflow.steps) ? workflow.steps : []).map((step) => (
                   <div key={step.id}>
                     {step.status === "done" ? "✅" : "□"} {step.label}
                   </div>

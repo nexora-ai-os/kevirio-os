@@ -6,6 +6,7 @@ const primaryItems = [
   ["approval", "✅ Approval"],
   ["analytics", "📊 Analytics"],
   ["apiCenter", "🔌 API / AI"],
+  ["operations", "⚙️ Operations"],
 ];
 
 const advancedItems = [

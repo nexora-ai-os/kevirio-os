@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import "./styles.css";
 
 import Sidebar from "./components/Sidebar";
@@ -23,7 +23,7 @@ import { initialPrograms } from "./data/programs";
 import { initialApprovals } from "./data/approvals";
 import { initialAnalytics } from "./data/analytics";
 import { initialDraft } from "./data/draft";
-import { initialNotifications } from "./data/notifications";
+import { initialNotifications as initialLegacyNotifications } from "./data/notifications";
 import { initialTodos } from "./data/todos";
 import { initialChatMessages } from "./data/chat";
 import { initialOpportunities } from "./data/opportunities";
@@ -36,7 +36,26 @@ import BusinessMemory from "./components/BusinessMemory";
 import { initialDecisionJournal, initialMemoryRecords } from "./services/memoryEngine";
 import HomeCommandCenter from "./components/HomeCommandCenter";
 import CampaignOS from "./components/CampaignOS";
+import OperatorOverview from "./components/OperatorOverview";
+import OperationCommandCenter from "./components/OperationCommandCenter";
 import { initialCampaigns } from "./services/campaignEngine";
+import {
+  initialAgents,
+  initialTasks,
+  initialIntegrations,
+  initialWorkflows,
+  initialNotifications as initialPlatformNotifications,
+  initialApiStatuses,
+  initialDepartments,
+  initialModes,
+  initialApprovalsOS,
+  initialRevenues,
+  initialForecasts,
+  initialRisks,
+  initialTrendScores,
+  initialMarketInsights,
+  initialNextActions,
+} from "./data/platformOS";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -46,7 +65,7 @@ export default function App() {
   const [approvals, setApprovals] = useLocalStorage("nexora-approvals", initialApprovals, setSavedAt);
   const [analytics, setAnalytics] = useLocalStorage("nexora-analytics", initialAnalytics, setSavedAt);
   const [draft, setDraft] = useLocalStorage("nexora-draft", initialDraft, setSavedAt);
-  const [notifications, setNotifications] = useLocalStorage("nexora-notifications", initialNotifications, setSavedAt);
+  const [notifications, setNotifications] = useLocalStorage("nexora-notifications", initialLegacyNotifications, setSavedAt);
   const [todos, setTodos] = useLocalStorage("nexora-todos", initialTodos, setSavedAt);
   const [chatMessages, setChatMessages] = useLocalStorage("nexora-chat", initialChatMessages, setSavedAt);
   const [opportunities, setOpportunities] = useLocalStorage("nexora-opportunities", initialOpportunities, setSavedAt);
@@ -54,12 +73,26 @@ export default function App() {
   const [missionTasks, setMissionTasks] = useLocalStorage("kevirio-mission-tasks", initialMissionTasks, setSavedAt);
   const [workItems, setWorkItems] = useLocalStorage("kevirio-work-items", initialWorkItems, setSavedAt);
   const [trendItems, setTrendItems] = useLocalStorage("kevirio-trend-items", initialTrendItems, setSavedAt);
-  const [workflows, setWorkflows] = useLocalStorage("kevirio-workflows", [], setSavedAt);
   const [revenueOpportunities, setRevenueOpportunities] = useLocalStorage("kevirio-revenue-opportunities", initialRevenueOpportunities, setSavedAt);
   const [businessMemory, setBusinessMemory] = useLocalStorage("kevirio-business-memory", initialBusinessMemory, setSavedAt);
   const [memoryRecords, setMemoryRecords] = useLocalStorage("kevirio-memory-records", initialMemoryRecords, setSavedAt);
   const [decisionJournal, setDecisionJournal] = useLocalStorage("kevirio-decision-journal", initialDecisionJournal, setSavedAt);
   const [campaigns, setCampaigns] = useLocalStorage("kevirio-campaigns", initialCampaigns, setSavedAt);
+  const [agents, setAgents] = useLocalStorage("kevirio-agents", initialAgents, setSavedAt);
+  const [platformTasks, setPlatformTasks] = useLocalStorage("kevirio-platform-tasks", initialTasks, setSavedAt);
+  const [integrations, setIntegrations] = useLocalStorage("kevirio-integrations", initialIntegrations, setSavedAt);
+  const [workflows, setWorkflows] = useLocalStorage("kevirio-workflows", initialWorkflows, setSavedAt);
+  const [platformNotifications, setPlatformNotifications] = useLocalStorage("kevirio-platform-notifications", initialPlatformNotifications, setSavedAt);
+  const [apiStatuses, setApiStatuses] = useLocalStorage("kevirio-api-statuses", initialApiStatuses, setSavedAt);
+  const [departments, setDepartments] = useLocalStorage("kevirio-departments", initialDepartments, setSavedAt);
+  const [modes, setModes] = useLocalStorage("kevirio-modes", initialModes, setSavedAt);
+  const [approvalsOS, setApprovalsOS] = useLocalStorage("kevirio-approvals-os", initialApprovalsOS, setSavedAt);
+  const [revenues, setRevenues] = useLocalStorage("kevirio-revenues", initialRevenues, setSavedAt);
+  const [forecasts, setForecasts] = useLocalStorage("kevirio-forecasts", initialForecasts, setSavedAt);
+  const [risks, setRisks] = useLocalStorage("kevirio-risks", initialRisks, setSavedAt);
+  const [trendScores, setTrendScores] = useLocalStorage("kevirio-trend-scores", initialTrendScores, setSavedAt);
+  const [marketInsights, setMarketInsights] = useLocalStorage("kevirio-market-insights", initialMarketInsights, setSavedAt);
+  const [nextActions, setNextActions] = useLocalStorage("kevirio-next-actions", initialNextActions, setSavedAt);
 
   const resetAll = () => {
     const ok = window.confirm("保存データを初期化しますか？");
@@ -79,7 +112,7 @@ export default function App() {
     setApprovals(initialApprovals);
     setAnalytics(initialAnalytics);
     setDraft(initialDraft);
-    setNotifications(initialNotifications);
+    setNotifications(initialLegacyNotifications);
     setTodos(initialTodos);
     setChatMessages(initialChatMessages);
     setRevenueOpportunities(initialRevenueOpportunities);
@@ -87,18 +120,33 @@ export default function App() {
     setMissionTasks(initialMissionTasks);
     setWorkItems(initialWorkItems);
     setTrendItems(initialTrendItems);
-    setWorkflows([]);
+    setWorkflows(initialWorkflows);
     setMemoryRecords(initialMemoryRecords);
     setDecisionJournal(initialDecisionJournal);
     setCampaigns(initialCampaigns);
     setRevenueOpportunities(initialRevenueOpportunities);
     setBusinessMemory(initialBusinessMemory);
+    setAgents(initialAgents);
+    setPlatformTasks(initialTasks);
+    setIntegrations(initialIntegrations);
+    setWorkflows(initialWorkflows);
+    setPlatformNotifications(initialPlatformNotifications);
+    setApiStatuses(initialApiStatuses);
+    setDepartments(initialDepartments);
+    setModes(initialModes);
+    setApprovalsOS(initialApprovalsOS);
+    setRevenues(initialRevenues);
+    setForecasts(initialForecasts);
+    setRisks(initialRisks);
+    setTrendScores(initialTrendScores);
+    setMarketInsights(initialMarketInsights);
+    setNextActions(initialNextActions);
     setPage("home");
     setSavedAt("初期化済み");
   };
 
-  const pages = {
-    home: <HomeCommandCenter approvals={approvals} analytics={analytics} missionTasks={missionTasks} workItems={workItems} pipelineRuns={pipelineRuns} workflows={workflows} memoryRecords={memoryRecords} decisionJournal={decisionJournal} campaigns={campaigns} setPage={setPage} />,
+  const pages = useMemo(() => ({
+    home: <OperatorOverview approvals={approvals} approvalsOS={approvalsOS} analytics={analytics} agents={agents} tasks={platformTasks} integrations={integrations} apiStatuses={apiStatuses} departments={departments} modes={modes} revenues={revenues} forecasts={forecasts} risks={risks} trendScores={trendScores} marketInsights={marketInsights} nextActions={nextActions} notifications={platformNotifications} setPage={setPage} />,
     campaign: <CampaignOS campaigns={campaigns} setCampaigns={setCampaigns} setDraft={setDraft} setApprovals={setApprovals} setWorkflows={setWorkflows} setDecisionJournal={setDecisionJournal} setMemoryRecords={setMemoryRecords} setPage={setPage} />,
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} />,
@@ -113,9 +161,89 @@ export default function App() {
     content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} savedAt={savedAt} />,
     approval: <ApprovalCenter approvals={approvals} setApprovals={setApprovals} setAnalytics={setAnalytics} savedAt={savedAt} />,
     analytics: <Analytics analytics={analytics} approvals={approvals} savedAt={savedAt} setPage={setPage} />,
+    operations: <OperationCommandCenter tasks={platformTasks} integrations={integrations} workflows={workflows} setPage={setPage} />,
     assistant: <AIAssistant programs={programs} approvals={approvals} chatMessages={chatMessages} setChatMessages={setChatMessages} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,
     settings: <Settings resetAll={resetAll} savedAt={savedAt} notifications={notifications} setNotifications={setNotifications} todos={todos} setTodos={setTodos} />,
-  };
+  }), [
+    agents,
+    analytics,
+    approvals,
+    approvalsOS,
+    apiStatuses,
+    businessMemory,
+    campaigns,
+    chatMessages,
+    departments,
+    draft,
+    forecasts,
+    integrations,
+    marketInsights,
+    memoryRecords,
+    missionTasks,
+    modes,
+    nextActions,
+    notifications,
+    opportunities,
+    pipelineRuns,
+    platformNotifications,
+    platformTasks,
+    programs,
+    revenueOpportunities,
+    revenues,
+    risks,
+    setApprovals,
+    setAnalytics,
+    setBusinessMemory,
+    setCampaigns,
+    setChatMessages,
+    setDecisionJournal,
+    setDraft,
+    setMissionTasks,
+    setMemoryRecords,
+    setNotifications,
+    setOpportunities,
+    setPage,
+    setPipelineRuns,
+    setPrograms,
+    setRevenueOpportunities,
+    setSavedAt,
+    setTodos,
+    setTrendItems,
+    setWorkItems,
+    setWorkflows,
+    todos,
+    trendItems,
+    trendScores,
+    workItems,
+    workflows,
+    workItems,
+    savedAt,
+    decisionJournal,
+    setApprovals,
+    setAnalytics,
+    setCampaigns,
+    setChatMessages,
+    setDecisionJournal,
+    setDraft,
+    setMissionTasks,
+    setMemoryRecords,
+    setNotifications,
+    setOpportunities,
+    setPage,
+    setPipelineRuns,
+    setPrograms,
+    setRevenueOpportunities,
+    setSavedAt,
+    setTodos,
+    setTrendItems,
+    setWorkItems,
+    setWorkflows,
+    todos,
+    trendItems,
+    trendScores,
+    workItems,
+    workflows,
+  ]);
 
   return (
     <div className="app-shell">
