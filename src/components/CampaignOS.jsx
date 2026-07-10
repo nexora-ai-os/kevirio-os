@@ -20,6 +20,7 @@ export default function CampaignOS({
   setDecisionJournal,
   setMemoryRecords,
   setPage,
+  embedded = false,
 }) {
   const [form, setForm] = useState({
     theme: "",
@@ -99,8 +100,10 @@ ${campaign.legalChecklist.map((item) => `- ${item}`).join("\n")}
 
   const current = preview;
 
+  const Shell = embedded ? "section" : "main";
+
   return (
-    <main className="content">
+    <Shell className={embedded ? "campaign-os-section" : "content"}>
       <section className="hero v5-hero">
         <p className="eyebrow">CAMPAIGN OS v5.0</p>
         <h1>1テーマから、日本向け3本・海外向け3本を一括生成。</h1>
@@ -235,6 +238,6 @@ ${campaign.legalChecklist.map((item) => `- ${item}`).join("\n")}
           ))}
         </div>
       </section>
-    </main>
+    </Shell>
   );
 }

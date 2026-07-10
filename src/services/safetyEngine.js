@@ -53,6 +53,7 @@ const PHASE1_MOCK_ACTIONS = new Set([
   "workflow-execute",
   "workflow-auto-flow",
   "cost-estimate",
+  "mock-campaign-create",
 ]);
 
 const OWNER_REQUIRED_ACTIONS = new Set([

@@ -39,6 +39,7 @@ import BusinessMemory from "./components/BusinessMemory";
 import { initialDecisionJournal, initialMemoryRecords } from "./services/memoryEngine";
 import HomeCommandCenter from "./components/HomeCommandCenter";
 import CampaignOS from "./components/CampaignOS";
+import RevenueCampaignFoundation from "./components/RevenueCampaignFoundation";
 import OperatorOverview from "./components/OperatorOverview";
 import OperationCommandCenter from "./components/OperationCommandCenter";
 import { initialCampaigns } from "./services/campaignEngine";
@@ -83,6 +84,7 @@ export default function App() {
   const [memoryRecords, setMemoryRecords] = useLocalStorage("kevirio-memory-records", initialMemoryRecords, setSavedAt);
   const [decisionJournal, setDecisionJournal] = useLocalStorage("kevirio-decision-journal", initialDecisionJournal, setSavedAt);
   const [campaigns, setCampaigns] = useLocalStorage("kevirio-campaigns", initialCampaigns, setSavedAt);
+  const [revenueCampaigns, setRevenueCampaigns] = useLocalStorage("kevirio.revenueCampaigns.v1", [], setSavedAt);
   const [agents, setAgents] = useLocalStorage("kevirio-agents", initialAgents, setSavedAt);
   const [platformTasks, setPlatformTasks] = useLocalStorage("kevirio-platform-tasks", initialTasks, setSavedAt);
   const [integrations, setIntegrations] = useLocalStorage("kevirio-integrations", initialIntegrations, setSavedAt);
@@ -112,6 +114,7 @@ export default function App() {
     localStorage.removeItem("nexora-chat");
     localStorage.removeItem("nexora-opportunities");
     localStorage.removeItem("nexora-pipeline-runs");
+    localStorage.removeItem("kevirio.revenueCampaigns.v1");
 
     setPrograms(initialPrograms);
     setApprovals(initialApprovals);
@@ -129,6 +132,7 @@ export default function App() {
     setMemoryRecords(initialMemoryRecords);
     setDecisionJournal(initialDecisionJournal);
     setCampaigns(initialCampaigns);
+    setRevenueCampaigns([]);
     setRevenueOpportunities(initialRevenueOpportunities);
     setBusinessMemory(initialBusinessMemory);
     setAgents(initialAgents);
@@ -152,7 +156,12 @@ export default function App() {
 
   const pages = useMemo(() => ({
     home: <OperatorOverview approvals={approvals} approvalsOS={approvalsOS} analytics={analytics} agents={agents} tasks={platformTasks} integrations={integrations} apiStatuses={apiStatuses} departments={departments} modes={modes} revenues={revenues} forecasts={forecasts} risks={risks} trendScores={trendScores} marketInsights={marketInsights} nextActions={nextActions} notifications={platformNotifications} setPage={setPage} />,
-    campaign: <CampaignOS campaigns={campaigns} setCampaigns={setCampaigns} setDraft={setDraft} setApprovals={setApprovals} setWorkflows={setWorkflows} setDecisionJournal={setDecisionJournal} setMemoryRecords={setMemoryRecords} setPage={setPage} />,
+    campaign: (
+      <main className="content">
+        <RevenueCampaignFoundation budget={budget} revenueCampaigns={revenueCampaigns} setRevenueCampaigns={setRevenueCampaigns} />
+        <CampaignOS embedded campaigns={campaigns} setCampaigns={setCampaigns} setDraft={setDraft} setApprovals={setApprovals} setWorkflows={setWorkflows} setDecisionJournal={setDecisionJournal} setMemoryRecords={setMemoryRecords} setPage={setPage} />
+      </main>
+    ),
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} budget={budget} />,
     memory: <BusinessMemory memoryRecords={memoryRecords} setMemoryRecords={setMemoryRecords} decisionJournal={decisionJournal} setDecisionJournal={setDecisionJournal} setPage={setPage} />,
@@ -195,6 +204,7 @@ export default function App() {
     platformTasks,
     programs,
     revenueOpportunities,
+    revenueCampaigns,
     revenues,
     risks,
     setApprovals,
@@ -212,6 +222,7 @@ export default function App() {
     setPipelineRuns,
     setPrograms,
     setRevenueOpportunities,
+    setRevenueCampaigns,
     setSavedAt,
     setTodos,
     setTrendItems,
