@@ -158,7 +158,7 @@ export default function App() {
     home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} />,
     campaign: (
       <main className="content">
-        <RevenueCampaignFoundation budget={budget} revenueCampaigns={revenueCampaigns} setRevenueCampaigns={setRevenueCampaigns} />
+        <RevenueCampaignFoundation budget={budget} revenueCampaigns={revenueCampaigns} setRevenueCampaigns={setRevenueCampaigns} setPage={setPage} />
         <CampaignOS embedded campaigns={campaigns} setCampaigns={setCampaigns} setDraft={setDraft} setApprovals={setApprovals} setWorkflows={setWorkflows} setDecisionJournal={setDecisionJournal} setMemoryRecords={setMemoryRecords} setPage={setPage} />
       </main>
     ),

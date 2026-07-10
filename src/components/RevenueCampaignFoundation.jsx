@@ -8,26 +8,27 @@ import {
   getDefaultRevenueCampaignInput,
   getRevenueGoalOptions,
 } from "../services/revenueCampaignService";
+import RevenuePackageGenerator from "./RevenuePackageGenerator";
 
 const campaignTypeLabels = {
-  [CAMPAIGN_TYPES.CORE_MEDIA]: "CORE MEDIA",
-  [CAMPAIGN_TYPES.SHORT_TERM_SERVICE]: "SHORT-TERM SERVICE",
+  [CAMPAIGN_TYPES.CORE_MEDIA]: "本命事業",
+  [CAMPAIGN_TYPES.SHORT_TERM_SERVICE]: "短期収益",
 };
 
 const goalLabels = {
-  AFFILIATE_REVENUE: "Affiliate revenue",
-  AD_REVENUE: "Ad revenue",
-  PRODUCT_REVENUE: "Product revenue",
-  SERVICE_LEAD: "Service lead",
-  BRAND_GROWTH: "Brand growth",
-  SERVICE_REVENUE: "Service revenue",
-  LEAD_GENERATION: "Lead generation",
-  ORDER_ACQUISITION: "Order acquisition",
-  REPEAT_ORDER: "Repeat order",
-  PORTFOLIO_BUILDING: "Portfolio building",
+  AFFILIATE_REVENUE: "アフィリエイト収益",
+  AD_REVENUE: "広告収益",
+  PRODUCT_REVENUE: "商品収益",
+  SERVICE_LEAD: "サービス相談",
+  BRAND_GROWTH: "ブランド成長",
+  SERVICE_REVENUE: "サービス収益",
+  LEAD_GENERATION: "見込み客獲得",
+  ORDER_ACQUISITION: "受注獲得",
+  REPEAT_ORDER: "継続受注",
+  PORTFOLIO_BUILDING: "実績づくり",
 };
 
-export default function RevenueCampaignFoundation({ budget, revenueCampaigns = [], setRevenueCampaigns }) {
+export default function RevenueCampaignFoundation({ budget, revenueCampaigns = [], setRevenueCampaigns, setPage }) {
   const [form, setForm] = useState(() => getDefaultRevenueCampaignInput());
   const [errors, setErrors] = useState({});
   const [latest, setLatest] = useState(null);
@@ -91,27 +92,29 @@ export default function RevenueCampaignFoundation({ budget, revenueCampaigns = [
 
   return (
     <section>
-      <section className="hero v5-hero">
-        <p className="eyebrow">P0-001 Revenue Campaign Foundation</p>
-        <h1>Revenue Campaign Foundation</h1>
+      <section className="hero v5-hero p0-005-compact-hero">
+        <p className="eyebrow">P0-001 / Revenue Campaign Foundation</p>
+        <h1>収益キャンペーン作成</h1>
         <p className="lead">
-          Development Mode / Mock Only。外部通信なし、実売上ではないMock Draftとして、6項目以内の入力からCampaign基礎データを保存します。
+          開発モードのモック下書きです。外部通信なし、実売上ではありません。
         </p>
         <div className="connection-flow">
-          <span>Development Mode</span>
-          <span>Mock Only</span>
+          <span>開発モード</span>
+          <span>モックのみ</span>
           <span>外部通信なし</span>
           <span>実売上ではありません</span>
         </div>
       </section>
 
+      <RevenuePackageGenerator campaigns={revenueCampaigns} budget={budget} setPage={setPage} />
+
       <section className="panel">
         <div className="section-head">
           <div>
-            <p className="eyebrow">OWNER INPUT</p>
-            <h2>6項目でMock Campaignを作成</h2>
+            <p className="eyebrow">キャンペーン入力</p>
+            <h2>6項目でモックキャンペーンを作成</h2>
           </div>
-          <span className="badge">MOCK / DRAFT 固定</span>
+          <span className="badge">モック / 下書き</span>
         </div>
 
         <div className="v5-picker">
@@ -174,17 +177,17 @@ export default function RevenueCampaignFoundation({ budget, revenueCampaigns = [
           <div>
             <h3>入力検証</h3>
             <div className="mission-list">
-              <div>Campaign type: {form.campaignType}</div>
-              <div>Value type: MOCK固定</div>
-              <div>Status: DRAFT固定</div>
-              <div>External execution: false</div>
+              <div>種別: {campaignTypeLabels[form.campaignType]}</div>
+              <div>下書き / モックのみ</div>
+              <div>未公開 / 未承認</div>
+              <div>外部通信なし</div>
             </div>
           </div>
         </div>
 
         {errors.guard && <p className="success-message">{errors.guard}</p>}
         <div className="actions">
-          <button onClick={saveCampaign}>Mock Campaignを作成</button>
+          <button onClick={saveCampaign}>モックキャンペーンを作成</button>
           <button onClick={resetForm}>入力をリセット</button>
         </div>
       </section>
@@ -192,58 +195,80 @@ export default function RevenueCampaignFoundation({ budget, revenueCampaigns = [
       <section className="panel">
         <div className="section-head">
           <div>
-            <p className="eyebrow">CAMPAIGN PREVIEW</p>
-            <h2>保存されるMock Draft</h2>
+            <p className="eyebrow">保存内容の確認</p>
+            <h2>Ownerが最初に見る内容</h2>
           </div>
-          <span className="badge">requestedArtifacts {REQUESTED_ARTIFACTS.length}件</span>
+          <span className="badge">成果物 {REQUESTED_ARTIFACTS.length}件</span>
         </div>
         <div className="grid">
           <div className="card">
-            <span className="badge">{preview.campaignType}</span>
+            <span className="badge">{campaignTypeLabels[preview.campaignType] || preview.campaignType}</span>
             <h2>{preview.theme || "テーマ未入力"}</h2>
             <p>{preview.targetAudience || "対象者未入力"}</p>
           </div>
           <div className="card">
-            <span className="badge">IDs</span>
+            <span className="badge">目的</span>
             <ul>
-              <li>campaignId: {preview.campaignId}</li>
-              <li>correlationId: {preview.correlationId}</li>
-              <li>opportunityId: {preview.opportunityId}</li>
+              <li>収益目的: {goalLabels[preview.revenueGoal] || preview.revenueGoal}</li>
+              <li>主チャネル: {preview.primaryChannels?.join(" / ")}</li>
+              <li>言語: {preview.language}</li>
             </ul>
           </div>
           <div className="card">
-            <span className="badge">Safety</span>
+            <span className="badge">状態</span>
             <ul>
-              <li>mockOnly: true</li>
-              <li>externalExecutionAllowed: false</li>
-              <li>ownerApprovalRequired: false</li>
-              <li>valueType: MOCK</li>
-              <li>status: DRAFT</li>
+              <li>下書き</li>
+              <li>未公開</li>
+              <li>未承認</li>
+              <li>外部通信なし</li>
+              <li>実売上ではありません</li>
             </ul>
           </div>
         </div>
         <div className="mission-list">
-          <div>Revenue MVP Package Input: {preview.revenuePackageInput?.requestedArtifacts?.join(" / ")}</div>
-          {latest && <div>Mock Campaign作成完了。外部通信は行われていません。次工程: Revenue MVP Package Generator</div>}
+          {latest && <div>次工程: 収益パッケージ作成へ進む</div>}
         </div>
+        <details className="tech-details">
+          <summary>技術情報を見る</summary>
+          <div className="mission-list tech-list">
+            <div>campaignId: {preview.campaignId}</div>
+            <div>correlationId: {preview.correlationId}</div>
+            <div>opportunityId: {preview.opportunityId}</div>
+            <div>status: {preview.status}</div>
+            <div>valueType: {preview.valueType}</div>
+            <div>mockOnly: {String(preview.mockOnly)}</div>
+            <div>requestedArtifacts: {preview.revenuePackageInput?.requestedArtifacts?.join(" / ")}</div>
+          </div>
+        </details>
       </section>
 
       <section className="panel">
         <div className="section-head">
           <div>
-            <p className="eyebrow">SAVED MOCK CAMPAIGNS</p>
-            <h2>LocalStorage: kevirio.revenueCampaigns.v1</h2>
+            <p className="eyebrow">保存済みモックキャンペーン</p>
+            <h2>保存済みキャンペーン</h2>
           </div>
           <span className="badge">{revenueCampaigns.length}件</span>
         </div>
         <div className="mission-list">
-          {revenueCampaigns.length === 0 && <div>まだMock Campaignはありません。</div>}
+          {revenueCampaigns.length === 0 && <div>まだモックキャンペーンはありません。</div>}
           {revenueCampaigns.map((campaign) => (
             <div key={campaign.campaignId}>
-              {campaign.campaignId} / {campaign.campaignType} / {campaign.theme} / {campaign.status} / {campaign.valueType}
+              {campaignTypeLabels[campaign.campaignType] || campaign.campaignType} / {campaign.theme} / {campaign.targetAudience}
             </div>
           ))}
         </div>
+        <details className="tech-details">
+          <summary>技術情報を見る</summary>
+          <div className="mission-list tech-list">
+            <div>LocalStorageキー: kevirio.revenueCampaigns.v1</div>
+            {revenueCampaigns.map((campaign) => (
+              <div key={`${campaign.campaignId}-tech`}>
+                {campaign.campaignId} / {campaign.campaignType} / {campaign.status} / {campaign.valueType}
+              </div>
+            ))}
+          </div>
+        </details>
       </section>
     </section>
   );

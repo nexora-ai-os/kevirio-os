@@ -1119,6 +1119,68 @@ nav.sidebar::-webkit-scrollbar-track {
   font-weight: 900;
 }
 
+/* KEVIRIO Phase1-B P0-005 UX polish */
+.content,
+.panel,
+.card,
+.grid > *,
+.v5-picker > *,
+.mission-list > *,
+.kpi-grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.p0-005-compact-hero {
+  padding: 24px 28px;
+}
+
+.p0-005-compact-hero h1 {
+  font-size: clamp(26px, 3.4vw, 42px);
+  line-height: 1.16;
+  margin-bottom: 10px;
+}
+
+.p0-005-compact-hero .lead {
+  max-width: 760px;
+  line-height: 1.55;
+}
+
+.tech-details {
+  margin-top: 14px;
+}
+
+.tech-details summary {
+  cursor: pointer;
+  color: #2C6E99;
+  font-weight: 900;
+}
+
+.tech-list div,
+.card li,
+.mission-list div {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.grid,
+.kpi-grid,
+.v5-picker {
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+}
+
+.actions button,
+.toolbar select,
+.wide-btn {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.connection-flow span,
+.badge {
+  white-space: normal;
+}
+
 @media (max-width: 1180px) {
   .owner-action-list,
   .revenue-kpi-grid,
