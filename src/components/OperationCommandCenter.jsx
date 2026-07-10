@@ -1,5 +1,6 @@
 import React, { memo } from "react";
 import { Button, Card, GlassPanel, SectionTitle, StatusBadge } from "./shared/UIComponents";
+import EventLedgerPanel from "./EventLedgerPanel";
 
 function OperationCommandCenter({ tasks = [], integrations = [], workflows = [], setPage }) {
   return (
@@ -66,6 +67,8 @@ function OperationCommandCenter({ tasks = [], integrations = [], workflows = [],
           </Card>
         </GlassPanel>
       </div>
+
+      <EventLedgerPanel />
     </div>
   );
 }

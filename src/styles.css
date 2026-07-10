@@ -754,3 +754,40 @@ nav.sidebar::-webkit-scrollbar-track {
   font-weight: 900;
   color: #2D8B57;
 }
+
+
+/* KEVIRIO Phase1-B P0-003 Mock Event Ledger */
+.event-ledger-panel {
+  border-color: rgba(87, 184, 255, 0.2);
+}
+
+.event-ledger-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.event-ledger-row {
+  display: grid;
+  grid-template-columns: 56px minmax(180px, 1.2fr) minmax(140px, 1fr) minmax(180px, 1.1fr) minmax(210px, 1.1fr) 80px;
+  gap: 10px;
+  align-items: center;
+  min-width: 960px;
+  padding: 12px 14px;
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #65717A;
+  font-size: 13px;
+}
+
+.event-ledger-row strong {
+  color: #20252B;
+}
+
+.event-ledger-row--head {
+  background: rgba(87, 184, 255, 0.1);
+  color: #2C6E99;
+  font-weight: 900;
+}
