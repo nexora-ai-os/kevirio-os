@@ -87,7 +87,30 @@ body { overflow-x: hidden; }
   box-shadow: 0 10px 24px rgba(80, 120, 140, 0.08);
 }
 
-.nav button { text-align: left; }
+.nav button {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .nav button:hover, .nav button.active, .actions button:hover, .icon-btn:hover, .profile-btn:hover, .wide-btn:hover, .floating-ai:hover, .chat-input button:hover, .section-head button:hover {
   background: linear-gradient(135deg, rgba(101, 210, 138, 0.95), rgba(183, 244, 226, 0.78));
@@ -1179,6 +1202,134 @@ nav.sidebar::-webkit-scrollbar-track {
 .connection-flow span,
 .badge {
   white-space: normal;
+}
+
+/* KEVIRIO Phase1-B P0-006 Owner Review Workspace */
+.owner-review-workspace {
+  display: grid;
+  gap: 18px;
+}
+
+.review-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 18px;
+  align-items: center;
+}
+
+.review-top h1 {
+  font-size: clamp(28px, 3.6vw, 42px);
+  margin-bottom: 8px;
+}
+
+.review-top p {
+  color: #65717A;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.review-count {
+  min-height: 126px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: rgba(101, 210, 138, 0.13);
+  border: 1px solid rgba(101, 210, 138, 0.24);
+}
+
+.review-count strong {
+  display: block;
+  font-size: 52px;
+  line-height: 1;
+  color: #20252B;
+}
+
+.review-count span {
+  display: block;
+  color: #2D8B57;
+  font-weight: 950;
+}
+
+.review-list {
+  display: grid;
+  gap: 10px;
+}
+
+.review-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 110px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.review-card strong,
+.review-main-text h3 {
+  color: #20252B;
+}
+
+.review-card p,
+.review-main-text p,
+.review-side div,
+.review-note span {
+  color: #65717A;
+  line-height: 1.6;
+}
+
+.review-card button {
+  border: 1px solid rgba(101, 210, 138, 0.22);
+  background: rgba(255,255,255,0.74);
+  border-radius: 999px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.review-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.75fr);
+  gap: 14px;
+}
+
+.review-main-text,
+.review-side {
+  min-width: 0;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  overflow-wrap: anywhere;
+}
+
+.review-side {
+  display: grid;
+  gap: 10px;
+}
+
+.review-note {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.review-actions {
+  max-width: 520px;
+}
+
+@media (max-width: 760px) {
+  .review-top,
+  .review-card,
+  .review-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review-count {
+    min-height: 96px;
+  }
 }
 
 @media (max-width: 1180px) {

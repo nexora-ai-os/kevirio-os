@@ -42,6 +42,7 @@ import CampaignOS from "./components/CampaignOS";
 import RevenueCampaignFoundation from "./components/RevenueCampaignFoundation";
 import OperationCommandCenter from "./components/OperationCommandCenter";
 import RevenueCommandCenter from "./components/RevenueCommandCenter";
+import OwnerReviewWorkspace from "./components/OwnerReviewWorkspace";
 import { initialCampaigns } from "./services/campaignEngine";
 import {
   initialAgents,
@@ -162,6 +163,7 @@ export default function App() {
         <CampaignOS embedded campaigns={campaigns} setCampaigns={setCampaigns} setDraft={setDraft} setApprovals={setApprovals} setWorkflows={setWorkflows} setDecisionJournal={setDecisionJournal} setMemoryRecords={setMemoryRecords} setPage={setPage} />
       </main>
     ),
+    review: <OwnerReviewWorkspace revenueCampaigns={revenueCampaigns} budget={budget} />,
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} budget={budget} />,
     memory: <BusinessMemory memoryRecords={memoryRecords} setMemoryRecords={setMemoryRecords} decisionJournal={decisionJournal} setDecisionJournal={setDecisionJournal} setPage={setPage} />,
