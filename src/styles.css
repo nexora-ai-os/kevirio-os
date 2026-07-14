@@ -1210,6 +1210,142 @@ nav.sidebar::-webkit-scrollbar-track {
   gap: 18px;
 }
 
+/* KEVIRIO V8 Sprint1 Owner Decision Center */
+.sprint-review {
+  display: grid;
+  gap: 18px;
+}
+
+.sprint-decision-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.15fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.sprint-focus {
+  display: grid;
+  gap: 10px;
+  align-content: center;
+}
+
+.sprint-focus h1 {
+  font-size: clamp(26px, 3.2vw, 40px);
+  margin: 0;
+}
+
+.sprint-focus strong {
+  font-size: clamp(26px, 3.8vw, 48px);
+  color: #20252B;
+  line-height: 1.08;
+}
+
+.sprint-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sprint-facts div,
+.sprint-details div {
+  min-width: 0;
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  background: rgba(255, 255, 255, 0.66);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.sprint-facts span,
+.sprint-pipeline span {
+  display: block;
+  color: #65717A;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sprint-facts strong {
+  display: block;
+  margin-top: 8px;
+  color: #20252B;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.sprint-artifact-panel h2 {
+  font-size: clamp(22px, 2.5vw, 32px);
+}
+
+.sprint-artifact-body {
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  color: #4D5962;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sprint-artifact-point {
+  margin-top: 12px;
+  color: #2D8B57;
+  font-weight: 900;
+}
+
+.sprint-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 160px));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.sprint-actions button,
+.sprint-pipeline button {
+  border: 1px solid rgba(101, 210, 138, 0.22);
+  color: var(--graphite);
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 16px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 48px;
+  box-shadow: 0 10px 24px rgba(80, 120, 140, 0.08);
+}
+
+.sprint-actions button:first-child,
+.sprint-pipeline button.active {
+  background: linear-gradient(135deg, rgba(101, 210, 138, 0.95), rgba(183, 244, 226, 0.78));
+}
+
+.sprint-note {
+  max-width: 760px;
+}
+
+.sprint-pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sprint-pipeline button {
+  text-align: left;
+}
+
+.sprint-pipeline strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #20252B;
+}
+
+.sprint-details {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  color: #65717A;
+  font-weight: 800;
+}
+
 .review-top {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 150px;
@@ -1321,6 +1457,14 @@ nav.sidebar::-webkit-scrollbar-track {
 }
 
 @media (max-width: 760px) {
+  .sprint-decision-panel,
+  .sprint-facts,
+  .sprint-actions,
+  .sprint-pipeline,
+  .sprint-details {
+    grid-template-columns: 1fr;
+  }
+
   .review-top,
   .review-card,
   .review-detail-grid {
