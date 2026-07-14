@@ -1,0 +1,275 @@
+.market-intelligence {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 180px;
+}
+
+.mi-panel,
+.mi-card {
+  border: 1px solid rgba(101, 210, 138, 0.18);
+  background: rgba(255, 255, 255, 0.74);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+
+.mi-panel {
+  padding: 16px 18px;
+}
+
+.mi-briefing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  gap: 14px;
+  align-items: center;
+}
+
+.mi-briefing h1 {
+  font-size: clamp(26px, 2.8vw, 34px);
+  line-height: 1.16;
+  margin-bottom: 6px;
+}
+
+.mi-briefing__side {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(101, 210, 138, 0.12);
+  border: 1px solid rgba(101, 210, 138, 0.2);
+}
+
+.mi-briefing__side span,
+.mi-next-action span,
+.mi-primary-list span {
+  color: #65717A;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mi-briefing__side strong {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.mi-briefing__side small,
+.mi-next-action p,
+.mi-status-panel p {
+  color: #65717A;
+  line-height: 1.6;
+  font-weight: 800;
+}
+
+.mi-next-action {
+  display: grid;
+  gap: 6px;
+  border-color: rgba(87, 184, 255, 0.2);
+}
+
+.mi-next-action strong {
+  display: block;
+  margin-top: 4px;
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.35;
+}
+
+.mi-safety-strip {
+  display: block;
+}
+
+.mi-safety-strip span,
+.mi-lane,
+.mi-rank {
+  border: 1px solid rgba(101, 210, 138, 0.24);
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #2D8B57;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.mi-safety-strip span {
+  display: inline-block;
+  line-height: 1.5;
+}
+
+.mi-recommendations {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mi-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  align-content: start;
+}
+
+.mi-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.mi-lane--asset {
+  color: #2C6E99;
+  border-color: rgba(87, 184, 255, 0.26);
+  background: rgba(87, 184, 255, 0.12);
+}
+
+.mi-card h2 {
+  font-size: clamp(18px, 1.8vw, 21px);
+  line-height: 1.25;
+}
+
+.mi-primary-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mi-primary-list div,
+.mi-reason-list div {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.mi-primary-list strong,
+.mi-reason-list strong {
+  display: block;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.mi-detail-toggle {
+  justify-self: start;
+  border: 1px solid rgba(101, 210, 138, 0.22);
+  color: var(--graphite);
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 42px;
+}
+
+.mi-detail-toggle:focus-visible {
+  outline: 3px solid rgba(87, 184, 255, 0.34);
+  outline-offset: 3px;
+}
+
+.mi-details {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.mi-details[hidden] {
+  display: none;
+}
+
+.mi-detail-section {
+  display: grid;
+  gap: 8px;
+}
+
+.mi-detail-section h3 {
+  font-size: 15px;
+  line-height: 1.3;
+  color: #20252B;
+}
+
+.mi-details dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mi-details dl div,
+.mi-detail-group {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.mi-details dt {
+  color: #65717A;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.mi-details dd {
+  margin-top: 4px;
+  color: #20252B;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.mi-metric-list {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mi-detail-group ul {
+  margin-top: 8px;
+  padding-left: 18px;
+  color: #65717A;
+  line-height: 1.65;
+}
+
+.mi-reason-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mi-reason-list span {
+  display: block;
+  margin-top: 4px;
+  color: #65717A;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+@media (max-width: 1100px) {
+  .mi-recommendations {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .mi-briefing,
+  .mi-next-action,
+  .mi-recommendations,
+  .mi-details dl,
+  .mi-metric-list {
+    grid-template-columns: 1fr;
+  }
+
+  .market-intelligence {
+    gap: 12px;
+  }
+
+  .mi-panel,
+  .mi-card {
+    border-radius: 18px;
+  }
+
+  .mi-card h2 {
+    font-size: 20px;
+  }
+
+  .mi-primary-list strong,
+  .mi-details dd,
+  .mi-detail-group li {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}

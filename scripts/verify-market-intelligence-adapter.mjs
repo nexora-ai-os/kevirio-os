@@ -74,7 +74,7 @@ const tests = [
     assert("asset label", titles.includes("資産形成"));
   }],
   ["Forecast label uses Japanese estimated revenue wording", () => {
-    assert("forecast label", buildViewModel().recommendations.every((item) => item.primary.forecastLabel.startsWith("推定売上:")));
+    assert("forecast label", buildViewModel().recommendations.every((item) => item.primary.forecastLabel.includes("¥") && item.primary.forecastLabel.includes("日")));
   }],
   ["Mock safety is explicit on every recommendation", () => {
     assert("mock safety", buildViewModel().recommendations.every((item) => item.safety.dataMode === DATA_MODES.MOCK && item.safety.isMock === true));

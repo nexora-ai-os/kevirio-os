@@ -28,6 +28,78 @@ const LANE_LABELS = Object.freeze({
   [LANES.ASSET]: "資産形成",
 });
 
+const MARKET_TITLE_LABELS = Object.freeze({
+  "Small Business SNS and Article Production": "小規模事業者向けSNS・記事制作",
+  "AI Workflow Efficiency Support": "AI業務効率化支援",
+  "AI Productivity Affiliate Media": "AI時短・業務効率化メディア",
+  "Small Business Marketing Media": "小規模事業者向け集客メディア",
+});
+
+const CUSTOMER_PROBLEM_LABELS = Object.freeze({
+  "Small businesses need frequent content but lack staff time.": "小規模事業者は継続的な情報発信が必要ですが、制作を担当する人員と時間が不足しています。",
+  "Owners want AI efficiency but do not know what to automate first.": "事業者はAIで業務を効率化したい一方、最初に自動化すべき業務を判断できていません。",
+  "Readers need practical AI tools that save time without heavy setup.": "読者は、複雑な設定なしで時間を削減できる実用的なAIツールを探しています。",
+  "Small businesses need simple marketing guidance they can reuse.": "小規模事業者は、繰り返し使えるわかりやすい集客ノウハウを必要としています。",
+});
+
+const TARGET_AUDIENCE_LABELS = Object.freeze({
+  "Local small business owners": "地域の小規模事業者・個人事業主",
+  "Small teams and owner-operated businesses": "少人数チーム・オーナー経営の事業者",
+  "Solo workers and small business operators": "一人事業者・小規模事業の運営者",
+  "Local service businesses": "地域密着型のサービス事業者",
+});
+
+const VALUE_LABELS = Object.freeze({
+  service: "サービス提供",
+  lead: "見込み客獲得",
+  affiliate: "アフィリエイト",
+  media: "メディア収益",
+  seo: "SEO",
+  sns: "SNS",
+});
+
+const ASSUMPTION_LABELS = Object.freeze({
+  "One mock service package sold within 30 days": "30日以内に初回サービスパッケージが1件成約する想定",
+  "Mock pricing: one initial content bundle": "初回コンテンツ制作パックを1件販売する想定",
+  "One mock diagnostic package closes from lead outreach": "見込み客への提案から診断パッケージが1件成約する想定",
+  "Mock competitor offers support service pricing": "競合サービスの価格帯を参考にした支援サービス想定",
+  "Mock SEO article set creates initial affiliate clicks": "SEO記事群から初期のアフィリエイトクリックが発生する想定",
+  "Mock affiliate commission range and initial traffic assumption": "初期流入とアフィリエイト報酬レンジに基づく想定",
+  "Mock media content creates future lead capture": "メディア記事から将来の見込み客獲得につながる想定",
+  "Mock owned performance benchmark": "自社保有コンテンツのMock実績ベンチマーク",
+});
+
+const EVIDENCE_LABELS = Object.freeze({
+  "service package mock assumption": "サービスパッケージ化できるMock根拠",
+  "mock service fee range": "サービス単価レンジのMock根拠",
+  "mock lead conversion assumption": "見込み客から成約へのMock想定",
+  "mock consulting lead": "相談・診断サービスのMock見込み客",
+  "mock competitor service offers": "競合サービス提供状況のMock根拠",
+  "mock affiliate program availability": "アフィリエイト案件が存在するMock根拠",
+  "mock affiliate commission assumption": "アフィリエイト報酬のMock想定",
+  "mock lead magnet assumption": "資料請求・登録導線のMock想定",
+  "mock owned content benchmark": "自社コンテンツ比較のMock根拠",
+});
+
+const RISK_LABELS = Object.freeze({
+  "delivery-scope-risk": "納品範囲が広がる可能性",
+  "owner-contact-required": "顧客対応にOwner確認が必要",
+  "owner-sales-call-required": "成約前にOwnerの商談確認が必要",
+  "competition-risk": "競合が多い可能性",
+  "content-consistency-risk": "継続的な制作体制が必要",
+  "slow-compounding": "成果の蓄積に時間がかかる可能性",
+  "disclosure-required": "紹介・広告表記の確認が必要",
+});
+
+const PROVENANCE_LABELS = Object.freeze({
+  "Mock demand board": "Mock需要ボード",
+  "Mock monetization registry": "Mock収益化レジストリ",
+  "Mock demand registry": "Mock需要レジストリ",
+  "Mock competition board": "Mock競合ボード",
+  "Mock public demand board": "Mock公開需要ボード",
+  "Mock owned performance sample": "Mock自社実績サンプル",
+});
+
 const RISK_ORDER = ["none", "low", "medium", "high", "critical"];
 
 function createError(code, field, message) {
@@ -196,7 +268,7 @@ function formatYen(value) {
 }
 
 function buildForecastLabel(forecast) {
-  return `推定売上: ${formatYen(forecast.low)}〜${formatYen(forecast.base)} / ${forecast.periodDays}日`;
+  return `${formatYen(forecast.low)}〜${formatYen(forecast.base)} / ${forecast.periodDays}日`;
 }
 
 function buildConfidenceLabel(confidence) {
@@ -218,17 +290,37 @@ function buildMainRisk(opportunity) {
   const risks = Array.isArray(opportunity.riskFlags) ? opportunity.riskFlags : [];
   const medium = risks.find((risk) => String(risk).toLowerCase().includes("medium"));
   const first = medium || risks[0];
-  return first ? `注意: ${first}` : "重大なリスクは検出されていません（Mock評価）。";
+  return first ? displayText(first, RISK_LABELS, "確認が必要なリスク") : "重大なリスクは検出されていません（Mock評価）。";
 }
 
 function buildNextAction(opportunity) {
   const laneLabel = LANE_LABELS[opportunity.lane] || "市場";
-  return `${laneLabel}候補として、P0-013CでOwner判断用に表示します。`;
+  return `${laneLabel}候補として根拠を確認`;
+}
+
+function displayText(value, dictionary, fallback = null) {
+  if (value === undefined || value === null || value === "") return fallback || "要確認";
+  return dictionary[value] || fallback || value;
+}
+
+function displayList(values = [], dictionary) {
+  return values.map((value) => displayText(value, dictionary));
+}
+
+function formatDateTokyo(value) {
+  const time = Date.parse(value || "");
+  if (!Number.isFinite(time)) return "要確認";
+  return new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "Asia/Tokyo",
+  }).format(new Date(time));
 }
 
 function summarizeProvenance(provenance) {
   if (!isPlainObject(provenance) || !Array.isArray(provenance.sourceNames)) return [];
-  return provenance.sourceNames.map((sourceName) => `Mock source: ${sourceName}`);
+  return provenance.sourceNames.map((sourceName) => displayText(sourceName, PROVENANCE_LABELS));
 }
 
 function buildRecommendation(opportunity, rank) {
@@ -241,7 +333,7 @@ function buildRecommendation(opportunity, rank) {
     correlationId: opportunity.correlationId,
     lane: opportunity.lane,
     primary: {
-      title: `${opportunity.title}（${LANE_LABELS[opportunity.lane]}）`,
+      title: `${displayText(opportunity.title, MARKET_TITLE_LABELS)}（${LANE_LABELS[opportunity.lane]}）`,
       whyNow: buildWhyNow(opportunity),
       forecastLabel: buildForecastLabel(forecast),
       forecastRange: {
@@ -255,22 +347,22 @@ function buildRecommendation(opportunity, rank) {
       adjustedConfidence: opportunity.adjustedConfidence,
       mainRisk: buildMainRisk(opportunity),
       nextAction: buildNextAction(opportunity),
-      expiresAt: opportunity.expiresAt,
+      expiresAt: formatDateTokyo(opportunity.expiresAt),
     },
     details: {
-      customerProblem: opportunity.customerProblem,
-      targetAudience: opportunity.targetAudience,
-      revenueModel: opportunity.revenueModel,
-      recommendedChannel: opportunity.recommendedChannel,
+      customerProblem: displayText(opportunity.customerProblem, CUSTOMER_PROBLEM_LABELS),
+      targetAudience: displayText(opportunity.targetAudience, TARGET_AUDIENCE_LABELS),
+      revenueModel: displayText(opportunity.revenueModel, VALUE_LABELS),
+      recommendedChannel: displayText(opportunity.recommendedChannel, VALUE_LABELS),
       finalScore: opportunity.finalScore,
       baseScore: opportunity.baseScore,
       totalPenalty: opportunity.totalPenalty,
       estimatedTimeToRevenue: opportunity.estimatedTimeToRevenue,
-      assumptions: Array.isArray(forecast.assumptions) ? [...forecast.assumptions] : [],
+      assumptions: Array.isArray(forecast.assumptions) ? displayList(forecast.assumptions, ASSUMPTION_LABELS) : [],
       supportingSignalCount: Array.isArray(opportunity.supportingSignalIds) ? opportunity.supportingSignalIds.length : 0,
       sourceTypeCount: new Set((opportunity.signals || []).map((signal) => signal.sourceType).filter(Boolean)).size,
-      monetizationEvidence: Array.isArray(opportunity.monetizationEvidence) ? [...opportunity.monetizationEvidence] : [],
-      riskFlags: Array.isArray(opportunity.riskFlags) ? [...opportunity.riskFlags] : [],
+      monetizationEvidence: Array.isArray(opportunity.monetizationEvidence) ? displayList(opportunity.monetizationEvidence, EVIDENCE_LABELS) : [],
+      riskFlags: Array.isArray(opportunity.riskFlags) ? displayList(opportunity.riskFlags, RISK_LABELS) : [],
       provenanceSummary: summarizeProvenance(opportunity.provenance),
     },
     safety: {

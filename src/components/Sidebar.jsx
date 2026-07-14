@@ -13,7 +13,7 @@ const primaryItems = [
 const advancedItems = [
   ["ceo", "AI CEO"],
   ["memory", "Business Memory"],
-  ["opportunity", "Opportunity"],
+  ["opportunity", "市場インテリジェンス"],
   ["trends", "Trend"],
   ["workflows", "Workflow"],
   ["dashboard", "Mission"],
