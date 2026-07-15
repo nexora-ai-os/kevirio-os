@@ -3,6 +3,10 @@ import { buildMockRevenueCampaign, getDefaultRevenueCampaignInput } from "../ser
 import { generateRevenuePackage } from "../services/revenuePackageService";
 import { canExecute, createPhase1Context, EXECUTION_MODES } from "../services/safetyEngine";
 import { getEmployeeById } from "../services/aiWorkforceService";
+import {
+  buildOwnerReviewQueueViewModel,
+  loadOwnerReviewCandidates,
+} from "../services/ownerReviewCandidateAdapter";
 
 const REVIEW_TYPES = ["SEO_TITLE", "JP_SNS_POST", "BLOG_ARTICLE", "CANVA_INSTRUCTION"];
 
@@ -26,6 +30,11 @@ const PIPELINE_LABELS = {
   Revision: "Revision",
   Ready: "Ready",
 };
+
+function getBrowserStorage() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage;
+}
 
 function getArtifactText(artifact) {
   const draft = artifact?.draft || {};
@@ -94,6 +103,11 @@ export default function OwnerReviewWorkspace({ revenueCampaigns = [], budget }) 
   const [sandboxChecks, setSandboxChecks] = useState({});
   const [openDetails, setOpenDetails] = useState(false);
   const [openPublishDetails, setOpenPublishDetails] = useState(false);
+  const [openMarketReviewDetails, setOpenMarketReviewDetails] = useState(false);
+  const marketReviewQueue = useMemo(() => (
+    buildOwnerReviewQueueViewModel(loadOwnerReviewCandidates(getBrowserStorage()))
+  ), []);
+  const marketReviewItem = marketReviewQueue.items[0];
 
   const packageDraft = useMemo(() => {
     const campaign = revenueCampaigns[0] || buildMockRevenueCampaign(getDefaultRevenueCampaignInput(), budget).campaign;
@@ -222,6 +236,89 @@ export default function OwnerReviewWorkspace({ revenueCampaigns = [], budget }) 
   return (
     <main className="content">
       <section className="sprint-review">
+        <section className="panel market-review-candidate-panel" aria-live="polite">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Market Intelligence</p>
+              <h2>Mock成果物レビュー待ち</h2>
+            </div>
+            <span className="badge">{marketReviewQueue.items.length}件</span>
+          </div>
+
+          {!marketReviewQueue.ok && (
+            <p className="market-review-safe-message">{marketReviewQueue.message}</p>
+          )}
+
+          {marketReviewQueue.ok && !marketReviewItem && (
+            <p className="market-review-safe-message">Market由来のレビュー待ちはありません。</p>
+          )}
+
+          {marketReviewQueue.ok && marketReviewItem && (
+            <div className="market-review-candidate">
+              <div className="market-review-summary">
+                <div>
+                  <span>Campaign</span>
+                  <strong>{marketReviewItem.campaignTitle}</strong>
+                </div>
+                <div>
+                  <span>対象者</span>
+                  <strong>{marketReviewItem.targetAudience}</strong>
+                </div>
+                <div>
+                  <span>Channel</span>
+                  <strong>{marketReviewItem.channel}</strong>
+                </div>
+                <div>
+                  <span>Status</span>
+                  <strong>{marketReviewItem.status}</strong>
+                </div>
+              </div>
+
+              <p className="market-review-safe-message">
+                {marketReviewItem.mockLabel}。{marketReviewItem.safetyLabel}
+              </p>
+
+              <button
+                type="button"
+                className="mi-detail-toggle"
+                aria-expanded={openMarketReviewDetails}
+                onClick={() => setOpenMarketReviewDetails((current) => !current)}
+              >
+                {openMarketReviewDetails ? "詳細を閉じる" : "詳細を見る"}
+              </button>
+
+              {openMarketReviewDetails && (
+                <div className="market-review-details">
+                  <div>
+                    <span>Offer / Value Proposition</span>
+                    <strong>{marketReviewItem.offerConcept}</strong>
+                  </div>
+                  <div>
+                    <span>Content Brief</span>
+                    <strong>{marketReviewItem.contentBrief}</strong>
+                  </div>
+                  <div>
+                    <span>Draft Preview</span>
+                    <p>{marketReviewItem.draftPreview}</p>
+                  </div>
+                  <div>
+                    <span>Risk Notes</span>
+                    <ul>
+                      {marketReviewItem.riskNotes.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                  <div>
+                    <span>禁止表現</span>
+                    <ul>
+                      {marketReviewItem.prohibitedClaims.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
         <section className="panel sprint-decision-panel">
           <div className="sprint-focus">
             <p className="eyebrow">Owner Decision Center</p>

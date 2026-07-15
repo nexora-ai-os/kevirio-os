@@ -192,8 +192,8 @@ const tests = [
     const unknown = viewModel.blocked.reasonSummary.find((item) => item.reasonCode === "UNKNOWN_CODE");
     assert("unknown message", unknown.ownerMessage === "確認が必要な候補があります。");
   }],
-  ["Owner Decision remains disabled", () => {
-    assert("owner disabled", buildViewModel().recommendations.every((item) => item.safety.ownerDecisionEnabled === false));
+  ["Owner Decision is enabled for P0-014", () => {
+    assert("owner enabled", buildViewModel().recommendations.every((item) => item.safety.ownerDecisionEnabled === true));
   }],
   ["Campaign Handoff remains disabled", () => {
     assert("campaign disabled", buildViewModel().recommendations.every((item) => item.safety.campaignHandoffEnabled === false));

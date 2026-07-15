@@ -1418,6 +1418,71 @@ nav.sidebar::-webkit-scrollbar-track {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.market-review-candidate-panel {
+  display: grid;
+  gap: 14px;
+  border-color: rgba(87, 184, 255, 0.2);
+}
+
+.market-review-safe-message {
+  margin: 0;
+  color: #65717A;
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.65;
+}
+
+.market-review-candidate {
+  display: grid;
+  gap: 12px;
+}
+
+.market-review-summary,
+.market-review-details {
+  display: grid;
+  gap: 10px;
+}
+
+.market-review-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.market-review-summary div,
+.market-review-details div {
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(45, 49, 55, 0.06);
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.market-review-summary span,
+.market-review-details span {
+  display: block;
+  color: #65717A;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.market-review-summary strong,
+.market-review-details strong {
+  display: block;
+  margin-top: 6px;
+  color: #20252B;
+  font-size: 15px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.market-review-details p,
+.market-review-details ul {
+  margin-top: 6px;
+  color: #20252B;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.65;
+}
+
 .review-top {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 150px;
@@ -1536,7 +1601,8 @@ nav.sidebar::-webkit-scrollbar-track {
   .sprint-details,
   .sprint-publish-summary,
   .sprint-sandbox-card,
-  .sprint-publish-details {
+  .sprint-publish-details,
+  .market-review-summary {
     grid-template-columns: 1fr;
   }
 

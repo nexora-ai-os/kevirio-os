@@ -371,7 +371,7 @@ function buildRecommendation(opportunity, rank) {
       productionExecution: false,
       externalExecution: false,
       confirmedRevenueAvailable: false,
-      ownerDecisionEnabled: false,
+      ownerDecisionEnabled: true,
       campaignHandoffEnabled: false,
     },
   };

@@ -1,11 +1,36 @@
 import { useMemo, useState } from "react";
 import "./MarketIntelligence.css";
 import { mockMarketSignals } from "../data/mockMarketSignals";
+import {
+  getDecisionStorageKey,
+  getMarketDecisionForOpportunity,
+  loadMarketDecisions,
+  saveMarketDecision,
+} from "../services/marketDecisionService";
+import {
+  getOwnerReviewCandidateForDecision,
+  loadOwnerReviewCandidates,
+  markOwnerReviewCandidateSuperseded,
+  saveRevenueDecisionVerticalSlice,
+} from "../services/ownerReviewCandidateAdapter";
 import { buildMarketIntelligenceFoundation } from "../services/marketIntelligenceEngine";
 import { buildMarketIntelligenceViewModel } from "../services/marketIntelligenceAdapter";
 
 const SANDBOX_EVALUATION_TIME = "2026-07-14T12:00:00.000Z";
 const SANDBOX_EVALUATION_TIMESTAMP = Date.parse(SANDBOX_EVALUATION_TIME);
+const STORAGE_CORRUPTED_COPY = "判断データを確認できないため、安全のため未選択として表示しています。";
+
+const HOLD_REASON_OPTIONS = [
+  { value: "NEEDS_MORE_EVIDENCE", label: "根拠を追加確認" },
+  { value: "REVIEW_LATER", label: "後でもう一度確認" },
+  { value: "BUDGET_REVIEW", label: "費用条件を確認" },
+];
+
+const REJECT_REASON_OPTIONS = [
+  { value: "NOT_STRATEGIC_FIT", label: "現在の方針に合わない" },
+  { value: "OWNER_EFFORT_TOO_HIGH", label: "Owner負荷が大きい" },
+  { value: "REVENUE_PATH_WEAK", label: "収益化経路が弱い" },
+];
 
 function formatSnapshotDate(value) {
   return new Intl.DateTimeFormat("ja-JP", {
@@ -18,6 +43,100 @@ function formatSnapshotDate(value) {
 
 function laneLabel(lane) {
   return lane === "asset" ? "資産形成" : "短期収益";
+}
+
+function getBrowserStorage() {
+  if (typeof window === "undefined") return null;
+  return window.localStorage;
+}
+
+function getDecisionStatusCopy(decision, storageStatus, saveFailure, reviewCandidate, verticalFailure) {
+  if (storageStatus === "corrupted") {
+    return {
+      label: "判断データ破損",
+      detail: STORAGE_CORRUPTED_COPY,
+    };
+  }
+  if (verticalFailure) {
+    return {
+      label: "レビュー待ち登録失敗",
+      detail: "判断は保存しましたが、下流候補の保存は安全のため停止しました。",
+    };
+  }
+  if (saveFailure) {
+    return {
+      label: "保存失敗",
+      detail: "保存できませんでした。現在の判断は変更されていません。",
+    };
+  }
+  if (!decision) {
+    return {
+      label: "未選択",
+      detail: "進める・保留・却下のいずれかを選択してください。",
+    };
+  }
+  if (decision.decision === "approved") {
+    if (reviewCandidate) {
+      return {
+        label: "選択済み: 進める",
+        detail: "AI社員がMock Campaign案とContent Briefを作成し、レビュー待ちへ送りました。",
+      };
+    }
+    return {
+      label: "選択済み: 進める",
+      detail: "Mock Campaign案の作成候補です。",
+    };
+  }
+  if (decision.decision === "hold") {
+    return {
+      label: "保留",
+      detail: decision.reasonLabel,
+    };
+  }
+  return {
+    label: "却下",
+    detail: decision.reasonLabel,
+  };
+}
+
+function buildDecisionNextAction(recommendations, decisionState) {
+  if (decisionState.storageStatus === "corrupted") {
+    return {
+      label: "判断データ確認",
+      title: STORAGE_CORRUPTED_COPY,
+    };
+  }
+
+  const workspace = decisionState.workspace;
+  const undecided = recommendations.find((recommendation) => (
+    !getMarketDecisionForOpportunity(workspace, recommendation.opportunityId, recommendation.opportunityVersion)
+  ));
+  if (undecided) {
+    return {
+      label: `次の判断: ${undecided.rank}位`,
+      title: undecided.primary.title,
+    };
+  }
+
+  const held = recommendations.find((recommendation) => (
+    getMarketDecisionForOpportunity(workspace, recommendation.opportunityId, recommendation.opportunityVersion)?.decision === "hold"
+  ));
+  if (held) {
+    return {
+      label: "保留中",
+      title: `${held.primary.title}を後で再確認します`,
+    };
+  }
+
+  return {
+    label: "判断完了",
+    title: "市場候補3件の判断が完了しました",
+  };
+}
+
+function buildReviewQueueCount(reviewWorkspace) {
+  if (!reviewWorkspace?.reviewCandidatesById) return 0;
+  return Object.values(reviewWorkspace.reviewCandidatesById).filter((candidate) => candidate.status === "reviewPending").length;
 }
 
 function StatusPanel({ viewModel }) {
@@ -59,11 +178,26 @@ function StatusPanel({ viewModel }) {
   );
 }
 
-function RecommendationCard({ recommendation }) {
+function RecommendationCard({
+  recommendation,
+  decision,
+  storageStatus,
+  saveFailure,
+  reasonSelection,
+  reviewCandidate,
+  onReasonChange,
+  onDecision,
+}) {
   const [open, setOpen] = useState(false);
   const detailId = `market-detail-${recommendation.opportunityId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const decisionKey = getDecisionStorageKey(recommendation.opportunityId, recommendation.opportunityVersion);
   const detail = recommendation.details;
   const forecast = recommendation.primary.forecastRange;
+  const activeDecision = storageStatus === "corrupted" ? null : decision;
+  const statusCopy = getDecisionStatusCopy(activeDecision, storageStatus, saveFailure, reviewCandidate, saveFailure === "vertical");
+  const isDecisionDisabled = storageStatus === "corrupted";
+  const holdReason = reasonSelection?.hold || "REVIEW_LATER";
+  const rejectReason = reasonSelection?.rejected || "NOT_STRATEGIC_FIT";
 
   return (
     <article className="mi-card">
@@ -91,6 +225,84 @@ function RecommendationCard({ recommendation }) {
           <strong>{recommendation.primary.mainRisk}</strong>
         </div>
       </div>
+
+      <section className="mi-decision-panel" aria-live="polite">
+        <div className="mi-decision-status">
+          <span>Owner判断</span>
+          <strong>{statusCopy.label}</strong>
+          <small>{statusCopy.detail}</small>
+        </div>
+
+        {saveFailure && (
+          <p className="mi-decision-alert" role="alert">
+            {saveFailure === "vertical"
+              ? "判断は保存済みです。Review Queue登録は安全境界で停止しました。"
+              : "保存できませんでした。外部送信やCampaign作成は行っていません。"}
+          </p>
+        )}
+        {storageStatus === "corrupted" && (
+          <p className="mi-decision-alert" role="alert">
+            {STORAGE_CORRUPTED_COPY}
+          </p>
+        )}
+
+        <div className="mi-decision-buttons" aria-label={`${recommendation.primary.title}のOwner判断`}>
+          <button
+            type="button"
+            aria-pressed={activeDecision?.decision === "approved"}
+            disabled={isDecisionDisabled}
+            title={isDecisionDisabled ? "判断データ破損のため保存できません" : "Mock Campaign案の作成候補として選択"}
+            onClick={() => onDecision(recommendation, "approved", "OWNER_SELECTED_FOR_MOCK_CAMPAIGN")}
+          >
+            進める
+          </button>
+          <button
+            type="button"
+            aria-pressed={activeDecision?.decision === "hold"}
+            disabled={isDecisionDisabled}
+            title={isDecisionDisabled ? "判断データ破損のため保存できません" : "後で再確認する"}
+            onClick={() => onDecision(recommendation, "hold", holdReason)}
+          >
+            保留
+          </button>
+          <button
+            type="button"
+            aria-pressed={activeDecision?.decision === "rejected"}
+            disabled={isDecisionDisabled}
+            title={isDecisionDisabled ? "判断データ破損のため保存できません" : "このOpportunity Versionを進めない"}
+            onClick={() => onDecision(recommendation, "rejected", rejectReason)}
+          >
+            却下
+          </button>
+        </div>
+
+        <div className="mi-reason-controls">
+          <label>
+            <span>保留理由</span>
+            <select
+              value={holdReason}
+              disabled={isDecisionDisabled}
+              onChange={(event) => onReasonChange(decisionKey, "hold", event.target.value)}
+            >
+              {HOLD_REASON_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>却下理由</span>
+            <select
+              value={rejectReason}
+              disabled={isDecisionDisabled}
+              onChange={(event) => onReasonChange(decisionKey, "rejected", event.target.value)}
+            >
+              {REJECT_REASON_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
 
       <button
         className="mi-detail-toggle"
@@ -164,12 +376,76 @@ function RecommendationCard({ recommendation }) {
 }
 
 export default function MarketIntelligence() {
+  const [decisionState, setDecisionState] = useState(() => loadMarketDecisions(getBrowserStorage()));
+  const [reviewState, setReviewState] = useState(() => loadOwnerReviewCandidates(getBrowserStorage()));
+  const [reasonSelections, setReasonSelections] = useState({});
+  const [saveFailures, setSaveFailures] = useState({});
   const viewModel = useMemo(() => {
     const foundation = buildMarketIntelligenceFoundation(mockMarketSignals, SANDBOX_EVALUATION_TIMESTAMP);
     return buildMarketIntelligenceViewModel(foundation, SANDBOX_EVALUATION_TIME);
   }, []);
 
   const snapshotDate = formatSnapshotDate(SANDBOX_EVALUATION_TIME);
+  const decisionNextAction = buildDecisionNextAction(viewModel.recommendations, decisionState);
+
+  function handleReasonChange(decisionKey, type, value) {
+    setReasonSelections((current) => ({
+      ...current,
+      [decisionKey]: {
+        ...current[decisionKey],
+        [type]: value,
+      },
+    }));
+  }
+
+  function handleDecision(recommendation, decision, reasonCode) {
+    const decisionKey = getDecisionStorageKey(recommendation.opportunityId, recommendation.opportunityVersion);
+    const result = saveMarketDecision(getBrowserStorage(), {
+      opportunityId: recommendation.opportunityId,
+      opportunityVersion: recommendation.opportunityVersion,
+      marketId: recommendation.marketId,
+      correlationId: recommendation.correlationId,
+      decision,
+      reasonCode,
+      decidedAt: new Date().toISOString(),
+    });
+
+    if (result.ok) {
+      setDecisionState(result);
+      if (decision === "approved") {
+        const verticalResult = saveRevenueDecisionVerticalSlice(getBrowserStorage(), {
+          recommendation,
+          ownerDecision: result.decision,
+          createdAt: result.decision.decidedAt,
+        });
+        if (verticalResult.ok) {
+          setReviewState(loadOwnerReviewCandidates(getBrowserStorage()));
+        } else {
+          setSaveFailures((current) => ({ ...current, [decisionKey]: "vertical" }));
+          return;
+        }
+      } else {
+        markOwnerReviewCandidateSuperseded(
+          getBrowserStorage(),
+          result.decision.decisionId,
+          result.decision.decidedAt,
+          "owner_decision_changed"
+        );
+        setReviewState(loadOwnerReviewCandidates(getBrowserStorage()));
+      }
+      setSaveFailures((current) => {
+        const next = { ...current };
+        delete next[decisionKey];
+        return next;
+      });
+      return;
+    }
+
+    setSaveFailures((current) => ({ ...current, [decisionKey]: true }));
+    if (result.storageStatus === "corrupted") {
+      setDecisionState(result);
+    }
+  }
 
   return (
     <main className="content market-intelligence">
@@ -186,13 +462,19 @@ export default function MarketIntelligence() {
 
       <section className="mi-panel mi-next-action">
         <div>
-          <span>次に見る候補: 1位</span>
-          <strong>{viewModel.recommendations[0]?.primary.title || "表示できる候補はありません"}</strong>
+          <span>{decisionNextAction.label}</span>
+          <strong>{decisionNextAction.title || "表示できる候補はありません"}</strong>
         </div>
       </section>
 
       <section className="mi-safety-strip" aria-label="Safety summary">
-        <span>Sandbox模擬データ / 外部通信なし / Productionなし / 実売上未接続 / 判断機能未接続</span>
+        <span>Sandbox模擬データ / 外部通信なし / Productionなし / 実売上未接続 / Mock Handoffのみ / Review QueueはWorkspace保存</span>
+      </section>
+
+      <section className="mi-panel mi-review-queue-status" aria-live="polite">
+        <span>Owner Review Queue</span>
+        <strong>{buildReviewQueueCount(reviewState.workspace)}件レビュー待ち</strong>
+        <small>Mock Campaign案 / Content Brief / Draft Candidateのみ。公開・外部送信は行いません。</small>
       </section>
 
       <StatusPanel viewModel={viewModel} />
@@ -200,7 +482,20 @@ export default function MarketIntelligence() {
       {viewModel.status === "ready" && (
         <section className="mi-recommendations" aria-label="Sandbox推薦市場">
           {viewModel.recommendations.map((recommendation) => (
-            <RecommendationCard key={recommendation.opportunityId} recommendation={recommendation} />
+            <RecommendationCard
+              key={recommendation.opportunityId}
+              recommendation={recommendation}
+              decision={getMarketDecisionForOpportunity(decisionState.workspace, recommendation.opportunityId, recommendation.opportunityVersion)}
+              storageStatus={decisionState.storageStatus}
+              saveFailure={saveFailures[getDecisionStorageKey(recommendation.opportunityId, recommendation.opportunityVersion)]}
+              reasonSelection={reasonSelections[getDecisionStorageKey(recommendation.opportunityId, recommendation.opportunityVersion)]}
+              reviewCandidate={getOwnerReviewCandidateForDecision(
+                reviewState.workspace,
+                getMarketDecisionForOpportunity(decisionState.workspace, recommendation.opportunityId, recommendation.opportunityVersion)?.decisionId
+              )}
+              onReasonChange={handleReasonChange}
+              onDecision={handleDecision}
+            />
           ))}
         </section>
       )}
