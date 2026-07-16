@@ -7,6 +7,13 @@ import {
   buildOwnerReviewQueueViewModel,
   loadOwnerReviewCandidates,
 } from "../services/ownerReviewCandidateAdapter";
+import {
+  REVIEW_REASON_OPTIONS,
+} from "../services/ownerReviewDecisionService";
+import {
+  loadPublishImprovementState,
+  runOwnerReviewWorkflow,
+} from "../services/publishImprovementOrchestrator";
 
 const REVIEW_TYPES = ["SEO_TITLE", "JP_SNS_POST", "BLOG_ARTICLE", "CANVA_INSTRUCTION"];
 
@@ -34,6 +41,41 @@ const PIPELINE_LABELS = {
 function getBrowserStorage() {
   if (typeof window === "undefined") return null;
   return window.localStorage;
+}
+
+function loadMarketReviewData() {
+  const storage = getBrowserStorage();
+  const loadResult = loadOwnerReviewCandidates(storage);
+  const queue = buildOwnerReviewQueueViewModel(loadResult);
+  const item = queue.items[0] || null;
+  const candidate = item && loadResult.ok
+    ? loadResult.workspace.reviewCandidatesById[item.reviewCandidateId] || null
+    : null;
+  const workflow = candidate ? loadPublishImprovementState(storage, candidate) : { ok: true, payload: {} };
+  return {
+    queue,
+    item,
+    candidate,
+    workflow: workflow.ok ? workflow.payload : {},
+    error: workflow.ok ? "" : "保存済みWorkspaceを安全に確認できません。Mock処理を停止しています。",
+  };
+}
+
+function getDecisionLabel(decision) {
+  if (decision === "approvedForMockWorkflow") return "Mock公開準備へ承認済み";
+  if (decision === "revisionRequested") return "修正依頼済み";
+  if (decision === "rejected") return "却下済み";
+  return "レビュー待ち";
+}
+
+function getReviewStatusLabel(status) {
+  if (status === "reviewPending") return "レビュー待ち";
+  if (status === "superseded") return "差し替え済み";
+  return "Mock状態";
+}
+
+function formatYen(value) {
+  return `${Number(value || 0).toLocaleString("ja-JP")}円`;
 }
 
 function getArtifactText(artifact) {
@@ -104,10 +146,20 @@ export default function OwnerReviewWorkspace({ revenueCampaigns = [], budget }) 
   const [openDetails, setOpenDetails] = useState(false);
   const [openPublishDetails, setOpenPublishDetails] = useState(false);
   const [openMarketReviewDetails, setOpenMarketReviewDetails] = useState(false);
-  const marketReviewQueue = useMemo(() => (
-    buildOwnerReviewQueueViewModel(loadOwnerReviewCandidates(getBrowserStorage()))
-  ), []);
-  const marketReviewItem = marketReviewQueue.items[0];
+  const [marketReviewData, setMarketReviewData] = useState(() => loadMarketReviewData());
+  const [marketDecisionReason, setMarketDecisionReason] = useState("CLARIFY_OFFER");
+  const [marketRejectReason, setMarketRejectReason] = useState("NOT_ALIGNED");
+  const [marketWorkflowError, setMarketWorkflowError] = useState("");
+  const marketReviewQueue = marketReviewData.queue;
+  const marketReviewItem = marketReviewData.item;
+  const marketReviewCandidate = marketReviewData.candidate;
+  const marketWorkflow = marketReviewData.workflow || {};
+  const latestRevision = marketWorkflow.latestRevision;
+  const exportEntity = marketWorkflow.exportEntity;
+  const sandboxPerformance = marketWorkflow.sandboxPerformance;
+  const improvementRecommendations = marketWorkflow.improvementRecommendations || [];
+  const topImprovement = improvementRecommendations[0];
+  const marketDecision = marketWorkflow.decision;
 
   const packageDraft = useMemo(() => {
     const campaign = revenueCampaigns[0] || buildMockRevenueCampaign(getDefaultRevenueCampaignInput(), budget).campaign;
@@ -221,6 +273,41 @@ export default function OwnerReviewWorkspace({ revenueCampaigns = [], budget }) 
     }));
   };
 
+  const refreshMarketWorkflow = () => setMarketReviewData(loadMarketReviewData());
+
+  const handleMarketDecision = (decision) => {
+    if (!marketReviewCandidate) return;
+    const reasonCode = decision === "revisionRequested"
+      ? marketDecisionReason
+      : decision === "rejected"
+        ? marketRejectReason
+        : "MOCK_WORKFLOW_READY";
+    const reason = (REVIEW_REASON_OPTIONS[decision] || []).find((option) => option.code === reasonCode);
+    const result = runOwnerReviewWorkflow(getBrowserStorage(), marketReviewCandidate, {
+      decision,
+      reasonCode,
+      reasonText: reason?.label,
+      decidedAt: "2026-07-16T00:00:00.000Z",
+    });
+    if (!result.ok) {
+      setMarketWorkflowError("安全境界により処理を停止しました。Mock Workspaceは変更していません。");
+      return;
+    }
+    setMarketWorkflowError("");
+    refreshMarketWorkflow();
+  };
+
+  const handleExportMarkdown = () => {
+    if (!exportEntity?.markdown || typeof window === "undefined") return;
+    const blob = new Blob([exportEntity.markdown], { type: "text/markdown;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${exportEntity.exportId.replaceAll(":", "-")}.md`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   if (!selected) {
     return (
       <main className="content">
@@ -270,7 +357,11 @@ export default function OwnerReviewWorkspace({ revenueCampaigns = [], budget }) 
                 </div>
                 <div>
                   <span>Status</span>
-                  <strong>{marketReviewItem.status}</strong>
+                  <strong>{getDecisionLabel(marketDecision?.decision) || getReviewStatusLabel(marketReviewItem.status)}</strong>
+                </div>
+                <div>
+                  <span>Revision</span>
+                  <strong>{latestRevision ? `${latestRevision.revisionNumber}回目` : "未修正"}</strong>
                 </div>
               </div>
 
@@ -278,9 +369,105 @@ export default function OwnerReviewWorkspace({ revenueCampaigns = [], budget }) 
                 {marketReviewItem.mockLabel}。{marketReviewItem.safetyLabel}
               </p>
 
+              {(marketWorkflowError || marketReviewData.error) && (
+                <p className="market-review-alert" role="alert">
+                  {marketWorkflowError || marketReviewData.error}
+                </p>
+              )}
+
+              <div className="market-review-decision-box" aria-label="Owner Review Decision">
+                <div>
+                  <p className="eyebrow">One Next Action</p>
+                  <h3>{marketDecision?.decision === "approvedForMockWorkflow" ? "Mock公開準備が完了しました" : "Owner判断を選んでください"}</h3>
+                  <p>この承認はMock成果物を公開準備へ進めるだけです。Production公開、外部送信、実売上確定は行いません。</p>
+                </div>
+                <div className="market-review-decision-actions">
+                  <button
+                    type="button"
+                    aria-pressed={marketDecision?.decision === "approvedForMockWorkflow"}
+                    onClick={() => handleMarketDecision("approvedForMockWorkflow")}
+                  >
+                    承認
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={marketDecision?.decision === "revisionRequested"}
+                    onClick={() => handleMarketDecision("revisionRequested")}
+                  >
+                    修正依頼
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={marketDecision?.decision === "rejected"}
+                    onClick={() => handleMarketDecision("rejected")}
+                  >
+                    却下
+                  </button>
+                </div>
+                <div className="market-review-reasons">
+                  <label>
+                    <span>修正理由</span>
+                    <select value={marketDecisionReason} onChange={(event) => setMarketDecisionReason(event.target.value)}>
+                      {REVIEW_REASON_OPTIONS.revisionRequested.map((option) => (
+                        <option key={option.code} value={option.code}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span>却下理由</span>
+                    <select value={marketRejectReason} onChange={(event) => setMarketRejectReason(event.target.value)}>
+                      {REVIEW_REASON_OPTIONS.rejected.map((option) => (
+                        <option key={option.code} value={option.code}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              {latestRevision && (
+                <div className="market-workflow-card" aria-live="polite">
+                  <p className="eyebrow">AI Revision Candidate</p>
+                  <h3>AI社員が修正案を生成しました</h3>
+                  <p>再レビューが必要です。Score、Ranking、Forecastは再計算していません。</p>
+                  <ul>
+                    {latestRevision.changesSummary.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                  <div className="market-workflow-preview">{latestRevision.revisedDraftPreview}</div>
+                </div>
+              )}
+
+              {exportEntity && sandboxPerformance && topImprovement && (
+                <div className="market-workflow-output" aria-live="polite">
+                  <div className="market-workflow-card">
+                    <p className="eyebrow">Publish-ready Export</p>
+                    <h3>{exportEntity.title}</h3>
+                    <p>{exportEntity.campaignSummary}</p>
+                    <button type="button" onClick={handleExportMarkdown}>Markdownをローカル保存</button>
+                  </div>
+                  <div className="market-workflow-card">
+                    <p className="eyebrow">Sandbox模擬結果</p>
+                    <h3>実績ではありません</h3>
+                    <div className="market-performance-grid">
+                      <div><span>表示</span><strong>{sandboxPerformance.mockImpressions.toLocaleString("ja-JP")}</strong></div>
+                      <div><span>クリック</span><strong>{sandboxPerformance.mockClicks.toLocaleString("ja-JP")}</strong></div>
+                      <div><span>Lead</span><strong>{sandboxPerformance.mockLeads.toLocaleString("ja-JP")}</strong></div>
+                      <div><span>Sandbox模擬売上</span><strong>{formatYen(sandboxPerformance.mockRevenueEstimate.base)}</strong></div>
+                    </div>
+                    <p>外部Analytics未接続。Actual Revenueは未接続です。</p>
+                  </div>
+                  <div className="market-workflow-card">
+                    <p className="eyebrow">最優先改善案</p>
+                    <h3>{topImprovement.finding}</h3>
+                    <p>{topImprovement.recommendedChange}</p>
+                    <strong>{topImprovement.nextAction}</strong>
+                  </div>
+                </div>
+              )}
+
               <button
                 type="button"
                 className="mi-detail-toggle"
+                aria-controls="market-review-details"
                 aria-expanded={openMarketReviewDetails}
                 onClick={() => setOpenMarketReviewDetails((current) => !current)}
               >
@@ -288,7 +475,7 @@ export default function OwnerReviewWorkspace({ revenueCampaigns = [], budget }) 
               </button>
 
               {openMarketReviewDetails && (
-                <div className="market-review-details">
+                <div className="market-review-details" id="market-review-details">
                   <div>
                     <span>Offer / Value Proposition</span>
                     <strong>{marketReviewItem.offerConcept}</strong>
