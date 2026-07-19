@@ -63,7 +63,10 @@ export default async function handler(req, res) {
 
   const body = isPlainObject(req.body) ? req.body : {};
   if (body.action === "sandboxGenerateRevenueLanes") {
-    const result = await executeSandboxResponse(body, { ownerAuthenticated: false, featureEnabled: false, usageStore: null });
+    const verified = await resolveVerifiedOwnerContext(req);
+    if (!verified.ok) return res.status(403).json({ ok: false, status: "blocked", reasonCode: verified.reasonCode, productionExecution: false, publishEnabled: false, actualRevenueConnected: false, ledgerAppend: false });
+    const usageStore = createVerifiedSupabaseUsageStoreAdapter(createSupabaseServerClient(), verified.context);
+    const result = await executeSandboxResponse(body, { ownerAuthenticated: true, featureEnabled: process.env.KEVIRIO_OPENAI_SANDBOX_ENABLED === "true", usageStore, credential: process.env.OPENAI_API_KEY, ownerContext: verified.context });
     const statusCode = result.ok ? 200 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : result.status === "blocked" ? 403 : 502;
     return res.status(statusCode).json(result);
   }
@@ -96,3 +99,6 @@ export default async function handler(req, res) {
   });
 }
 import { executeSandboxResponse } from "../server/openaiSandboxAdapter.js";
+import { resolveVerifiedOwnerContext } from "../server/verifiedOwnerContext.js";
+import { createSupabaseServerClient } from "../server/supabaseServerClient.js";
+import { createVerifiedSupabaseUsageStoreAdapter } from "../server/supabaseUsageStoreAdapter.js";

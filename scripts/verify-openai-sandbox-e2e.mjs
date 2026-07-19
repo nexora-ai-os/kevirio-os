@@ -18,13 +18,13 @@ check("unknown action rejected", () => assert.equal(actionRes.payload.reasonCode
 const forgedRes = response();
 await handler({ method: "POST", body: request }, forgedRes);
 check("public forged owner approval rejected", () => assert.equal(forgedRes.statusCode, 403));
-check("public endpoint requires server authentication", () => assert.equal(forgedRes.payload.reasonCode, "LIVE_SANDBOX_AUTH_REQUIRED"));
+check("public endpoint requires server authentication", () => assert.equal(["REQUEST_INTEGRITY_REQUIRED", "OWNER_SESSION_INVALID", "OWNER_AUTH_PROVIDER_REQUIRED"].includes(forgedRes.payload.reasonCode), true));
 const adapterSource = readFileSync(new URL("../server/openaiSandboxAdapter.js", import.meta.url), "utf8");
 const apiSource = readFileSync(new URL("../api/ai.js", import.meta.url), "utf8");
 const uiSource = readFileSync(new URL("../src/components/OwnerReviewWorkspace.jsx", import.meta.url), "utf8");
 check("existing route owns sandbox action", () => assert.ok(apiSource.includes('body.action === "sandboxGenerateRevenueLanes"')));
-check("public route hard-locks missing server auth", () => assert.ok(apiSource.includes("ownerAuthenticated: false")));
-check("public route does not retrieve provider credential", () => assert.equal(/OPENAI_API_KEY|process\.env/.test(apiSource), false));
+check("public route requires verified server context", () => assert.ok(apiSource.includes("resolveVerifiedOwnerContext") && apiSource.includes("ownerAuthenticated: true")));
+check("provider credential is server-only", () => assert.ok(apiSource.includes("process.env.OPENAI_API_KEY") && !uiSource.includes("OPENAI_API_KEY")));
 check("server adapter owns external URL", () => assert.ok(adapterSource.includes("https://api.openai.com/v1/responses")));
 check("client does not contain external URL", () => assert.equal(uiSource.includes("api.openai.com"), false));
 check("credential name not rendered", () => assert.equal(uiSource.includes("OPENAI_API_KEY"), false));
