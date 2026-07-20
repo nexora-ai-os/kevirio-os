@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolveVerifiedOwnerContext } from "../server/verifiedOwnerContext.js";
+import { createSupabaseServerClient } from "../server/supabaseServerClient.js";
 import { createSupabaseUsageStoreAdapter } from "../server/supabaseUsageStoreAdapter.js";
 import { createLocalDevServer } from "../server/localDevServer.js";
 
@@ -22,6 +23,18 @@ await check("invalid session rejected", async () => assert.equal((await resolveV
 await check("inactive owner rejected", async () => assert.equal((await resolveVerifiedOwnerContext(request({ authorization: "Bearer token" }), { client: client({ status: "disabled" }), allowedOrigin })).reasonCode, "OWNER_PROFILE_NOT_ACTIVE"));
 await check("client owner forgery is ignored", async () => { const result = await resolveVerifiedOwnerContext(request({ authorization: "Bearer token" }, { ownerId: "forged", ownerAuthenticated: true }), { client: client({ userId: "owner-real" }), allowedOrigin }); assert.equal(result.context.ownerId, "owner-real"); });
 
+let providerFactoryCalls = 0;
+const dummyProviderFactory = () => { providerFactoryCalls += 1; return { auth: { getUser: async () => { throw new Error("network must not execute"); } } }; };
+await check("server provider constructs from dummy HTTPS config without network", () => { const provider = createSupabaseServerClient({ SUPABASE_URL: "https://dummy-project.supabase.co", SUPABASE_SECRET_KEY: "dummy-server-secret" }, dummyProviderFactory); assert.equal(typeof provider?.auth?.getUser, "function"); assert.equal(providerFactoryCalls, 1); });
+await check("server provider permits HTTP localhost for local development", () => assert.ok(createSupabaseServerClient({ SUPABASE_URL: "http://127.0.0.1:54321", SUPABASE_SECRET_KEY: "dummy-server-secret" }, () => ({ auth: {} }))));
+await check("server provider rejects missing URL or secret", () => { assert.equal(createSupabaseServerClient({ SUPABASE_SECRET_KEY: "dummy-server-secret" }, dummyProviderFactory), null); assert.equal(createSupabaseServerClient({ SUPABASE_URL: "https://dummy-project.supabase.co" }, dummyProviderFactory), null); });
+await check("server provider rejects malformed URL without throwing", () => assert.equal(createSupabaseServerClient({ SUPABASE_URL: "malformed", SUPABASE_SECRET_KEY: "dummy-server-secret" }, dummyProviderFactory), null));
+await check("server provider rejects unsupported protocol", () => assert.equal(createSupabaseServerClient({ SUPABASE_URL: "javascript:blocked", SUPABASE_SECRET_KEY: "dummy-server-secret" }, dummyProviderFactory), null));
+await check("server provider rejects URL credentials", () => assert.equal(createSupabaseServerClient({ SUPABASE_URL: "https://user:password@dummy-project.supabase.co", SUPABASE_SECRET_KEY: "dummy-server-secret" }, dummyProviderFactory), null));
+await check("server provider normalizes factory exceptions to null", () => assert.equal(createSupabaseServerClient({ SUPABASE_URL: "https://dummy-project.supabase.co", SUPABASE_SECRET_KEY: "dummy-server-secret" }, () => { throw new Error("private raw provider failure"); }), null));
+const serverClientSource = readFileSync(new URL("../server/supabaseServerClient.js", import.meta.url), "utf8");
+await check("server provider exposes no raw error stack or credential state", () => { assert.equal(/console\.|error\.message|error\.stack|configured/i.test(serverClientSource), false); assert.ok(serverClientSource.includes("catch { return null; }")); });
+
 const rpcCalls = [];
 const usageClient = { rpc: async (name, args) => { rpcCalls.push({ name, args }); if (name === "reserve_sandbox_request") return { data: { reservationId: "reservation-1" }, error: null }; return { data: true, error: null }; } };
 const store = createSupabaseUsageStoreAdapter(usageClient, "owner-real");
@@ -42,7 +55,7 @@ await check("server keeps getUser and owner profile verification", () => { asser
 await check("production boundaries remain false", () => { for (const boundary of ["productionExecution: false", "publishEnabled: false", "actualRevenueConnected: false", "ledgerAppend: false"]) assert.ok(gatewaySource.includes(boundary)); });
 
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-await check("local full runtime uses Node harness without Vercel", () => { assert.equal(packageJson.scripts["dev:full"], "node server/localDevServer.js"); assert.equal(packageJson.devDependencies?.vercel, undefined); });
+await check("local full runtime uses optional Node env-file without enabling sandbox", () => { assert.equal(packageJson.scripts["dev:full"], "node --env-file-if-exists=.env.local server/localDevServer.js"); assert.equal(packageJson.scripts["dev:full"].includes("KEVIRIO_OPENAI_SANDBOX_ENABLED"), false); assert.equal(packageJson.devDependencies?.vercel, undefined); });
 let viteClosed = false;
 const mockVite = { middlewares: (_req, res) => { res.writeHead(200, { "content-type": "text/html" }); res.end("<main>KEVIRIO</main>"); }, close: async () => { viteClosed = true; } };
 const localRuntime = await createLocalDevServer({ host: "127.0.0.1", port: 0, vite: mockVite, aiHandler: async () => { throw new Error("API handler must not run during root verification"); } });
@@ -55,4 +68,4 @@ await check("released and expired rows are reusable but active duplicates block"
 await check("migration preserves limits locks and reconciliation", () => { assert.ok(migration.includes("p_estimated_cost_usd > 0.03")); assert.ok(migration.includes("> 1.00")); assert.ok((migration.match(/for update/g) || []).length >= 2); assert.ok(migration.includes("v_reconciled_reserved := greatest(0")); });
 await check("migration security is fail closed and idempotent", () => { assert.ok(migration.includes("security definer") && migration.includes("set search_path = ''")); for (const role of ["public", "anon", "authenticated"]) assert.ok(migration.includes(`from ${role}`)); assert.ok(migration.includes("to service_role")); assert.equal(/\bexecute\s+format\s*\(/i.test(migration), false); assert.ok(/^begin;/.test(migration.trim()) && /commit;\s*$/.test(migration.trim())); });
 await check("migration contains no revenue or ledger fields", () => assert.equal(/actual.?revenue|ledger/i.test(migration), false));
-console.log(`Authenticated sandbox transaction verification: ${passed}/20 passed`);
+console.log(`Authenticated sandbox transaction verification: ${passed}/28 passed`);
