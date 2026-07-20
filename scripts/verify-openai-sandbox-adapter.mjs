@@ -29,7 +29,7 @@ const gates = (store, overrides = {}) => ({ ownerAuthenticated: true, featureEna
 
 await check("budget policy remains bounded", () => assert.equal(OPENAI_SANDBOX_BUDGET_POLICY.maxRetries, 1));
 await check("request validates", () => assert.equal(validateRequest(valid).valid, true));
-await check("request uses strict schema and store false", () => { const body = buildRequest(valid); assert.equal(body.store, false); assert.equal(body.text.format.strict, true); });
+await check("request uses server-only cheapest compatible model, strict schema, and store false", () => { const body = buildRequest(valid); assert.equal(body.model, "gpt-5-nano"); assert.equal(body.store, false); assert.equal(body.text.format.strict, true); });
 await check("cost stays under request limit", () => assert.equal(evaluateCost(valid, 0).allowed, true));
 let blockedProviderCalls = 0; const forbidden = async () => { blockedProviderCalls += 1; throw new Error("must not execute"); };
 await check("server auth required", async () => assert.equal((await executeSandboxResponse(valid, { ownerAuthenticated: false, transport: forbidden })).reasonCode, "LIVE_SANDBOX_AUTH_REQUIRED"));

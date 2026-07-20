@@ -1,6 +1,6 @@
 import { OPENAI_SANDBOX_BUDGET_POLICY, evaluateOpenAISandboxBudget, validateOpenAISandboxRequest } from "../src/services/openAISandboxPolicy.js";
 
-const MODEL_POLICY = Object.freeze({ id: "sandbox-direct-v1", model: "gpt-5.6-luna", inputPerMillion: 1, outputPerMillion: 6, verified: true, pricingVerifiedAt: "2026-07-19" });
+const MODEL_POLICY = Object.freeze({ id: "sandbox-direct-v1", model: "gpt-5-nano", inputPerMillion: 0.05, outputPerMillion: 0.4, verified: true, pricingVerifiedAt: "2026-07-20" });
 const MAX_RESPONSE_CHARACTERS = 50000;
 const NORMALIZED_REASONS = new Set(["SERVER_USAGE_STORE_REQUIRED", "USAGE_RESERVATION_FAILED", "USAGE_COMMIT_FAILED", "USAGE_RELEASE_FAILED", "SANDBOX_REQUEST_ALREADY_CLAIMED"]);
 
