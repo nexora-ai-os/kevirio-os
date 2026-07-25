@@ -1,0 +1,8 @@
+[
+  {"id":"TD-001","priority":"P0","area":"persistence","title":"Business source of truth and RLS absent","mvpBlocking":true},
+  {"id":"TD-002","priority":"P0","area":"auth","title":"App-wide owner auth absent","mvpBlocking":true},
+  {"id":"TD-003","priority":"P0","area":"revenue-core","title":"Fragmented localStorage state","mvpBlocking":true},
+  {"id":"TD-004","priority":"P0","area":"revenue","title":"Actual revenue evidence ledger absent","mvpBlocking":true},
+  {"id":"TD-005","priority":"P0","area":"workflow","title":"Durable approval workflow absent","mvpBlocking":true},
+  {"id":"TD-007","priority":"P1","area":"dependency","title":"High PostCSS advisory","mvpBlocking":false}
+]

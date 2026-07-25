@@ -1,0 +1,6 @@
+[
+  {"id":"PRIV-001","severity":"HIGH","title":"No workspace/client segregation","mvpBlocking":true},
+  {"id":"PRIV-002","severity":"HIGH","title":"Business Memory stored in plaintext localStorage","mvpBlocking":true},
+  {"id":"PRIV-003","severity":"MEDIUM","title":"No retention/deletion verification","mvpBlocking":false},
+  {"id":"PRIV-004","severity":"MEDIUM","title":"No provider redaction/sensitivity policy","mvpBlocking":false}
+]

@@ -1,0 +1,6 @@
+[
+  {"boundary":"browser-localStorage","severity":"HIGH","risk":"plaintext confidential state without owner/workspace separation"},
+  {"boundary":"browser-api","severity":"MEDIUM","risk":"only sandbox endpoint has strong owner/origin verification"},
+  {"boundary":"api-provider","severity":"MEDIUM","risk":"no PII/secret redaction or sensitivity routing"},
+  {"boundary":"workspace-client","severity":"HIGH","risk":"technical segregation absent"}
+]

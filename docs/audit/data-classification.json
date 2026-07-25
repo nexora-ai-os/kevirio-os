@@ -1,0 +1,6 @@
+[
+  {"class":"Authentication Data","stores":["environment","Supabase Auth session"],"risk":"HIGH","formalPolicy":false},
+  {"class":"Business Confidential","stores":["localStorage"],"risk":"HIGH","formalPolicy":false},
+  {"class":"Financial Data","stores":["localStorage","sandbox usage tables"],"risk":"MEDIUM","formalPolicy":false},
+  {"class":"Intellectual Property","stores":["repository","localStorage"],"risk":"MEDIUM","formalPolicy":false}
+]

@@ -1,0 +1,7 @@
+{
+  "baseline":{"date":"2026-07-25","branch":"audit/kevirio-v2-complete-current-state","sha":"d4e50b9172e998a92d754e789b72ee69580f053b","trackedFiles":165},
+  "runtime":{"frontend":"React/Vite SPA","server":["Vercel API functions","Node local Vite middleware"],"router":"internal React state","authScope":"review page only"},
+  "persistence":{"supabaseTables":4,"businessTables":0,"localStorageKeyCountMinimum":33},
+  "build":{"status":"success","jsBytes":890510,"warning":"chunk over 500 kB"},
+  "securityGate":"FAIL"
+}

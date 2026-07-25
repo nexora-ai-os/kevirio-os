@@ -1,0 +1,1 @@
+{"appWideAuth":"implemented_local","workspaceRls":"implemented_not_remote_verified","crossWorkspace":"static_and_adapter_tests_pass","secretExposure":"policy_pass","providerEgress":"implemented","actualRevenueEvidence":"implemented_local","auditTrail":"implemented_schema","dependencyHigh":0,"externalExecution":"locked","overall":"CONDITIONAL_PASS"}

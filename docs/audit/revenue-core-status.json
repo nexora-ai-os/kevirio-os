@@ -1,0 +1,13 @@
+{
+  "score":32,
+  "signal":"MOCK_WORKING",
+  "opportunity":"MOCK_WORKING",
+  "ownerDecision":"MOCK_WORKING",
+  "campaign":"MOCK_WORKING",
+  "artifact":"MOCK_WORKING",
+  "approval":"PRODUCTION_PARTIAL",
+  "externalExecution":"NOT_IMPLEMENTED",
+  "actualRevenue":"NOT_IMPLEMENTED",
+  "ledger":"NOT_IMPLEMENTED",
+  "persistence":"PRODUCTION_PARTIAL"
+}

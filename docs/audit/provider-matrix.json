@@ -1,0 +1,11 @@
+[
+  {"provider":"openai","status":"PRODUCTION_PARTIAL","liveCode":true,"verifiedLiveCall":false},
+  {"provider":"anthropic","status":"CONFIG_ONLY","liveCode":false},
+  {"provider":"gemini","status":"CONFIG_ONLY","liveCode":false},
+  {"provider":"perplexity","status":"CONFIG_ONLY","liveCode":false},
+  {"provider":"canva","status":"UI_ONLY","liveCode":false},
+  {"provider":"google","status":"NOT_IMPLEMENTED","liveCode":false},
+  {"provider":"supabase","status":"PRODUCTION_PARTIAL","liveRemoteVerified":false},
+  {"provider":"github","status":"NOT_IMPLEMENTED","liveCode":false},
+  {"provider":"vercel","status":"CONFIG_ONLY","deploymentVerified":false}
+]

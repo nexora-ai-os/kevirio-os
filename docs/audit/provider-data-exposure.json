@@ -1,0 +1,7 @@
+[
+  {"provider":"openai","dataTypes":["approved mock package subset"],"storeRequested":false,"piiDetection":false,"sensitivityRouting":false},
+  {"provider":"anthropic","dataTypes":[],"runtimeConnected":false},
+  {"provider":"gemini","dataTypes":[],"runtimeConnected":false},
+  {"provider":"perplexity","dataTypes":[],"runtimeConnected":false},
+  {"provider":"canva","dataTypes":[],"runtimeConnected":false}
+]
