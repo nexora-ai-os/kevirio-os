@@ -43,6 +43,7 @@ import RevenueCampaignFoundation from "./components/RevenueCampaignFoundation";
 import OperationCommandCenter from "./components/OperationCommandCenter";
 import RevenueCommandCenter from "./components/RevenueCommandCenter";
 import OwnerReviewWorkspace from "./components/OwnerReviewWorkspace";
+import ProductionRevenueWorkspace from "./components/ProductionRevenueWorkspace";
 import { initialCampaigns } from "./services/campaignEngine";
 import {
   initialAgents,
@@ -156,6 +157,7 @@ export default function App({ ownerSession, ownerSupabaseClient }) {
   };
 
   const pages = useMemo(() => ({
+    production: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
     home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} ownerSession={ownerSession} ownerSupabaseClient={ownerSupabaseClient} />,
     campaign: (
       <main className="content">

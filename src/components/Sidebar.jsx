@@ -1,6 +1,7 @@
 import BrandMark from "./BrandMark";
 
 const primaryItems = [
+  ["production", "Production Revenue"],
   ["review", "成果物レビュー"],
   ["home", "Home"],
   ["campaign", "Campaign"],
@@ -26,6 +27,7 @@ const advancedItems = [
 ];
 
 const iconPaths = {
+  production: "M4 18h16 M6 15l4-4 3 2 5-6 M18 7v4 M18 7h-4",
   review: "M5 5h14v14H5z M8 9h8 M8 13h5",
   home: "M4 11l8-7 8 7 M6 10v10h12V10",
   campaign: "M5 13l9-8 2 2-8 9-4 1z M14 5l5-2-2 5",
