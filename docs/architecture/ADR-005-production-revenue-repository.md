@@ -1,6 +1,6 @@
 # ADR-005: Production Revenue Repository Integration
 
-Status: Accepted for the Revenue MVP foundation  
+Status: Accepted for the Revenue MVP foundation
 Date: 2026-07-25
 
 ## Decision
