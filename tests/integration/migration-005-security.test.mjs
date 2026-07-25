@@ -16,5 +16,8 @@ test("migration 005 preserves approval, actual and external-execution boundaries
   assert.match(sql, /external_execution_allowed[\s\S]+false/);
   assert.match(sql, /actual_revenue_verification/);
   assert.match(sql, /verification_required/);
+  assert.match(sql, /actual_revenue_snapshot_mismatch/);
+  assert.match(sql, /evidencecandidateid/);
+  assert.match(sql, /revenue_records_approval_snapshot/);
   assert.doesNotMatch(sql, /service_role/);
 });

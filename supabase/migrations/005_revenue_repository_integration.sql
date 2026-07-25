@@ -131,4 +131,32 @@ end $$;
 revoke all on function public.register_revenue_evidence(uuid,uuid,text,text,bigint,bigint,text,timestamptz) from public, anon;
 grant execute on function public.register_revenue_evidence(uuid,uuid,text,text,bigint,bigint,text,timestamptz) to authenticated;
 
+create or replace function public.enforce_actual_revenue_approval_snapshot()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare v_evidence public.evidence_candidates; v_preview jsonb;
+begin
+  select * into v_evidence from public.evidence_candidates where id=new.evidence_candidate_id;
+  select preview_snapshot into v_preview from public.approval_requests
+    where id=(new.attribution->>'approvalRequestId')::uuid
+      and workspace_id=new.workspace_id
+      and campaign_id=new.campaign_id
+      and scope='actual_revenue_verification'
+      and status='approved';
+  if v_evidence.id is null or v_preview is null
+    or v_preview->>'evidenceCandidateId' <> new.evidence_candidate_id::text
+    or (v_preview->>'amountMinor')::bigint <> new.gross_amount_minor
+    or (v_preview->>'costAmountMinor')::bigint <> new.cost_amount_minor
+    or v_preview->>'currency' <> new.currency
+    or v_evidence.amount_minor <> new.gross_amount_minor
+    or v_evidence.cost_amount_minor <> new.cost_amount_minor
+    or v_evidence.currency <> new.currency
+  then raise exception 'actual_revenue_snapshot_mismatch';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists revenue_records_approval_snapshot on public.revenue_records;
+create trigger revenue_records_approval_snapshot before insert on public.revenue_records
+for each row execute function public.enforce_actual_revenue_approval_snapshot();
+
 commit;
