@@ -4,7 +4,7 @@
 |---|---|---|
 | 0 Baseline stabilization | COMPLETE | npm audit 0, scripts, env contract |
 | 1 App-wide Auth | COMPLETE_LOCAL / REMOTE_NOT_VERIFIED | main.jsx Owner gate, auth tests |
-| 2 Workspace/Brand | COMPLETE_LOCAL / REMOTE_NOT_VERIFIED | migration 003, RLS tests |
+| 2 Workspace/Brand | BOOTSTRAP_UI_READY / REMOTE_OWNER_VERIFY | migrations 003/004, session RPC, RLS tests |
 | 3 Business SoT | COMPLETE_LOCAL / REMOTE_NOT_VERIFIED | 18 tables, repository |
 | 4 State machine | COMPLETE_LOCAL | unit tests |
 | 5 Durable workflow/approval | COMPLETE_LOCAL | workflow tables, approval RPC |

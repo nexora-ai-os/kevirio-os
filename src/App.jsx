@@ -62,7 +62,7 @@ import {
   initialNextActions,
 } from "./data/platformOS";
 
-export default function App({ ownerSession }) {
+export default function App({ ownerSession, ownerSupabaseClient }) {
   const [page, setPage] = useState("home");
   const [savedAt, setSavedAt] = useState("未保存");
   const [budget] = useState(() => createBudgetState(defaultBudgetConfig));
@@ -156,7 +156,7 @@ export default function App({ ownerSession }) {
   };
 
   const pages = useMemo(() => ({
-    home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} ownerSession={ownerSession} />,
+    home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} ownerSession={ownerSession} ownerSupabaseClient={ownerSupabaseClient} />,
     campaign: (
       <main className="content">
         <RevenueCampaignFoundation budget={budget} revenueCampaigns={revenueCampaigns} setRevenueCampaigns={setRevenueCampaigns} setPage={setPage} />
@@ -201,6 +201,7 @@ export default function App({ ownerSession }) {
     nextActions,
     notifications,
     ownerSession,
+    ownerSupabaseClient,
     opportunities,
     pipelineRuns,
     platformNotifications,

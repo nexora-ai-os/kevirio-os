@@ -186,6 +186,7 @@ export default function RevenueCommandCenter({
   budget,
   setPage,
   ownerSession,
+  ownerSupabaseClient,
 }) {
   const [openPanel, setOpenPanel] = useState("");
   const combinedCampaignCount = revenueCampaigns.length + campaigns.length;
@@ -203,7 +204,7 @@ export default function RevenueCommandCenter({
 
   return (
     <main className="content revenue-command-center">
-      <ProductionFoundationPanel ownerSession={ownerSession} />
+      <ProductionFoundationPanel ownerSession={ownerSession} ownerSupabaseClient={ownerSupabaseClient} />
       <section className="hero revenue-command-hero simplified">
         <div>
           <p className="eyebrow">売上司令室 / Revenue Command Center</p>

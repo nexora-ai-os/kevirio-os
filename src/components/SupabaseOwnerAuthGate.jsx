@@ -62,7 +62,7 @@ export default function SupabaseOwnerAuthGate({ children }) {
   }
 
   const getOwnerAccessToken = () => session?.access_token || null;
-  const content = isValidElement(children) ? cloneElement(children, { getOwnerAccessToken, ownerSession: session }) : children;
+  const content = isValidElement(children) ? cloneElement(children, { getOwnerAccessToken, ownerSession: session, ownerSupabaseClient: client }) : children;
   return <><div className="owner-auth-toolbar"><span>Owner session verified</span><button type="button" onClick={signOut}>Logout</button></div>{content}</>;
 }
 
