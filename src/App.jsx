@@ -43,7 +43,6 @@ import RevenueCampaignFoundation from "./components/RevenueCampaignFoundation";
 import OperationCommandCenter from "./components/OperationCommandCenter";
 import RevenueCommandCenter from "./components/RevenueCommandCenter";
 import OwnerReviewWorkspace from "./components/OwnerReviewWorkspace";
-import SupabaseOwnerAuthGate from "./components/SupabaseOwnerAuthGate";
 import { initialCampaigns } from "./services/campaignEngine";
 import {
   initialAgents,
@@ -63,7 +62,7 @@ import {
   initialNextActions,
 } from "./data/platformOS";
 
-export default function App() {
+export default function App({ ownerSession }) {
   const [page, setPage] = useState("home");
   const [savedAt, setSavedAt] = useState("未保存");
   const [budget] = useState(() => createBudgetState(defaultBudgetConfig));
@@ -157,14 +156,14 @@ export default function App() {
   };
 
   const pages = useMemo(() => ({
-    home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} />,
+    home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} ownerSession={ownerSession} />,
     campaign: (
       <main className="content">
         <RevenueCampaignFoundation budget={budget} revenueCampaigns={revenueCampaigns} setRevenueCampaigns={setRevenueCampaigns} setPage={setPage} />
         <CampaignOS embedded campaigns={campaigns} setCampaigns={setCampaigns} setDraft={setDraft} setApprovals={setApprovals} setWorkflows={setWorkflows} setDecisionJournal={setDecisionJournal} setMemoryRecords={setMemoryRecords} setPage={setPage} />
       </main>
     ),
-    review: <SupabaseOwnerAuthGate><OwnerReviewWorkspace revenueCampaigns={revenueCampaigns} budget={budget} /></SupabaseOwnerAuthGate>,
+    review: <OwnerReviewWorkspace revenueCampaigns={revenueCampaigns} budget={budget} />,
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} budget={budget} />,
     memory: <BusinessMemory memoryRecords={memoryRecords} setMemoryRecords={setMemoryRecords} decisionJournal={decisionJournal} setDecisionJournal={setDecisionJournal} setPage={setPage} />,
@@ -201,6 +200,7 @@ export default function App() {
     modes,
     nextActions,
     notifications,
+    ownerSession,
     opportunities,
     pipelineRuns,
     platformNotifications,

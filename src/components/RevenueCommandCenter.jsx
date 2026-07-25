@@ -5,6 +5,7 @@ import { CAMPAIGN_TYPES } from "../services/revenueCampaignService";
 import { validateEventLedger } from "../services/eventLedgerService.js";
 import OwnerActionQueue from "./OwnerActionQueue";
 import RevenueSummaryCards from "./RevenueSummaryCards";
+import ProductionFoundationPanel from "./ProductionFoundationPanel";
 
 const detailStages = ["Opportunity", "Campaign", "Package", "Approval", "Result", "Revenue"];
 const priorityEmployeeIds = ["F01", "M26", "F24", "F04", "F16"];
@@ -184,6 +185,7 @@ export default function RevenueCommandCenter({
   tasks = [],
   budget,
   setPage,
+  ownerSession,
 }) {
   const [openPanel, setOpenPanel] = useState("");
   const combinedCampaignCount = revenueCampaigns.length + campaigns.length;
@@ -201,6 +203,7 @@ export default function RevenueCommandCenter({
 
   return (
     <main className="content revenue-command-center">
+      <ProductionFoundationPanel ownerSession={ownerSession} />
       <section className="hero revenue-command-hero simplified">
         <div>
           <p className="eyebrow">売上司令室 / Revenue Command Center</p>
