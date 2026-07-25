@@ -1,10 +1,13 @@
 import { OPENAI_SANDBOX_ACTION, OPENAI_SANDBOX_SCOPE, createOpenAISandboxIdempotencyKey, validateOpenAISandboxRequest } from "./openAISandboxPolicy.js";
+import { evaluateProviderEgress } from "./providerDataEgressPolicy.js";
 
 const inFlight = new Map();
 export const DIRECT_SERVICE_SANDBOX_SCHEMA = Object.freeze({ type: "object", additionalProperties: false, properties: { serviceName: { type: "string" }, proposalSummary: { type: "string" }, deliverables: { type: "array", items: { type: "string" } }, riskNotes: { type: "array", items: { type: "string" } } }, required: ["serviceName", "proposalSummary", "deliverables", "riskNotes"] });
 
 export function buildOpenAISandboxGatewayRequest({ sourceExport, directService, emergencyStopActive = false }) {
-  const request = { schemaVersion: "2.0.0", action: OPENAI_SANDBOX_ACTION, operatingMode: "sandbox", dataMode: "mock", ownerApproved: true, approvalScope: OPENAI_SANDBOX_SCOPE, productionExecution: false, publishEnabled: false, actualRevenueConnected: false, ledgerAppend: false, externalExecutionRequested: true, externalExecutionScope: OPENAI_SANDBOX_SCOPE, sourceExportId: sourceExport?.exportId, correlationId: sourceExport?.correlationId, sourceRevisionId: sourceExport?.sourceRevisionCandidateId || "base", purpose: "directServiceDraft", input: { serviceName: directService?.serviceName, proposalSummary: directService?.proposalSummary, deliverables: directService?.deliverables, deliveryScope: directService?.deliveryScope, excludedScope: directService?.excludedScope, riskNotes: directService?.riskNotes }, requestedModelPolicy: "serverAllowlist", outputSchema: DIRECT_SERVICE_SANDBOX_SCHEMA, emergencyStopActive };
+  const selectedFields = { serviceName: directService?.serviceName, proposalSummary: directService?.proposalSummary, deliverables: directService?.deliverables, deliveryScope: directService?.deliveryScope, excludedScope: directService?.excludedScope, riskNotes: directService?.riskNotes };
+  const egress = evaluateProviderEgress({ purpose: "directServiceDraft", sensitivityLevel: sourceExport?.sensitivityLevel || "internal", selectedFields });
+  const request = { schemaVersion: "2.0.0", action: OPENAI_SANDBOX_ACTION, operatingMode: "sandbox", dataMode: "mock", ownerApproved: true, approvalScope: OPENAI_SANDBOX_SCOPE, productionExecution: false, publishEnabled: false, actualRevenueConnected: false, ledgerAppend: false, externalExecutionRequested: true, externalExecutionScope: OPENAI_SANDBOX_SCOPE, sourceExportId: sourceExport?.exportId, correlationId: sourceExport?.correlationId, sourceRevisionId: sourceExport?.sourceRevisionCandidateId || "base", purpose: "directServiceDraft", input: egress.allowed ? egress.sanitizedFields : {}, requestedModelPolicy: "serverAllowlist", outputSchema: DIRECT_SERVICE_SANDBOX_SCHEMA, emergencyStopActive: emergencyStopActive || !egress.allowed };
   request.idempotencyKey = createOpenAISandboxIdempotencyKey(request); return request;
 }
 
@@ -15,6 +18,8 @@ function gatewayFailure(reasonCode, message = "Sandbox generation failed.") {
 }
 
 export async function executeOpenAISandboxGateway(request, options = {}) {
+  const egress = evaluateProviderEgress({ purpose: request?.purpose, sensitivityLevel: "internal", selectedFields: request?.input });
+  if (!egress.allowed) return gatewayFailure(egress.reasonCode || "PROVIDER_EGRESS_BLOCKED");
   const validation = validateOpenAISandboxGatewayRequest(request);
   if (!validation.valid) return gatewayFailure(validation.errors[0]?.code || "REQUEST_INVALID");
   if (inFlight.has(request.idempotencyKey)) return inFlight.get(request.idempotencyKey);

@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const sql=readFileSync(new URL("../../supabase/migrations/003_revenue_production_foundation.sql",import.meta.url),"utf8").toLowerCase();
+test("all business tables enable RLS",()=>assert.equal((sql.match(/enable row level security/g)||[]).length,18));
+test("cross-workspace policies use server-derived membership",()=>assert.ok((sql.match(/is_active_workspace_member\(workspace_id\)/g)||[]).length>=15));
+test("actual revenue is insert-closed to browser roles",()=>assert.ok(sql.includes("revenue_records_member_select")));
+test("approval decisions are immutable to browser roles",()=>assert.ok(sql.includes("approval_decisions_member_all on public.approval_decisions for select")));
+test("cross-entity workspace references are trigger-enforced",()=>assert.ok((sql.match(/workspace_integrity/g)||[]).length>=20));
+test("actual revenue requires approval and verified evidence RPC",()=>assert.ok(sql.includes("actual_revenue_approval_required")&&sql.includes("verified_evidence_required")));
