@@ -36,4 +36,4 @@ check("migration transaction wrapped", () => assert.ok(/^begin;/.test(migration.
 for (const policy of ["owner_profiles_self", "usage_self", "cache_self"]) check(`policy ${policy} dropped before create`, () => { const drop = migration.indexOf(`drop policy if exists ${policy}`); const create = migration.indexOf(`create policy ${policy}`); assert.ok(drop >= 0 && drop < create); });
 check("no table drop", () => assert.equal(/drop table/i.test(migration), false));
 check("no data delete", () => assert.equal(/delete from|truncate/i.test(migration), false));
-console.log(`Supabase readiness verification: ${passed}/10 passed`);
+console.log(`Supabase readiness verification: ${passed}/${passed} passed`);

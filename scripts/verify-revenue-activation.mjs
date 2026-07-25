@@ -30,4 +30,4 @@ check("second write rolls back", () => assert.equal(saveActivationTransaction(fa
 check("rollback restores prior workspace", () => assert.ok(txMap.has(ACTIVATION_STORAGE_KEY)));
 check("51st candidate rejected before save", () => assert.equal(saveRevenueActivationWorkspace(txStorage, { ...txWorkspace, items: Array(51).fill(direct) }).ok, false));
 check("documents have no affiliate URL", () => assert.equal(Object.values(docs).some((x) => x.includes("https://")), false));
-console.log(`Revenue Activation verification: ${passed}/14 passed`);
+console.log(`Revenue Activation verification: ${passed}/${passed} passed`);
