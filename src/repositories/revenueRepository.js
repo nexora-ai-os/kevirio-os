@@ -14,12 +14,12 @@ export function createRevenueRepository(client) {
   const command=async(name,args)=>{requireCommandClient();const {data,error}=await client.rpc(name,args);if(error) throw new Error(SAFE_ERRORS.rpc);return data;};
   const loadContext=async()=>{const result=await inspectOwnerWorkspace(client);if(!result.ok || result.status!=="ready") throw new Error("OWNER_WORKSPACE_REQUIRED");return result;};
   const loadSnapshot=async(workspaceId)=>{
-    const [opportunities,campaigns,tasks,artifacts,approvals,evidence,revenue,workflows]=await Promise.all([
+    const [opportunities,campaigns,tasks,artifacts,approvals,evidence,revenue,workflows,executionPackages]=await Promise.all([
       list("opportunities",workspaceId),list("campaigns",workspaceId),list("tasks",workspaceId),
       list("artifacts",workspaceId),list("approval_requests",workspaceId),list("evidence_candidates",workspaceId),
-      list("revenue_records",workspaceId),list("workflow_runs",workspaceId),
+      list("revenue_records",workspaceId),list("workflow_runs",workspaceId),command("retrieve_manual_execution_packages",{p_workspace_id:workspaceId}),
     ]);
-    return {opportunities,campaigns,tasks,artifacts,approvals,evidence,revenue,workflows};
+    return {opportunities,campaigns,tasks,artifacts,approvals,evidence,revenue,workflows,executionPackages:executionPackages||[]};
   };
   return {
     loadContext,
@@ -37,6 +37,8 @@ export function createRevenueRepository(client) {
     decideApproval:(approvalRequestId,decision,reason,snapshot={})=>command("decide_approval",{
       p_approval_request_id:approvalRequestId,p_decision:decision,p_reason:reason,p_decision_snapshot:snapshot,
     }),
+    generateManualPackage:(approvalRequestId)=>command("generate_manual_execution_package",{p_approval_request_id:approvalRequestId}),
+    recordManualPackageAccess:(packageId,action)=>command("record_manual_package_access",{p_package_id:packageId,p_action:action}),
     registerEvidence:(workspaceId,campaignId,value)=>command("register_revenue_evidence",{
       p_workspace_id:workspaceId,p_campaign_id:campaignId,p_source_type:value.sourceType,
       p_source_reference:value.sourceReference,p_amount_minor:value.amountMinor,p_cost_amount_minor:value.costAmountMinor,
