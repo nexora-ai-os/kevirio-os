@@ -32,11 +32,45 @@ begin
 end $$;
 revoke all on function public.build_sales_ready_package_payload(uuid) from public, anon, authenticated;
 
+-- These two one-time backfills run in the migration administrator context,
+-- where auth.uid() is intentionally null. Validate every cross-workspace edge
+-- explicitly before suspending only the matching row-integrity trigger.
+do $$
+begin
+  if exists(
+    select 1 from public.campaigns c
+    left join public.opportunities o on o.id=c.opportunity_id and o.workspace_id=c.workspace_id
+    left join public.brand_profiles b on b.id=c.brand_id and b.workspace_id=c.workspace_id
+    left join public.clients cl on cl.id=c.client_id and cl.workspace_id=c.workspace_id
+    where coalesce(btrim(c.offer->>'title'),'')=''
+      and (o.id is null or b.id is null or (c.client_id is not null and cl.id is null))
+  ) then raise exception 'migration_008_campaign_workspace_mismatch'; end if;
+end $$;
+
+alter table public.campaigns disable trigger campaigns_workspace_integrity;
 update public.campaigns c set offer=c.offer||jsonb_build_object('title',case when right(o.title,2)='提案' then o.title else o.title||' 提案' end),updated_at=now()
 from public.opportunities o where o.id=c.opportunity_id and coalesce(btrim(c.offer->>'title'),'')='';
+alter table public.campaigns enable trigger campaigns_workspace_integrity;
 
+do $$
+begin
+  if exists(
+    select 1 from public.execution_packages ep
+    left join public.campaigns c on c.id=ep.campaign_id and c.workspace_id=ep.workspace_id
+    left join public.approval_requests ar on ar.id=ep.approval_request_id and ar.workspace_id=ep.workspace_id and ar.campaign_id=ep.campaign_id
+    left join public.artifacts a on a.id=ar.artifact_id and a.workspace_id=ep.workspace_id and a.campaign_id=ep.campaign_id
+    left join public.opportunities o on o.id=c.opportunity_id and o.workspace_id=ep.workspace_id
+    where ep.status<>'superseded' and not (ep.payload_snapshot ? 'serviceName')
+      and (c.id is null or ar.id is null or ar.scope<>'internal_artifact' or ar.status<>'approved'
+        or a.id is null or o.id is null or ar.preview_snapshot->>'artifactId'<>a.id::text
+        or nullif(ar.preview_snapshot->>'artifactVersion','')::integer<>a.version)
+  ) then raise exception 'migration_008_package_workspace_mismatch'; end if;
+end $$;
+
+alter table public.execution_packages disable trigger execution_packages_workspace_integrity;
 update public.execution_packages ep set payload_snapshot=public.build_sales_ready_package_payload(ep.approval_request_id)
 where ep.status<>'superseded' and not (ep.payload_snapshot ? 'serviceName');
+alter table public.execution_packages enable trigger execution_packages_workspace_integrity;
 
 create unique index if not exists evidence_candidates_workspace_reference_idx on public.evidence_candidates(workspace_id,source_reference);
 
