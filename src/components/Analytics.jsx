@@ -1,93 +1,28 @@
+import { useEffect, useMemo, useState } from "react";
 import TopBar from "./TopBar";
-import SocialRevenuePanel from "./SocialRevenuePanel";
-import { loadRevenueEvidenceCandidates } from "../services/revenueActivationService";
+import { createRevenueRepository } from "../repositories/revenueRepository.js";
+import { mapCanonicalActualAnalytics } from "../domain/revenueAnalytics.js";
 
-function formatYen(value) {
-  return `${Number(value || 0).toLocaleString()}円`;
-}
+const money=(minor,currency="JPY")=>new Intl.NumberFormat("ja-JP",{style:"currency",currency}).format(Number(minor || 0));
+const laneLabel={service:"サービス",affiliate:"アフィリエイト",digital_product:"デジタル商品",media:"メディア"};
 
-export default function Analytics({ analytics, approvals, savedAt, setPage }) {
-  const evidenceCandidates = typeof window !== "undefined" ? loadRevenueEvidenceCandidates(window.localStorage).items : [];
-  const safeApprovals = Array.isArray(approvals) ? approvals : [];
-  const approved = safeApprovals.filter((a) => ["承認済み", "謇ｿ隱肴ｸ医∩"].includes(a.status)).length;
-  const mockClicks = Number(analytics?.mockClicks || analytics?.clicks || 0);
-  const mockCv = Number(analytics?.mockCv || analytics?.cv || 0);
-  const mockRevenue = Number(analytics?.mockRevenue || analytics?.revenue || 0);
-  const forecastRevenue = Number(analytics?.forecastRevenue || 0) + approved * 3800;
-  const actualRevenue = Number(analytics?.actualRevenue || 0);
-  const ctr = mockClicks ? "4.8%" : "0%";
-
-  const separatedAnalytics = {
-    ...analytics,
-    revenue: mockRevenue,
-    mockRevenue,
-    forecastRevenue,
-    actualRevenue,
-  };
-
-  return (
-    <main className="content">
-      <SocialRevenuePanel campaigns={[]} approvals={approvals || []} analytics={separatedAnalytics} setPage={setPage} />
-      <section className="panel">
-        <p className="eyebrow">CONNECTION CORE</p>
-        <h2>Mock / Forecast / Actualを分けて確認</h2>
-        <div className="mission-list">
-          <div>承認済み案件はMock指標として扱います。</div>
-          <div>Actual Revenueは外部売上データ未接続のため0円固定です。</div>
-        </div>
-      </section>
-      <TopBar savedAt={savedAt} />
-
-      <div className="panel">
-        <h1>Analytics</h1>
-        <p className="muted">この画面はSandboxとMockの確認用です。Production公開、外部API取得、Actual Revenue確定は行いません。</p>
-      </div>
-
-      <div className="stats">
-        <div className="stat-card">
-          <span>Mock Revenue</span>
-          <strong>{formatYen(mockRevenue)}</strong>
-          <p>承認操作からの模擬値</p>
-        </div>
-        <div className="stat-card">
-          <span>Forecast Revenue</span>
-          <strong>{formatYen(forecastRevenue)}</strong>
-          <p>AI予測値。実売上ではありません。</p>
-        </div>
-        <div className="stat-card">
-          <span>Actual Revenue</span>
-          <strong>{formatYen(actualRevenue)}</strong>
-          <p>未接続。UI操作では増加しません。</p>
-        </div>
-        <div className="stat-card">
-          <span>Mock CTR</span>
-          <strong>{ctr}</strong>
-          <p>クリック {mockClicks} / CV {mockCv}</p>
-        </div>
-      </div>
-
-      <section className="panel">
-        <h2>Revenue境界</h2>
-        <div className="mission-list">
-          <div>Mock: {formatYen(mockRevenue)} / Sandbox・デモ由来</div>
-          <div>Forecast: {formatYen(forecastRevenue)} / AI予測由来</div>
-          <div>Actual: {formatYen(actualRevenue)} / 外部売上データ未接続</div>
-          <div>Mock値とActual値は合算しません。</div>
-        </div>
-      </section>
-
-      <section className="panel">
-        <h2>ASP別メモ</h2>
-        <div className="mission-list">
-          <div>PLAUD: Mock候補。SNS相性を確認中。</div>
-          <div>ConoHa AI Canvas: Mock候補。画像生成コンテンツ向け。</div>
-          <div>Value AI Writer: Mock候補。ブログ導線向け。</div>
-        </div>
-      </section>
-      <section className="panel" aria-live="polite">
-        <h2>Revenue Evidence Candidate</h2>
-        <div className="mission-list"><div>未検証候補: {evidenceCandidates.length}件</div><div>Verified Revenue: 未接続 / Actual Revenue: 未接続</div><div>候補はMock Workspace Stateであり、Ledgerには追記しません。</div></div>
-      </section>
-    </main>
-  );
+export default function Analytics({ savedAt, ownerSupabaseClient }) {
+  const repository=useMemo(()=>createRevenueRepository(ownerSupabaseClient),[ownerSupabaseClient]);
+  const [actual,setActual]=useState(()=>mapCanonicalActualAnalytics());
+  const [error,setError]=useState("");
+  useEffect(()=>{let active=true;(async()=>{try{const context=await repository.loadContext();const snapshot=await repository.loadSnapshot(context.workspace.id);if(active)setActual(mapCanonicalActualAnalytics(snapshot.revenue,snapshot.campaigns,snapshot.evidence));}catch{if(active)setError("Actual Revenueを取得できません。Owner SessionとMigration 008を確認してください。");}})();return()=>{active=false};},[repository]);
+  return <main className="content production-revenue">
+    <TopBar savedAt={savedAt}/>
+    <section className="production-hero"><div><span className="eyebrow">CANONICAL ACTUAL ANALYTICS</span><h1>Actual Revenue</h1><p>Supabaseの検証済みRevenue Recordのみを集計します。Mock、Forecast、承認待ちEvidenceは含みません。</p></div><div className="boundary-card"><strong>ACTUAL SOURCE</strong><span>VERIFIED EVIDENCE ONLY</span><span className="lock-status">External execution: LOCKED</span></div></section>
+    {error&&<div className="production-alert danger">{error}</div>}
+    <section className="production-kpis">
+      <article><span>Actual gross</span><strong>{actual.rows.length?money(actual.grossMinor):"実績未登録"}</strong><small>検証済み売上総額</small></article>
+      <article><span>Actual cost</span><strong>{actual.rows.length?money(actual.costMinor):"—"}</strong><small>検証済み原価</small></article>
+      <article><span>Actual net</span><strong>{actual.rows.length?money(actual.netMinor):"—"}</strong><small>Gross − Cost</small></article>
+      <article><span>Last verified</span><strong>{actual.lastVerifiedAt?new Date(actual.lastVerifiedAt).toLocaleDateString("ja-JP"):"実績未登録"}</strong><small>Revenue Record作成日</small></article>
+    </section>
+    <section className="production-panel featured"><div className="panel-heading"><div><span className="eyebrow">VERIFIED RECORDS</span><h2>検証済み実績</h2></div><span className="mode-badge actual">ACTUAL ONLY</span></div>
+      {!actual.rows.length?<p className="empty-copy">実績未登録です。Evidence登録とOwner承認が完了するまでActualには反映されません。</p>:actual.rows.map((row)=><div className="actual-row" key={row.id}><div><strong>{row.campaign}</strong><small>{laneLabel[row.lane] || "Revenue"} · {row.period} · {row.evidenceStatus}</small></div><div><span>売上 {money(row.grossMinor,row.currency)}</span><span>原価 {money(row.costMinor,row.currency)}</span><strong>純額 {money(row.netMinor,row.currency)}</strong><small>{new Date(row.verifiedAt).toLocaleDateString("ja-JP")}</small></div></div>)}
+    </section>
+  </main>;
 }

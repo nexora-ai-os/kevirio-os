@@ -22,3 +22,9 @@ export function transitionRevenueEntity(entityType, currentState, nextState, com
 export function requiresReapproval(approvedArtifactVersion, currentArtifactVersion) {
   return Number(approvedArtifactVersion) !== Number(currentArtifactVersion);
 }
+
+export const REVENUE_WORKFLOW_STEPS=["owner_artifact_approval","manual_package_ready","evidence_waiting","actual_revenue_approval","revenue_recorded"];
+export function transitionRevenueWorkflow(currentStep,nextStep) {
+  const current=REVENUE_WORKFLOW_STEPS.indexOf(currentStep);const next=REVENUE_WORKFLOW_STEPS.indexOf(nextStep);
+  return current>=0&&next===current+1?{ok:true,currentStep,nextStep}:{ok:false,reasonCode:"WORKFLOW_TRANSITION_FORBIDDEN"};
+}

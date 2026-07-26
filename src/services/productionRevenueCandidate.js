@@ -27,6 +27,7 @@ export function buildProductionCandidatePreview() {
       schemaVersion: recommendation.schemaVersion,
     },
     offer: {
+      title: recommendation.title.endsWith("提案") ? recommendation.title : `${recommendation.title} 提案`,
       audience: recommendation.targetAudience,
       validationBudgetMinor: recommendation.validationBudget,
       estimatedTimeToRevenueDays: recommendation.estimatedTimeToRevenue,

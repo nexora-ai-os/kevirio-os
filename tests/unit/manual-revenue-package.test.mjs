@@ -1,0 +1,9 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { deriveCampaignTitle, formatRevenuePackageMarkdown, mapSalesReadyPackage, selectOwnerSafeRevenuePackage } from "../../src/domain/manualRevenuePackage.js";
+
+const value=mapSalesReadyPackage({opportunity:{title:"SNS制作",summary:"時間不足"},campaign:{lane:"service",forecast_revenue_minor:50000,forecast_cost_minor:10000,forecast_currency:"JPY",offer:{audience:"小規模事業者"}},artifact:{version:1,customerProblem:"発信不足"},approvalSnapshot:{artifactVersion:1}});
+test("campaign title is deterministic and never untitled",()=>{assert.equal(deriveCampaignTitle("SNS制作"),"SNS制作 提案");assert.equal(deriveCampaignTitle(""),"小規模事業者向けSNS・記事制作支援 提案");});
+test("sales-ready package contains owner-safe forecast fields",()=>{for(const key of ["serviceName","campaignTitle","targetCustomer","customerProblem","serviceSummary","deliverables","scopeIncluded","scopeExcluded","forecastPriceMinor","forecastCostMinor","forecastNetMinor","currency","deliveryDays","revisionLimit","salesShortMessage","salesLongProposal","executionChecklist","evidenceInstructions","disclosure","lane","destinationType","artifactVersion","approvalSnapshot","externalExecutionAllowed"])assert.ok(key in value,key);assert.equal(value.forecastNetMinor,40000);assert.equal(value.externalExecutionAllowed,false);});
+test("formatted copy is readable Japanese Markdown without technical identifiers",()=>{const output=formatRevenuePackageMarkdown(value);assert.match(output,/サービス概要/);assert.match(output,/提案用長文/);assert.doesNotMatch(output,/idempotency|workspaceId|approvalRequestId/);});
+test("download projection excludes approval identifiers",()=>{const output=selectOwnerSafeRevenuePackage({...value,idempotencyKey:"secret",workspace:{id:"uuid"}});assert.equal("approvalSnapshot" in output,false);assert.equal("idempotencyKey" in output,false);assert.equal(output.externalExecutionAllowed,false);});

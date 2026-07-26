@@ -42,10 +42,8 @@ export function createRevenueRepository(client) {
     registerEvidence:(workspaceId,campaignId,value)=>command("register_revenue_evidence",{
       p_workspace_id:workspaceId,p_campaign_id:campaignId,p_source_type:value.sourceType,
       p_source_reference:value.sourceReference,p_amount_minor:value.amountMinor,p_cost_amount_minor:value.costAmountMinor,
-      p_currency:value.currency,p_occurred_at:value.occurredAt,
+      p_currency:value.currency,p_occurred_at:value.occurredAt,p_note:value.note || "",p_sensitivity_level:"financial_data",
     }),
-    verifyRevenue:(evidenceId,brandId,clientId,lane)=>command("verify_evidence_and_record_revenue",{
-      p_evidence_id:evidenceId,p_brand_id:brandId,p_client_id:clientId,p_lane:lane,
-    }),
+    verifyRevenue:(evidenceId)=>command("verify_evidence_and_record_revenue",{p_evidence_id:evidenceId}),
   };
 }

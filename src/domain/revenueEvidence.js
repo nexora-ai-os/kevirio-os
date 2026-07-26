@@ -11,6 +11,12 @@ export function validateEvidenceCandidate(input) {
   if (input?.valueType && input.valueType !== "actual") errors.push("ACTUAL_EVIDENCE_ONLY");
   return { valid:errors.length===0, errors };
 }
+export function validateEvidenceRegistration(input) {
+  const normalized={...input,sourceReference:String(input?.sourceReference || "").trim(),note:String(input?.note || "").trim(),currency:String(input?.currency || "").toUpperCase()};
+  const result=validateEvidenceCandidate({...normalized,workspaceId:input?.workspaceId || "pending-context",campaignId:input?.campaignId,valueType:"actual"});
+  const labels={ATTRIBUTION_REQUIRED:"Package生成済みCampaignを選択してください。",SOURCE_REFERENCE_REQUIRED:"Evidence参照番号と種別を入力してください。",AMOUNT_MINOR_INVALID:"売上総額は0以上の整数で入力してください。",COST_MINOR_INVALID:"原価は0以上の整数で入力してください。",CURRENCY_INVALID:"通貨はJPYなど3文字のISOコードで入力してください。",OCCURRED_AT_INVALID:"実際の発生日を入力してください。"};
+  return {valid:result.valid,errors:result.errors.map((code)=>labels[code] || "Evidence入力を確認してください。"),normalized};
+}
 export function createVerifiedRevenueRecord(evidence, verification) {
   const checked=validateEvidenceCandidate(evidence);
   if (!checked.valid) return { ok:false, errors:checked.errors };
