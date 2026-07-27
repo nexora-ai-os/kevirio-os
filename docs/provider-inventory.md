@@ -1,0 +1,17 @@
+# Production Provider Inventory
+
+Secret values are intentionally absent. `provider-audit.json` is the canonical machine-readable inventory.
+
+| Provider | Purpose | Authentication | Required variables | Local presence | Vercel Dev / Preview / Prod | Code Integration | Credential Validity | OAuth | Billing | Scope | Connection | Maturity | Manual action | Blocker | Next action |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| OpenAI | Owner承認付きAI Sandbox | API key | `OPENAI_API_KEY`, feature flag | Present | Absent / Absent / Absent | Implemented server-only | Valid | N/A | Not determined by read test | Sandbox policy | Connected | Conditional | Vercel設定 | Production env missing | Keep Sandbox and cost gate locked |
+| Anthropic | Review候補 | API key | `ANTHROPIC_API_KEY` | Present | Absent / Absent / Absent | Not implemented | Valid | N/A | Not determined | None granted by KEVIRIO | Connected | Locked | Adapter/security review | No runtime adapter | Implement server-only adapter |
+| Perplexity | Research候補 | API key | `PERPLEXITY_API_KEY` | Present | Absent / Absent / Absent | Not implemented | Valid for model listing | N/A | Not determined | Source/citation policy required | Generation request rejected (400) | Locked | Adapter/API compatibility review | Runtime generation unverified | Confirm supported generation contract before adapter work |
+| Gemini | AI候補 | API key | `GEMINI_API_KEY` | Present | Absent / Absent / Absent | Not implemented | Permission denied | N/A | Unknown | API access must be confirmed | 403 `PERMISSION_DENIED` | Locked | Owner console check | Key/API/project access unresolved | Confirm Gemini API enablement/restrictions |
+| Canva | Design候補 | OAuth 2.0 | Client ID/secret; later tokens | Client credentials only | Absent / Absent / Absent | Not implemented | Client credentials not sufficient | Incomplete | N/A | `profile:read` proposed | Access token missing | Locked | Implement then authorize | Callback/token lifecycle absent | Build OAuth foundation before consent |
+| Google OAuth | Workspace/Data候補 | OAuth 2.0 | Client ID/secret; later tokens | Absent | Absent / Absent / Absent | Not implemented | Unknown | Incomplete | N/A | Incremental read-only | Not authorized | Locked | Create OAuth client later | Configuration/callback absent | Build OAuth foundation before consent |
+| Supabase | Owner Auth/Canonical DB | Publishable + server secret | Four Supabase variables | Present and separated | Absent / Absent / Absent | Implemented | Valid public connection | N/A | N/A | RLS + server-only secret | Connected | Production | Configure Vercel | Production env absent | Preserve RLS and authenticated smoke |
+| GitHub | Source control | Git credential/CLI | No app env required | Remote configured | N/A | Repository only | CLI unavailable; remote readable | N/A | N/A | Push requires Owner approval | Metadata only | Conditional | Authenticate only for approved push/PR | No `gh` CLI session | Keep local commits; no push |
+| Vercel | Hosting | CLI session | Project environment variables | CLI authenticated | No project variables found | Project only | CLI session valid | N/A | Current project exists | Deployment permissions not exercised | Project found | Conditional | Link/configure before approved deploy | Repo unlinked and env absent | Add exact variables, then approved deploy |
+
+Feature maturity is restricted to: Production, Conditional, Mock, Locked. External Execution remains LOCKED for every provider.

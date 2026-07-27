@@ -1,0 +1,105 @@
+{
+  "secretPolicy": "values_redacted",
+  "externalExecution": "LOCKED",
+  "results": {
+    "openai": {
+      "provider": "openai",
+      "checked": true,
+      "connectionResult": "connected",
+      "httpStatus": 200,
+      "credentialValidity": "valid",
+      "billingStatus": "not_determined",
+      "detailCode": null,
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "anthropic": {
+      "provider": "anthropic",
+      "checked": true,
+      "connectionResult": "connected",
+      "httpStatus": 200,
+      "credentialValidity": "valid",
+      "billingStatus": "not_determined",
+      "detailCode": null,
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "perplexity": {
+      "provider": "perplexity",
+      "checked": true,
+      "connectionResult": "request_rejected",
+      "httpStatus": 400,
+      "credentialValidity": "valid",
+      "billingStatus": "not_determined",
+      "detailCode": "400",
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "gemini": {
+      "provider": "gemini",
+      "checked": true,
+      "connectionResult": "authentication_failed",
+      "httpStatus": 403,
+      "credentialValidity": "present_but_permission_denied",
+      "billingStatus": "not_determined",
+      "detailCode": "PERMISSION_DENIED",
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "canva": {
+      "provider": "canva",
+      "checked": true,
+      "connectionResult": "oauth_access_token_missing",
+      "httpStatus": null,
+      "credentialValidity": "client_credentials_only",
+      "billingStatus": "not_applicable",
+      "detailCode": null,
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "google": {
+      "provider": "google",
+      "checked": true,
+      "connectionResult": "oauth_not_authorized",
+      "httpStatus": null,
+      "credentialValidity": "unknown",
+      "billingStatus": "not_applicable",
+      "detailCode": null,
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "supabase": {
+      "provider": "supabase",
+      "checked": true,
+      "connectionResult": "connected",
+      "httpStatus": 200,
+      "credentialValidity": "valid",
+      "billingStatus": "not_determined",
+      "detailCode": null,
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "github": {
+      "provider": "github",
+      "checked": true,
+      "connectionResult": "cli_or_metadata_only",
+      "httpStatus": null,
+      "credentialValidity": "not_applicable",
+      "billingStatus": "unknown",
+      "detailCode": null,
+      "externalExecution": false,
+      "secretsExposed": false
+    },
+    "vercel": {
+      "provider": "vercel",
+      "checked": true,
+      "connectionResult": "cli_or_metadata_only",
+      "httpStatus": null,
+      "credentialValidity": "not_applicable",
+      "billingStatus": "unknown",
+      "detailCode": null,
+      "externalExecution": false,
+      "secretsExposed": false
+    }
+  }
+}

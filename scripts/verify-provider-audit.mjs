@@ -1,0 +1,7 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const files=["provider-audit.json","provider-health.json","docs/provider-inventory.md","docs/provider-audit-report.md","docs/manual-actions-required.md","docs/oauth-redirect-uris.md","scripts/provider-audit-lib.mjs","scripts/provider-audit.mjs","scripts/provider-health-check.mjs","scripts/check-env.mjs"];
+const output=files.map(file=>readFileSync(file,"utf8")).join("\n");const values=[];try{for(const line of readFileSync(".env.local","utf8").split(/\r?\n/)){const m=line.match(/^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);const name=m?.[1]||"";const value=m?.[2]?.trim().replace(/^(['"])(.*)\1$/,"$2");if(/KEY|SECRET|TOKEN|PASSWORD|CLIENT_ID/i.test(name)&&value&&value.length>=8)values.push(value);}}catch{}
+for(const value of values)assert.equal(output.includes(value),false,"provider audit output contains a local environment value");
+const audit=JSON.parse(readFileSync("provider-audit.json","utf8"));assert.equal(audit.secretPolicy,"values_redacted");assert.equal(audit.externalExecution,"LOCKED");assert.ok(audit.providers.every(item=>item.externalExecution===false));assert.ok(audit.providers.every(item=>["Production","Conditional","Mock","Locked"].includes(item.featureMaturity)));assert.equal(output.includes("docs/audit.zip.zip"),false);console.log(`Provider audit verification: ${files.length} files checked; secret values exposed: 0`);

@@ -1,0 +1,3 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { buildAudit, markdownReport, EXIT } from "./provider-audit-lib.mjs";
+let health={};try{health=JSON.parse(readFileSync("provider-health.json","utf8")).results||{};}catch{}const audit=buildAudit({health});const json=JSON.stringify(audit,null,2)+"\n";const markdown=markdownReport(audit);if(process.argv.includes("--write")){writeFileSync("provider-audit.json",json);writeFileSync("docs/provider-audit-report.md",markdown);}if(process.argv.includes("--markdown"))console.log(markdown);else console.log(json);process.exitCode=audit.providers.some(v=>v.featureMaturity==="Locked"||v.manualActionRequired)?EXIT.configuration:EXIT.ok;

@@ -1,0 +1,537 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-27T19:30:27.332Z",
+  "secretPolicy": "values_redacted",
+  "externalExecution": "LOCKED",
+  "repository": {
+    "migrationsUnchanged": "003-009",
+    "vercel": {
+      "authenticated": true,
+      "linked": false,
+      "project": "kevirio-os",
+      "productionUrl": "https://nexora-os-psi.vercel.app",
+      "environments": {
+        "development": [],
+        "preview": [],
+        "production": []
+      }
+    }
+  },
+  "providers": [
+    {
+      "provider": "openai",
+      "purpose": "Owner承認付きAI Sandbox",
+      "authenticationType": "API key",
+      "requiredEnvironmentVariables": [
+        "OPENAI_API_KEY",
+        "KEVIRIO_OPENAI_SANDBOX_ENABLED"
+      ],
+      "environmentVariables": [
+        {
+          "name": "OPENAI_API_KEY",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "KEVIRIO_OPENAI_SANDBOX_ENABLED",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "implemented",
+      "codeReferences": [
+        "src/components/AIAssistant.jsx",
+        "src/components/OwnerReviewWorkspace.jsx",
+        "src/components/ProductionFoundationPanel.jsx",
+        "src/data/integrationCapabilityRegistry.js",
+        "src/data/platformOS.js",
+        "src/services/apiRegistry.js",
+        "src/services/crossLaneRevenueOrchestrator.js",
+        "src/services/openAIProviderContract.js",
+        "src/services/openAISandboxPolicy.js",
+        "src/services/safetyEngine.js",
+        "server/openaiSandboxAdapter.js",
+        "api/ai.js",
+        "api/orchestrate.js"
+      ],
+      "credentialValidity": "valid",
+      "oauthCompletion": "not_applicable",
+      "billingStatus": "not_determined",
+      "scopePermission": "least privilege",
+      "connectionResult": "connected",
+      "featureMaturity": "Conditional",
+      "manualActionRequired": true,
+      "blocker": null,
+      "recommendedNextAction": "Keep Owner-approved Sandbox only; do not unlock production execution.",
+      "externalExecution": false
+    },
+    {
+      "provider": "anthropic",
+      "purpose": "長文レビュー候補",
+      "authenticationType": "API key",
+      "requiredEnvironmentVariables": [
+        "ANTHROPIC_API_KEY"
+      ],
+      "environmentVariables": [
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "not_implemented",
+      "codeReferences": [
+        "src/services/apiRegistry.js",
+        "api/ai.js",
+        "api/orchestrate.js"
+      ],
+      "credentialValidity": "valid",
+      "oauthCompletion": "not_applicable",
+      "billingStatus": "not_determined",
+      "scopePermission": "least privilege",
+      "connectionResult": "connected",
+      "featureMaturity": "Locked",
+      "manualActionRequired": true,
+      "blocker": "Credential is valid, but no governed runtime adapter exists.",
+      "recommendedNextAction": "Implement a server-only adapter and governance tests before feature enablement.",
+      "externalExecution": false
+    },
+    {
+      "provider": "perplexity",
+      "purpose": "調査・出典候補",
+      "authenticationType": "API key",
+      "requiredEnvironmentVariables": [
+        "PERPLEXITY_API_KEY"
+      ],
+      "environmentVariables": [
+        {
+          "name": "PERPLEXITY_API_KEY",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "not_implemented",
+      "codeReferences": [
+        "src/components/APIControlCenter.jsx",
+        "src/components/HomeCommandCenter.jsx",
+        "src/data/integrationCapabilityRegistry.js",
+        "src/data/platformOS.js",
+        "src/services/apiRegistry.js",
+        "src/services/safetyEngine.js",
+        "api/ai.js",
+        "api/orchestrate.js"
+      ],
+      "credentialValidity": "valid",
+      "oauthCompletion": "not_applicable",
+      "billingStatus": "not_determined",
+      "scopePermission": "least privilege",
+      "connectionResult": "request_rejected",
+      "featureMaturity": "Locked",
+      "manualActionRequired": true,
+      "blocker": "request_rejected",
+      "recommendedNextAction": "Implement a server-only adapter and governance tests before feature enablement.",
+      "externalExecution": false
+    },
+    {
+      "provider": "gemini",
+      "purpose": "AI補助候補",
+      "authenticationType": "API key",
+      "requiredEnvironmentVariables": [
+        "GEMINI_API_KEY"
+      ],
+      "environmentVariables": [
+        {
+          "name": "GEMINI_API_KEY",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "not_implemented",
+      "codeReferences": [
+        "src/components/AIAssistant.jsx",
+        "src/data/integrationCapabilityRegistry.js",
+        "src/services/apiRegistry.js",
+        "src/services/safetyEngine.js",
+        "api/ai.js",
+        "api/orchestrate.js"
+      ],
+      "credentialValidity": "present_but_permission_denied",
+      "oauthCompletion": "not_applicable",
+      "billingStatus": "not_determined",
+      "scopePermission": "least privilege",
+      "connectionResult": "authentication_failed",
+      "featureMaturity": "Locked",
+      "manualActionRequired": true,
+      "blocker": "authentication_failed",
+      "recommendedNextAction": "Implement a server-only adapter and governance tests before feature enablement.",
+      "externalExecution": false
+    },
+    {
+      "provider": "canva",
+      "purpose": "デザイン連携候補",
+      "authenticationType": "OAuth 2.0",
+      "requiredEnvironmentVariables": [
+        "CANVA_CLIENT_ID",
+        "CANVA_CLIENT_SECRET",
+        "CANVA_ACCESS_TOKEN",
+        "CANVA_REFRESH_TOKEN"
+      ],
+      "environmentVariables": [
+        {
+          "name": "CANVA_CLIENT_ID",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "CANVA_CLIENT_SECRET",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "CANVA_ACCESS_TOKEN",
+          "variable_present": false,
+          "variable_non_empty": false,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": false,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "CANVA_REFRESH_TOKEN",
+          "variable_present": false,
+          "variable_non_empty": false,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": false,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "not_implemented",
+      "codeReferences": [
+        "src/components/APIControlCenter.jsx",
+        "src/components/CampaignOS.jsx",
+        "src/components/HomeCommandCenter.jsx",
+        "src/components/OwnerReviewWorkspace.jsx",
+        "src/components/RevenueCampaignFoundation.jsx",
+        "src/data/aiWorkforceRegistry.js",
+        "src/data/integrationCapabilityRegistry.js",
+        "src/data/platformOS.js",
+        "src/data/revenuePackageSchema.js",
+        "src/services/apiRegistry.js",
+        "src/services/campaignEngine.js",
+        "src/services/revenuePackageService.js",
+        "api/ai.js",
+        "api/orchestrate.js"
+      ],
+      "credentialValidity": "client_credentials_only",
+      "oauthCompletion": "incomplete",
+      "billingStatus": "not_applicable",
+      "scopePermission": "profile:read proposed",
+      "connectionResult": "oauth_access_token_missing",
+      "featureMaturity": "Locked",
+      "manualActionRequired": true,
+      "blocker": "OAuth callback and token lifecycle are not implemented.",
+      "recommendedNextAction": "Implement callback, encrypted server-side token storage, state/PKCE, and least-privilege scopes before Owner OAuth.",
+      "externalExecution": false
+    },
+    {
+      "provider": "google",
+      "purpose": "Gmail / Drive / Calendar / Analytics / Search Console / YouTube",
+      "authenticationType": "OAuth 2.0",
+      "requiredEnvironmentVariables": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_ACCESS_TOKEN",
+        "GOOGLE_REFRESH_TOKEN"
+      ],
+      "environmentVariables": [
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "variable_present": false,
+          "variable_non_empty": false,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": false,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "variable_present": false,
+          "variable_non_empty": false,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": false,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "GOOGLE_ACCESS_TOKEN",
+          "variable_present": false,
+          "variable_non_empty": false,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": false,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "GOOGLE_REFRESH_TOKEN",
+          "variable_present": false,
+          "variable_non_empty": false,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": false,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "not_implemented",
+      "codeReferences": [
+        "src/components/APIControlCenter.jsx",
+        "src/components/HomeCommandCenter.jsx",
+        "src/data/integrationCapabilityRegistry.js",
+        "src/data/platformOS.js",
+        "src/services/agentEngine.js",
+        "src/services/apiRegistry.js",
+        "src/services/opportunityEngine.js",
+        "src/services/socialRevenueEngine.js",
+        "src/services/trendEngine.js",
+        "api/ai.js",
+        "api/orchestrate.js",
+        "supabase/migrations/009_canonical_offer_operations.sql"
+      ],
+      "credentialValidity": "unknown",
+      "oauthCompletion": "incomplete",
+      "billingStatus": "not_applicable",
+      "scopePermission": "read-only scopes proposed",
+      "connectionResult": "oauth_not_authorized",
+      "featureMaturity": "Locked",
+      "manualActionRequired": true,
+      "blocker": "OAuth callback and token lifecycle are not implemented.",
+      "recommendedNextAction": "Implement callback, encrypted server-side token storage, state/PKCE, and least-privilege scopes before Owner OAuth.",
+      "externalExecution": false
+    },
+    {
+      "provider": "supabase",
+      "purpose": "Owner AuthとCanonical Repository",
+      "authenticationType": "Publishable key + server secret",
+      "requiredEnvironmentVariables": [
+        "VITE_SUPABASE_URL",
+        "VITE_SUPABASE_PUBLISHABLE_KEY",
+        "SUPABASE_URL",
+        "SUPABASE_SECRET_KEY"
+      ],
+      "environmentVariables": [
+        {
+          "name": "VITE_SUPABASE_URL",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "VITE_SUPABASE_PUBLISHABLE_KEY",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "SUPABASE_URL",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        },
+        {
+          "name": "SUPABASE_SECRET_KEY",
+          "variable_present": true,
+          "variable_non_empty": true,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": true,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "implemented",
+      "codeReferences": [
+        "src/components/CanonicalHome.jsx",
+        "src/components/OfferOperationsWorkspace.jsx",
+        "src/components/ProductionFoundationPanel.jsx",
+        "src/components/ProductionRevenueWorkspace.jsx",
+        "src/components/RevenueCommandCenter.jsx",
+        "src/components/SupabaseOwnerAuthGate.jsx",
+        "src/services/supabaseBrowserClient.js",
+        "server/supabaseServerClient.js"
+      ],
+      "credentialValidity": "valid",
+      "oauthCompletion": "not_applicable",
+      "billingStatus": "not_determined",
+      "scopePermission": "least privilege",
+      "connectionResult": "connected",
+      "featureMaturity": "Production",
+      "manualActionRequired": false,
+      "blocker": null,
+      "recommendedNextAction": "Keep browser/server credential separation and run authenticated read smoke.",
+      "externalExecution": false
+    },
+    {
+      "provider": "github",
+      "purpose": "Source control",
+      "authenticationType": "Git credential / CLI",
+      "requiredEnvironmentVariables": [
+        "GITHUB_TOKEN"
+      ],
+      "environmentVariables": [
+        {
+          "name": "GITHUB_TOKEN",
+          "variable_present": false,
+          "variable_non_empty": false,
+          "duplicate_definition": false,
+          "naming_mismatch": false,
+          "local_only": false,
+          "vercel_presence": {
+            "development": false,
+            "preview": false,
+            "production": false
+          }
+        }
+      ],
+      "codeIntegration": "repository_only",
+      "codeReferences": [
+        "src/data/integrationCapabilityRegistry.js",
+        "src/services/agentEngine.js",
+        "src/services/opportunityEngine.js",
+        "src/services/trendEngine.js"
+      ],
+      "credentialValidity": "not_applicable",
+      "oauthCompletion": "not_applicable",
+      "billingStatus": "unknown",
+      "scopePermission": "least privilege",
+      "connectionResult": "cli_or_metadata_only",
+      "featureMaturity": "Conditional",
+      "manualActionRequired": true,
+      "blocker": "Git remote is configured; GitHub CLI is unavailable and no push was attempted.",
+      "recommendedNextAction": "Authenticate GitHub CLI only when PR or push is approved.",
+      "externalExecution": false
+    },
+    {
+      "provider": "vercel",
+      "purpose": "HostingとServer environment",
+      "authenticationType": "Vercel CLI session",
+      "requiredEnvironmentVariables": [],
+      "environmentVariables": [],
+      "codeIntegration": "project_only",
+      "codeReferences": [],
+      "credentialValidity": "not_applicable",
+      "oauthCompletion": "not_applicable",
+      "billingStatus": "unknown",
+      "scopePermission": "least privilege",
+      "connectionResult": "cli_or_metadata_only",
+      "featureMaturity": "Conditional",
+      "manualActionRequired": true,
+      "blocker": "Repository is not locally linked; environment names were empty in audited project.",
+      "recommendedNextAction": "Link the repository and add only required server/browser variables per environment before approved deploy.",
+      "externalExecution": false
+    }
+  ]
+}

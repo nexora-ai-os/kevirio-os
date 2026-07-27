@@ -1,0 +1,4 @@
+import { parseEnvFiles, PROVIDERS, EXIT } from "./provider-audit-lib.mjs";
+const defs=parseEnvFiles();const selected=process.argv.includes("--provider")?process.argv[process.argv.indexOf("--provider")+1]:null;const ids=selected?[selected]:Object.keys(PROVIDERS);let needs=false;const result={secretPolicy:"values_redacted",providers:{}};
+for(const id of ids){if(!PROVIDERS[id]){console.error("Unknown provider.");process.exit(EXIT.failure);}const rows=PROVIDERS[id].vars.map(name=>{const found=defs.filter(v=>v.name===name&&v.file!==".env.example");const item={name,present:found.length>0,nonEmpty:found.some(v=>v.nonEmpty),duplicate:found.some(v=>v.duplicate),value:"[REDACTED]"};if(!item.nonEmpty&&!/ACCESS_TOKEN|REFRESH_TOKEN/.test(name))needs=true;return item;});result.providers[id]=rows;}
+console.log(JSON.stringify(result,null,2));process.exitCode=needs?EXIT.configuration:EXIT.ok;

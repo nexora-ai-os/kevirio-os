@@ -14,7 +14,12 @@
     "test:smoke": "node scripts/verify-authenticated-sandbox-transaction.mjs",
     "verify:legacy": "node scripts/run-legacy-verification.mjs",
     "verify:security": "node scripts/check-source-policy.mjs && node scripts/verify-credential-boundary.mjs && node scripts/verify-credential-exposure.mjs",
-    "verify:migrations": "node scripts/verify-production-foundation-migration.mjs"
+    "verify:migrations": "node scripts/verify-production-foundation-migration.mjs",
+    "audit:env": "node scripts/check-env.mjs",
+    "audit:providers": "node scripts/provider-audit.mjs",
+    "audit:providers:write": "node scripts/provider-audit.mjs --write",
+    "audit:providers:health": "node --env-file-if-exists=.env.local scripts/provider-health-check.mjs --live --output provider-health.json",
+    "verify:provider-audit": "node scripts/verify-provider-audit.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",
