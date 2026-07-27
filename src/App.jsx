@@ -15,7 +15,6 @@ import WorkCommand from "./components/WorkCommand";
 import WorkEngine from "./components/WorkEngine";
 import AffiliateHub from "./components/AffiliateHub";
 import ContentStudio from "./components/ContentStudio";
-import ApprovalCenter from "./components/ApprovalCenter";
 import Analytics from "./components/Analytics";
 import AIAssistant from "./components/AIAssistant";
 import Settings from "./components/Settings";
@@ -177,7 +176,7 @@ export default function App({ ownerSession, ownerSupabaseClient }) {
     work: <WorkCommand opportunities={opportunities} setOpportunities={setOpportunities} pipelineRuns={pipelineRuns} setPipelineRuns={setPipelineRuns} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} savedAt={savedAt} />,
     affiliate: <AffiliateHub programs={programs} setPrograms={setPrograms} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,
     content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} savedAt={savedAt} />,
-    approval: <ApprovalCenter approvals={approvals} setApprovals={setApprovals} setAnalytics={setAnalytics} savedAt={savedAt} />,
+    approval: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
     analytics: <Analytics analytics={analytics} approvals={approvals} savedAt={savedAt} setPage={setPage} ownerSupabaseClient={ownerSupabaseClient} />,
     operations: <OperationCommandCenter tasks={platformTasks} integrations={integrations} workflows={workflows} setPage={setPage} />,
     assistant: <AIAssistant programs={programs} approvals={approvals} chatMessages={chatMessages} setChatMessages={setChatMessages} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,

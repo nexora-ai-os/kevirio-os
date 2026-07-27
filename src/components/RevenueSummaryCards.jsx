@@ -11,6 +11,8 @@ export default function RevenueSummaryCards({
   budgetRemaining = 0,
   activeAi = 0,
   eventCount = 0,
+  actualRevenue = 0,
+  actualConnected = false,
   expanded = false,
 }) {
   const primaryCards = [
@@ -25,7 +27,7 @@ export default function RevenueSummaryCards({
     { label: "Budget残量", value: `$${Number(budgetRemaining || 0).toFixed(2)}` },
     { label: "Event件数", value: `${eventCount}件` },
     { label: "Mock売上", value: formatYen(mockRevenue) },
-    { label: "実績売上", value: "未接続" },
+    { label: "実績売上", value: actualConnected ? formatYen(actualRevenue) : "Remote確認中" },
   ];
 
   return (
@@ -35,7 +37,7 @@ export default function RevenueSummaryCards({
           <p className="eyebrow">Revenue Status</p>
           <h2>売上状況</h2>
         </div>
-        <span className="badge">実績売上: 未接続</span>
+        <span className="badge">{actualConnected ? `検証済みActual: ${formatYen(actualRevenue)}` : "Actual Repository確認中"}</span>
       </div>
 
       <div className="revenue-kpi-grid">
