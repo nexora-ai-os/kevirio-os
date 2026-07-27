@@ -4,11 +4,11 @@ const primaryItems = [
   ["production", "Production Revenue"],
   ["review", "成果物レビュー"],
   ["home", "Home"],
-  ["campaign", "Campaign"],
+  ["campaign", "Offer Operations"],
   ["approval", "Approval"],
   ["analytics", "Analytics"],
   ["apiCenter", "API / AI"],
-  ["operations", "Operations"],
+  ["operations", "Connections / Ops"],
 ];
 
 const advancedItems = [
@@ -20,8 +20,8 @@ const advancedItems = [
   ["dashboard", "Mission"],
   ["workEngine", "Work Engine"],
   ["work", "Work Command"],
-  ["affiliate", "Affiliate"],
-  ["content", "Content"],
+  ["affiliate", "Affiliate (Mock Lab)"],
+  ["content", "Content (Mock Lab)"],
   ["assistant", "AI Companion"],
   ["settings", "Settings"],
 ];

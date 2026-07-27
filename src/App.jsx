@@ -43,6 +43,7 @@ import OperationCommandCenter from "./components/OperationCommandCenter";
 import RevenueCommandCenter from "./components/RevenueCommandCenter";
 import OwnerReviewWorkspace from "./components/OwnerReviewWorkspace";
 import ProductionRevenueWorkspace from "./components/ProductionRevenueWorkspace";
+import OfferOperationsWorkspace from "./components/OfferOperationsWorkspace";
 import { initialCampaigns } from "./services/campaignEngine";
 import {
   initialAgents,
@@ -158,12 +159,7 @@ export default function App({ ownerSession, ownerSupabaseClient }) {
   const pages = useMemo(() => ({
     production: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
     home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} ownerSession={ownerSession} ownerSupabaseClient={ownerSupabaseClient} />,
-    campaign: (
-      <main className="content">
-        <RevenueCampaignFoundation budget={budget} revenueCampaigns={revenueCampaigns} setRevenueCampaigns={setRevenueCampaigns} setPage={setPage} />
-        <CampaignOS embedded campaigns={campaigns} setCampaigns={setCampaigns} setDraft={setDraft} setApprovals={setApprovals} setWorkflows={setWorkflows} setDecisionJournal={setDecisionJournal} setMemoryRecords={setMemoryRecords} setPage={setPage} />
-      </main>
-    ),
+    campaign: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
     review: <OwnerReviewWorkspace revenueCampaigns={revenueCampaigns} budget={budget} />,
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} budget={budget} />,
@@ -178,7 +174,7 @@ export default function App({ ownerSession, ownerSupabaseClient }) {
     content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} savedAt={savedAt} />,
     approval: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
     analytics: <Analytics analytics={analytics} approvals={approvals} savedAt={savedAt} setPage={setPage} ownerSupabaseClient={ownerSupabaseClient} />,
-    operations: <OperationCommandCenter tasks={platformTasks} integrations={integrations} workflows={workflows} setPage={setPage} />,
+    operations: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
     assistant: <AIAssistant programs={programs} approvals={approvals} chatMessages={chatMessages} setChatMessages={setChatMessages} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,
     settings: <Settings resetAll={resetAll} savedAt={savedAt} notifications={notifications} setNotifications={setNotifications} todos={todos} setTodos={setTodos} budget={budget} />,
   }), [
