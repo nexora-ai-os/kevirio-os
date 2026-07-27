@@ -1,33 +1,45 @@
 # Final Production Activation Evidence — 2026-07-27
 
-## Implemented locally
+## Remote status
 
-- Additive Migration 009: Offer, canonical operation snapshots, connection readiness, Performance, Operating Cost, Learning, safe failures.
-- Existing Campaign / Artifact / immutable Approval / Execution Package / Evidence / Actualを再利用。
-- 日本・英語市場、Audience、Strategy、記事構成、SNS variants、short-video script、CTA、広告開示を永続化。
-- 承認済みContent PackageのCopy/Markdown download。外部実行はfalse。
-- Actual-only Profit: verified revenueとactual operating costのみ。Forecast/Test/Pending Evidenceを除外。
-- Primary Campaign/Operations導線をSupabase-backed Offer Operationsへ変更。旧Affiliate/ContentはMock Lab表示。
+- Owner reported Migration 009 completed in Supabase SQL Editor: `Success. No rows returned`.
+- Migration 009 is additive, transaction-wrapped, RLS-enabled, and grants protected commands only to `authenticated`.
+- Existing Migration 003–008 files remain unchanged.
+- The authenticated browser smoke reached the KEVIRIO application and Supabase project, but a later REST read stalled. The UI now fails closed after a finite deadline instead of remaining in an indefinite loading state.
+
+## Final smoke repairs
+
+- Reuse one Supabase browser client under React StrictMode.
+- Pass the already verified Owner Session to Home, Production Revenue, Approval, Offer Operations, and Analytics repository context reads.
+- Apply a 12-second fail-closed deadline to Owner profile, workspace, Revenue, and Offer Operations reads/commands.
+- Never offer Workspace bootstrap after a transient Remote failure.
+- Hide legacy local approval counts on canonical primary screens.
+- Render zero canonical Revenue Records as `実績未登録`, never as confirmed `¥0` sales.
+- Keep External Execution locked and all provider sends absent.
 
 ## Verification
 
-- Targeted unit/integration/E2E: 37 passed, 0 failed.
-- JavaScript syntax: 139/139 passed.
-- Source policy: 187 files passed.
-- Production build: passed (177 modules).
+- JavaScript syntax: 140/140 passed.
+- Source policy: 196 files passed.
+- Unit: 39 passed.
+- Integration: 58 passed.
+- E2E: 2 passed.
+- Credential Boundary: 27/27 passed.
+- Credential Exposure: 20/20 passed.
+- Production foundation migration inventory: 18/18 tables passed.
+- Critical legacy verification: 21/21 scripts passed.
+- Production build: passed, 175 modules.
 - npm audit: 0 vulnerabilities.
 - git diff --check: passed.
-- Remote Migration 009 / authenticated browser smoke / visual QA: Owner application後に実施。
 
 ## Safety assertions
 
-- Migrations 003–008は未変更。
-- Owner未Commitの`scripts/verify-authenticated-sandbox-transaction.mjs`と`docs/audit.zip.zip`は変更・削除・Commit対象外。
-- 新テーブルはRLS有効、authenticated SELECT-only、public/anon権限なし。
-- Actual Revenueへの直接insertなし。Evidence gateを維持。
-- Provider credential、OAuth、公開、課金、Production送信なし。
+- Owner-owned `scripts/verify-authenticated-sandbox-transaction.mjs` and `docs/audit.zip.zip` were not modified, staged, or committed by this work.
+- Browser roles retain read-only table access; protected mutations remain RPC-only.
+- Actual Revenue remains gated by verified Evidence and immutable approval snapshots.
+- Forecast, Mock, Test, and pending Evidence are excluded from Actual analytics.
+- No SNS, email, API, OAuth, payment, or production send was enabled.
 
 ## Release state
 
-`CONDITIONAL_COMPLETE`: local implementationは完了。Remote Migration 009適用とOwner authenticated smokeがProduction activation条件です。Push/Deployは未実施です。
-
+`CONDITIONAL_COMPLETE`: Migration 009 and local production gates are complete. A successful authenticated REST reload is still required before deployment because the final browser read encountered a transient Remote timeout. Push and deployment remain unperformed.

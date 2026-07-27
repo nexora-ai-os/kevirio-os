@@ -40,7 +40,7 @@ import HomeCommandCenter from "./components/HomeCommandCenter";
 import CampaignOS from "./components/CampaignOS";
 import RevenueCampaignFoundation from "./components/RevenueCampaignFoundation";
 import OperationCommandCenter from "./components/OperationCommandCenter";
-import RevenueCommandCenter from "./components/RevenueCommandCenter";
+import CanonicalHome from "./components/CanonicalHome";
 import OwnerReviewWorkspace from "./components/OwnerReviewWorkspace";
 import ProductionRevenueWorkspace from "./components/ProductionRevenueWorkspace";
 import OfferOperationsWorkspace from "./components/OfferOperationsWorkspace";
@@ -157,9 +157,9 @@ export default function App({ ownerSession, ownerSupabaseClient }) {
   };
 
   const pages = useMemo(() => ({
-    production: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
-    home: <RevenueCommandCenter approvals={approvals} approvalsOS={approvalsOS} forecasts={forecasts} revenues={revenues} revenueCampaigns={revenueCampaigns} campaigns={campaigns} tasks={platformTasks} budget={budget} setPage={setPage} ownerSession={ownerSession} ownerSupabaseClient={ownerSupabaseClient} />,
-    campaign: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
+    production: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
+    home: <CanonicalHome setPage={setPage} ownerSession={ownerSession} ownerSupabaseClient={ownerSupabaseClient} />,
+    campaign: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     review: <OwnerReviewWorkspace revenueCampaigns={revenueCampaigns} budget={budget} />,
     ceo: <AICEO workItems={workItems} missionTasks={missionTasks} approvals={approvals} analytics={analytics} pipelineRuns={pipelineRuns} setPage={setPage} />,
     apiCenter: <APIControlCenter setPage={setPage} budget={budget} />,
@@ -172,9 +172,9 @@ export default function App({ ownerSession, ownerSupabaseClient }) {
     work: <WorkCommand opportunities={opportunities} setOpportunities={setOpportunities} pipelineRuns={pipelineRuns} setPipelineRuns={setPipelineRuns} setDraft={setDraft} setApprovals={setApprovals} setNotifications={setNotifications} setPage={setPage} savedAt={savedAt} />,
     affiliate: <AffiliateHub programs={programs} setPrograms={setPrograms} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,
     content: <ContentStudio draft={draft} setDraft={setDraft} setApprovals={setApprovals} setPage={setPage} savedAt={savedAt} />,
-    approval: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
-    analytics: <Analytics analytics={analytics} approvals={approvals} savedAt={savedAt} setPage={setPage} ownerSupabaseClient={ownerSupabaseClient} />,
-    operations: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} />,
+    approval: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
+    analytics: <Analytics savedAt={savedAt} ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
+    operations: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     assistant: <AIAssistant programs={programs} approvals={approvals} chatMessages={chatMessages} setChatMessages={setChatMessages} setDraft={setDraft} setPage={setPage} savedAt={savedAt} />,
     settings: <Settings resetAll={resetAll} savedAt={savedAt} notifications={notifications} setNotifications={setNotifications} todos={todos} setTodos={setTodos} budget={budget} />,
   }), [
@@ -269,7 +269,7 @@ export default function App({ ownerSession, ownerSupabaseClient }) {
       <ErrorBoundary>
         {pages[page]}
       </ErrorBoundary>
-      <FloatingAssistant approvals={approvals} setPage={setPage} />
+      {! ["production","home","campaign","approval","analytics","operations"].includes(page) && <FloatingAssistant approvals={approvals} setPage={setPage} />}
       <BudgetGuardModal
         budget={budget}
         open={showBudgetModal}

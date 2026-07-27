@@ -11,7 +11,7 @@ const laneLabel = { service:"Service", affiliate:"Affiliate", digital_product:"D
 const workflowLabel = { owner_artifact_approval:"Artifact承認待ち", manual_package_ready:"Revenue Package準備完了", evidence_waiting:"Evidence待ち", actual_revenue_approval:"Actual Revenue承認待ち", revenue_recorded:"Revenue記録完了" };
 const destinationLabel = { email_draft:"Email draft (manual)", social_draft:"Social draft (manual)", owner_selected_service_channel:"Owner-selected service channel", owner_selected_manual_channel:"Owner-selected manual channel" };
 
-export default function ProductionRevenueWorkspace({ ownerSupabaseClient }) {
+export default function ProductionRevenueWorkspace({ ownerSupabaseClient, ownerSession }) {
   const repository = useMemo(() => createRevenueRepository(ownerSupabaseClient), [ownerSupabaseClient]);
   const preview = useMemo(buildProductionCandidatePreview, []);
   const [context, setContext] = useState(null);
@@ -25,14 +25,14 @@ export default function ProductionRevenueWorkspace({ ownerSupabaseClient }) {
   const refresh = useCallback(async () => {
     setError("");
     try {
-      const nextContext = await repository.loadContext();
+      const nextContext = await repository.loadContext(ownerSession);
       const nextSnapshot = await repository.loadSnapshot(nextContext.workspace.id);
       setContext(nextContext);
       setSnapshot(nextSnapshot);
     } catch {
-      setError("Remote repositoryを確認できません。Session・Migration 005・RLSを確認してください。");
+      setError("Remote repositoryを確認できません。通信状態とOwner Sessionを確認して再取得してください。");
     }
-  }, [repository]);
+  }, [repository,ownerSession]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -52,6 +52,7 @@ export default function ProductionRevenueWorkspace({ ownerSupabaseClient }) {
     approval.scope === "internal_artifact" && approval.status === "approved" && !packages.some((item) => item.approval_request_id === approval.id));
   const previewPackage = packages.find((item) => item.id === previewPackageId);
   const totalActual = (snapshot?.revenue || []).reduce((sum, item) => sum + Number(item.net_amount_minor || 0), 0);
+  const hasActual = Boolean(snapshot?.revenue?.length);
 
   const openPreview = (item) => run(`view:${item.id}`, async () => {
     await repository.recordManualPackageAccess(item.id, "viewed");
@@ -98,7 +99,7 @@ export default function ProductionRevenueWorkspace({ ownerSupabaseClient }) {
         <article><span>Workspace</span><strong>{context?.workspace?.name || "Remote確認中"}</strong><small>{context?.brand?.name || "—"}</small></article>
         <article><span>Campaigns</span><strong>{snapshot?.campaigns?.length ?? "—"}</strong><small>Supabase canonical</small></article>
         <article><span>Pending approvals</span><strong>{pending.length}</strong><small>Owner decision required</small></article>
-        <article><span>Verified net actual</span><strong>{money(totalActual)}</strong><small>Evidence-backed only</small></article>
+        <article><span>Verified net actual</span><strong>{hasActual ? money(totalActual) : "実績未登録"}</strong><small>Evidence-backed only</small></article>
       </section>
 
       <section className="production-grid">

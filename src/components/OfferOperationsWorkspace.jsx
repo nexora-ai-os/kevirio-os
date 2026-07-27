@@ -7,13 +7,13 @@ const statusLabel={owner_artifact_approval:"Content承認待ち",manual_package_
 const readinessLabel={adapter_unavailable:"Adapter未提供",credentials_missing:"認証情報未設定",authorization_required:"Owner認証が必要",permission_missing:"権限不足",configuration_incomplete:"設定未完了",dry_run_ready:"手動/Dry-run準備完了",production_ready:"本番準備完了",owner_locked:"Owner方針でロック",error:"接続エラー"};
 const initialOffer={title:"",advertiser:"",sourceUrl:"",category:"SaaS",commissionSummary:"",commissionMinor:"",currency:"JPY",termsSummary:"",disclosure:"広告・アフィリエイトを含むコンテンツです。",targetMarkets:["JP","GLOBAL"]};
 
-export default function OfferOperationsWorkspace({ownerSupabaseClient}){
+export default function OfferOperationsWorkspace({ownerSupabaseClient,ownerSession}){
   const repository=useMemo(()=>createOfferOperationsRepository(ownerSupabaseClient),[ownerSupabaseClient]);
   const [context,setContext]=useState(null);const [snapshot,setSnapshot]=useState(null);const [offer,setOffer]=useState(initialOffer);
   const [selected,setSelected]=useState("");const [busy,setBusy]=useState("");const [notice,setNotice]=useState("");const [error,setError]=useState("");
   const [performance,setPerformance]=useState({market:"JP",channel:"manual",periodStart:new Date().toISOString().slice(0,10),periodEnd:new Date().toISOString().slice(0,10),impressions:"0",clicks:"0",conversions:"0",sourceReference:"",isTest:false});
   const [cost,setCost]=useState({category:"ai_api",amountMinor:"0",currency:"JPY",valueType:"actual",occurredAt:new Date().toISOString(),sourceReference:"",note:""});
-  const refresh=useCallback(async()=>{try{const c=await repository.loadContext();const s=await repository.loadSnapshot(c.workspace.id);setContext(c);setSnapshot(s);setSelected((old)=>old||s.operations?.[0]?.id||"");setError("");}catch{setError("運用Repositoryを取得できません。Migration 009の適用状態とOwner Sessionを確認してください。");}},[repository]);
+  const refresh=useCallback(async()=>{try{const c=await repository.loadContext(ownerSession);const s=await repository.loadSnapshot(c.workspace.id);setContext(c);setSnapshot(s);setSelected((old)=>old||s.operations?.[0]?.id||"");setError("");}catch{setError("運用Repositoryを取得できません。Migration 009の適用状態とOwner Sessionを確認してください。");}},[repository,ownerSession]);
   useEffect(()=>{refresh();},[refresh]);
   const run=async(key,action,message)=>{if(busy)return;setBusy(key);setError("");setNotice("");try{await action();setNotice(message);await refresh();}catch{setError("処理を安全に停止しました。入力、承認Snapshot、Workspace境界、重複Referenceを確認してください。");}finally{setBusy("");}};
   const operation=snapshot?.operations?.find((v)=>v.id===selected)||snapshot?.operations?.[0];

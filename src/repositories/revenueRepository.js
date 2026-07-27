@@ -5,14 +5,16 @@ const SAFE_ERRORS = Object.freeze({
   write: "REPOSITORY_WRITE_FAILED",
   rpc: "REPOSITORY_COMMAND_FAILED",
 });
+const REMOTE_TIMEOUT_MS=12000;
+const withDeadline=async(request)=>{let timer;try{return await Promise.race([Promise.resolve(request),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("REPOSITORY_TIMEOUT")),REMOTE_TIMEOUT_MS);})]);}finally{clearTimeout(timer);}};
 
 export function createRevenueRepository(client) {
   const requireDataClient=()=>{if(!client?.from) throw new Error("REPOSITORY_PROVIDER_REQUIRED");};
   const requireCommandClient=()=>{if(!client?.rpc) throw new Error("REPOSITORY_PROVIDER_REQUIRED");};
-  const list=async(table,workspaceId)=>{requireDataClient(); if(!workspaceId) throw new Error("WORKSPACE_REQUIRED"); const {data,error}=await client.from(table).select("*").eq("workspace_id",workspaceId); if(error) throw new Error(SAFE_ERRORS.read); return data||[];};
+  const list=async(table,workspaceId)=>{requireDataClient(); if(!workspaceId) throw new Error("WORKSPACE_REQUIRED"); const {data,error}=await withDeadline(client.from(table).select("*").eq("workspace_id",workspaceId)); if(error) throw new Error(SAFE_ERRORS.read); return data||[];};
   const insert=async(table,workspaceId,value)=>{if(!workspaceId || value.workspace_id!==workspaceId) throw new Error("WORKSPACE_MISMATCH"); requireDataClient(); const {data,error}=await client.from(table).insert(value).select().single(); if(error) throw new Error("REPOSITORY_WRITE_FAILED"); return data;};
-  const command=async(name,args)=>{requireCommandClient();const {data,error}=await client.rpc(name,args);if(error) throw new Error(SAFE_ERRORS.rpc);return data;};
-  const loadContext=async()=>{const result=await inspectOwnerWorkspace(client);if(!result.ok || result.status!=="ready") throw new Error("OWNER_WORKSPACE_REQUIRED");return result;};
+  const command=async(name,args)=>{requireCommandClient();const {data,error}=await withDeadline(client.rpc(name,args));if(error) throw new Error(SAFE_ERRORS.rpc);return data;};
+  const loadContext=async(verifiedSession=null)=>{const result=await inspectOwnerWorkspace(client,verifiedSession);if(!result.ok || result.status!=="ready") throw new Error("OWNER_WORKSPACE_REQUIRED");return result;};
   const loadSnapshot=async(workspaceId)=>{
     const [opportunities,campaigns,tasks,artifacts,approvals,evidence,revenue,workflows,executionPackages]=await Promise.all([
       list("opportunities",workspaceId),list("campaigns",workspaceId),list("tasks",workspaceId),

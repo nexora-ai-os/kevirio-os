@@ -8,11 +8,11 @@ import { buildProfitByCurrency } from "../domain/offerOperations.js";
 const money=(minor,currency="JPY")=>new Intl.NumberFormat("ja-JP",{style:"currency",currency}).format(Number(minor||0));
 const laneLabel={service:"サービス",affiliate:"アフィリエイト",digital_product:"デジタル商品",media:"メディア"};
 
-export default function Analytics({savedAt,ownerSupabaseClient}){
+export default function Analytics({savedAt,ownerSupabaseClient,ownerSession}){
   const revenueRepository=useMemo(()=>createRevenueRepository(ownerSupabaseClient),[ownerSupabaseClient]);
   const operationsRepository=useMemo(()=>createOfferOperationsRepository(ownerSupabaseClient),[ownerSupabaseClient]);
   const [actual,setActual]=useState(()=>mapCanonicalActualAnalytics());const [profit,setProfit]=useState([]);const [error,setError]=useState("");
-  useEffect(()=>{let active=true;(async()=>{try{const context=await revenueRepository.loadContext();const [revenue,operations]=await Promise.all([revenueRepository.loadSnapshot(context.workspace.id),operationsRepository.loadSnapshot(context.workspace.id)]);if(active){setActual(mapCanonicalActualAnalytics(revenue.revenue,revenue.campaigns,revenue.evidence));setProfit(buildProfitByCurrency({revenueRecords:revenue.revenue,costRecords:operations.costs}));}}catch{if(active)setError("Actual / Profitを取得できません。Owner SessionとMigration 009を確認してください。");}})();return()=>{active=false};},[revenueRepository,operationsRepository]);
+  useEffect(()=>{let active=true;(async()=>{try{const context=await revenueRepository.loadContext(ownerSession);const [revenue,operations]=await Promise.all([revenueRepository.loadSnapshot(context.workspace.id),operationsRepository.loadSnapshot(context.workspace.id)]);if(active){setActual(mapCanonicalActualAnalytics(revenue.revenue,revenue.campaigns,revenue.evidence));setProfit(buildProfitByCurrency({revenueRecords:revenue.revenue,costRecords:operations.costs}));}}catch{if(active)setError("Actual / Profitを取得できません。Owner SessionとMigration 009を確認してください。");}})();return()=>{active=false};},[revenueRepository,operationsRepository,ownerSession]);
   return <main className="content production-revenue"><TopBar savedAt={savedAt}/>
     <section className="production-hero"><div><span className="eyebrow">CANONICAL ACTUAL ANALYTICS</span><h1>Actual Revenue & Profit</h1><p>検証済みRevenue RecordとActual Operating Costだけを集計します。Mock、Forecast、Test、承認待ちEvidenceは含みません。</p></div><div className="boundary-card"><strong>ACTUAL SOURCE</strong><span>VERIFIED EVIDENCE ONLY</span><span className="lock-status">External Execution: LOCKED</span></div></section>
     {error&&<div className="production-alert danger">{error}</div>}

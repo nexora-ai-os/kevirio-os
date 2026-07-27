@@ -244,6 +244,20 @@ begin
   return v_id;
 end $$;
 
+create or replace function public.record_operation_failure(p_operation_id uuid,p_operation text,p_error_code text,p_retryable boolean,p_owner_action text)
+returns uuid language plpgsql security definer set search_path='' as $$
+declare v_op public.offer_operations; v_id uuid;
+begin
+  select * into v_op from public.offer_operations where id=p_operation_id;
+  if v_op.id is null or not public.is_active_workspace_member(v_op.workspace_id) then raise exception 'operation_not_available'; end if;
+  if coalesce(btrim(p_operation),'')='' or coalesce(btrim(p_error_code),'')='' then raise exception 'failure_input_invalid'; end if;
+  insert into public.operation_failures(workspace_id,campaign_id,operation,error_code,retryable,owner_action,safe_context)
+  values(v_op.workspace_id,v_op.campaign_id,left(btrim(p_operation),80),left(btrim(p_error_code),80),coalesce(p_retryable,false),left(nullif(btrim(p_owner_action),''),240),jsonb_build_object('operationId',v_op.id,'recordedAt',now())) returning id into v_id;
+  insert into public.audit_logs(workspace_id,actor_type,actor_id,action,entity_type,entity_id,correlation_id,after_summary)
+  values(v_op.workspace_id,'system',auth.uid()::text,'operation.failed','operation_failure',v_id,v_id::text,jsonb_build_object('operation',left(btrim(p_operation),80),'errorCode',left(btrim(p_error_code),80),'retryable',coalesce(p_retryable,false)));
+  return v_id;
+end $$;
+
 -- Migration 008 upgrades only legacy sales packages. Content operation packages
 -- carry a different owner-safe schema and must remain byte-for-byte intact.
 create or replace function public.retrieve_manual_execution_packages(p_workspace_id uuid)
@@ -258,8 +272,8 @@ begin
   return query select * from public.execution_packages where workspace_id=p_workspace_id order by created_at desc;
 end $$;
 
-revoke all on function public.register_affiliate_offer(uuid,uuid,text,jsonb),public.prepare_offer_operation(uuid,text),public.record_offer_performance(uuid,jsonb),public.record_operating_cost(uuid,jsonb),public.generate_operation_learning(uuid) from public,anon;
-grant execute on function public.register_affiliate_offer(uuid,uuid,text,jsonb),public.prepare_offer_operation(uuid,text),public.record_offer_performance(uuid,jsonb),public.record_operating_cost(uuid,jsonb),public.generate_operation_learning(uuid) to authenticated;
+revoke all on function public.register_affiliate_offer(uuid,uuid,text,jsonb),public.prepare_offer_operation(uuid,text),public.record_offer_performance(uuid,jsonb),public.record_operating_cost(uuid,jsonb),public.generate_operation_learning(uuid),public.record_operation_failure(uuid,text,text,boolean,text) from public,anon;
+grant execute on function public.register_affiliate_offer(uuid,uuid,text,jsonb),public.prepare_offer_operation(uuid,text),public.record_offer_performance(uuid,jsonb),public.record_operating_cost(uuid,jsonb),public.generate_operation_learning(uuid),public.record_operation_failure(uuid,text,text,boolean,text) to authenticated;
 revoke all on function public.retrieve_manual_execution_packages(uuid) from public,anon;
 grant execute on function public.retrieve_manual_execution_packages(uuid) to authenticated;
 revoke all on function public.materialize_content_execution_package() from public,anon,authenticated;
