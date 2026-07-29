@@ -38,11 +38,11 @@
     "gemini": {
       "provider": "gemini",
       "checked": true,
-      "connectionResult": "authentication_failed",
-      "httpStatus": 403,
-      "credentialValidity": "present_but_permission_denied",
-      "billingStatus": "not_determined",
-      "detailCode": "PERMISSION_DENIED",
+      "connectionResult": "quota_exceeded",
+      "httpStatus": 429,
+      "credentialValidity": "valid",
+      "billingStatus": "quota_exceeded",
+      "detailCode": "RESOURCE_EXHAUSTED",
       "externalExecution": false,
       "secretsExposed": false
     },

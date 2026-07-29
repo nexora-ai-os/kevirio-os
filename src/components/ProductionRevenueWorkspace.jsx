@@ -3,6 +3,8 @@ import { createRevenueRepository } from "../repositories/revenueRepository.js";
 import { buildProductionCandidatePreview, candidateIdempotencyKey } from "../services/productionRevenueCandidate.js";
 import { formatRevenuePackageMarkdown, selectOwnerSafeRevenuePackage } from "../domain/manualRevenuePackage.js";
 import { validateEvidenceRegistration } from "../domain/revenueEvidence.js";
+import { Card, EnvironmentBadge, KpiCard, LoadingState, Money, PageHeader } from "../design-system/index.js";
+import "./ProductionScreens.css";
 
 const money = (minor, currency = "JPY") =>
   new Intl.NumberFormat("ja-JP", { style: "currency", currency }).format(Number(minor || 0));
@@ -78,29 +80,15 @@ export default function ProductionRevenueWorkspace({ ownerSupabaseClient, ownerS
   },"提案書Markdownをダウンロードしました。外部送信は実行していません。");
 
   return (
-    <main className="content production-revenue">
-      <section className="production-hero">
-        <div>
-          <span className="eyebrow">PRODUCTION REVENUE REPOSITORY</span>
-          <h1>OpportunityからActual Revenueまで、証跡を切らさない。</h1>
-          <p>Supabaseを唯一の正本として使用します。外部実行は常にロックされ、ActualはOwner承認済みEvidenceからのみ生成されます。</p>
-        </div>
-        <div className="boundary-card">
-          <strong>SECURITY BOUNDARY</strong>
-          <span>OWNER SESSION · RLS · RPC</span>
-          <span className="lock-status">External execution: LOCKED</span>
-        </div>
-      </section>
+    <main className="content production-revenue kv-production-screen">
+      <PageHeader title="Revenue" description="Actual, Forecast, Evidence, Campaigns and Manual Packages" actions={<EnvironmentBadge environment={context ? "production" : "locked"} />} />
+      <Card variant="decision" className="kv-operation-boundary"><div><strong>Security boundary</strong><p>Owner Session · RLS · protected RPC</p></div><strong>External execution: LOCKED</strong></Card>
 
       {error && <div className="production-alert danger" role="alert">{error}</div>}
       {notice && <div className="production-alert success" role="status">{notice}</div>}
+      {!snapshot && !error ? <LoadingState label="Loading Revenue" /> : null}
 
-      <section className="production-kpis">
-        <article><span>Workspace</span><strong>{context?.workspace?.name || "Remote確認中"}</strong><small>{context?.brand?.name || "—"}</small></article>
-        <article><span>Campaigns</span><strong>{snapshot?.campaigns?.length ?? "—"}</strong><small>Supabase canonical</small></article>
-        <article><span>Pending approvals</span><strong>{pending.length}</strong><small>Owner decision required</small></article>
-        <article><span>Verified net actual</span><strong>{hasActual ? money(totalActual) : "実績未登録"}</strong><small>Evidence-backed only</small></article>
-      </section>
+      <section className="kv-kpi-grid" aria-label="Revenue summary"><KpiCard label="Workspace" value={context?.workspace?.name} state={context ? "actual" : "unknown"} comparison={context?.brand?.name} /><KpiCard label="Campaigns" value={snapshot?.campaigns?.length} state={snapshot ? "actual" : "unknown"} comparison="Canonical repository" /><KpiCard label="Pending approvals" value={snapshot ? pending.length : null} state="pending" comparison="Owner decision required" /><KpiCard label="Verified net Actual" value={hasActual ? <Money value={totalActual} currency="JPY" kind="actual" evidenceVerified locale="ja-JP" /> : null} state={hasActual ? "actual" : "unknown"} comparison="Evidence-backed only" /></section>
 
       <section className="production-grid">
         <article className="production-panel featured">

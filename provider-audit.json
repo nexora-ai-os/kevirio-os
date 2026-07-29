@@ -195,14 +195,14 @@
         "api/ai.js",
         "api/orchestrate.js"
       ],
-      "credentialValidity": "present_but_permission_denied",
+      "credentialValidity": "valid",
       "oauthCompletion": "not_applicable",
-      "billingStatus": "not_determined",
+      "billingStatus": "quota_exceeded",
       "scopePermission": "least privilege",
-      "connectionResult": "authentication_failed",
+      "connectionResult": "quota_exceeded",
       "featureMaturity": "Locked",
       "manualActionRequired": true,
-      "blocker": "authentication_failed",
+      "blocker": "quota_exceeded",
       "recommendedNextAction": "Implement a server-only adapter and governance tests before feature enablement.",
       "externalExecution": false
     },

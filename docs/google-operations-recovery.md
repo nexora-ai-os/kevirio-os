@@ -1,0 +1,2 @@
+# Google Operations Recovery
+Token refresh failure、scope失効、account mismatchはconnectionをsuspendする。Quota/budget/circuitはtaskをblockedにする。stuck reservation/taskはAuditとexpiryを確認しserver-side release/cancelする。Partial workflowは成功サービスのfreshnessを保持し、失敗サービスだけ再計画する。Retryは1回までで再予約必須。

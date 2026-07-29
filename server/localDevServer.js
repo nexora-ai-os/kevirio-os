@@ -2,6 +2,8 @@ import { createServer as createHttpServer } from "node:http";
 import { pathToFileURL } from "node:url";
 import { createServer as createViteServer } from "vite";
 import aiHandler from "../api/ai.js";
+import providerHandler from "../api/provider.js";
+import employeeHandler from "../api/employee.js";
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 5173;
@@ -43,11 +45,11 @@ export async function createLocalDevServer(options = {}) {
     let pathname;
     try { pathname = new URL(req.url || "/", `http://${host}:${port}`).pathname; }
     catch { sendJson(res, 400, { ok: false, status: "blocked", reasonCode: "REQUEST_INTEGRITY_REQUIRED" }); return; }
-    if (pathname !== "/api/ai") { vite.middlewares(req, res, () => sendJson(res, 404, { ok: false, status: "blocked", reasonCode: "NOT_FOUND" })); return; }
+    if (!["/api/ai","/api/provider","/api/employee"].includes(pathname)) { vite.middlewares(req, res, () => sendJson(res, 404, { ok: false, status: "blocked", reasonCode: "NOT_FOUND" })); return; }
     if (req.method !== "POST") { sendJson(res, 405, { ok: false, status: "blocked", reasonCode: "REQUEST_INTEGRITY_REQUIRED" }); return; }
     try {
       const body = await readJsonBody(req, options.maxJsonBodyBytes || MAX_JSON_BODY_BYTES);
-      await handler({ method: req.method, headers: req.headers, body }, createServerlessResponseAdapter(res));
+      const selected=pathname==="/api/provider"?(options.providerHandler||providerHandler):pathname==="/api/employee"?(options.employeeHandler||employeeHandler):handler;await selected({ method:req.method,headers:req.headers,body },createServerlessResponseAdapter(res));
     } catch (error) {
       sendJson(res, error?.statusCode === 413 ? 413 : 400, { ok: false, status: "blocked", reasonCode: "REQUEST_INTEGRITY_REQUIRED" });
     }

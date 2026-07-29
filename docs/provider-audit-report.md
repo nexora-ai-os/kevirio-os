@@ -9,7 +9,7 @@ Generated: 2026-07-27T19:30:27.332Z
 | openai | OPENAI_API_KEY, KEVIRIO_OPENAI_SANDBOX_ENABLED | absent / absent / absent | implemented | valid | not_applicable | not_determined | connected | Conditional | none |
 | anthropic | ANTHROPIC_API_KEY | absent / absent / absent | not_implemented | valid | not_applicable | not_determined | connected | Locked | Credential is valid, but no governed runtime adapter exists. |
 | perplexity | PERPLEXITY_API_KEY | absent / absent / absent | not_implemented | valid | not_applicable | not_determined | request_rejected | Locked | request_rejected |
-| gemini | GEMINI_API_KEY | absent / absent / absent | not_implemented | present_but_permission_denied | not_applicable | not_determined | authentication_failed | Locked | authentication_failed |
+| gemini | GEMINI_API_KEY | absent / absent / absent | not_implemented | valid | not_applicable | quota_exceeded | quota_exceeded | Locked | quota_exceeded |
 | canva | CANVA_CLIENT_ID, CANVA_CLIENT_SECRET | absent / absent / absent | not_implemented | client_credentials_only | incomplete | not_applicable | oauth_access_token_missing | Locked | OAuth callback and token lifecycle are not implemented. |
 | google | none | absent / absent / absent | not_implemented | unknown | incomplete | not_applicable | oauth_not_authorized | Locked | OAuth callback and token lifecycle are not implemented. |
 | supabase | VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, SUPABASE_SECRET_KEY | absent / absent / absent | implemented | valid | not_applicable | not_determined | connected | Production | none |

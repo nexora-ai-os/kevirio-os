@@ -1,11 +1,11 @@
-import React from "react";
+import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import AppRouter from "./app/router";
 import SupabaseOwnerAuthGate from "./components/SupabaseOwnerAuthGate";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-<React.StrictMode>
-<SupabaseOwnerAuthGate><App /></SupabaseOwnerAuthGate>
-</React.StrictMode>
+<StrictMode>
+<SupabaseOwnerAuthGate><AppRouter /></SupabaseOwnerAuthGate>
+</StrictMode>
 );

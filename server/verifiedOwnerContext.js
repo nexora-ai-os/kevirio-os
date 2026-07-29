@@ -9,3 +9,10 @@ export async function resolveVerifiedOwnerContext(req, options = {}) {
   const profile = await client.from("owner_profiles").select("role,status").eq("owner_id", ownerId).maybeSingle().catch(() => ({ error: true })); if (profile?.error || profile?.data?.role !== "owner" || profile?.data?.status !== "active") return locked("OWNER_PROFILE_NOT_ACTIVE");
   return { ok: true, context: { ownerId, ownerIdentityVerified: true, sessionVerified: true, csrfVerified: true } };
 }
+export async function resolveVerifiedOwnerWorkspaceContext(req,workspaceId,options={}){
+  const verified=await resolveVerifiedOwnerContext(req,options);if(!verified.ok)return verified;
+  if(typeof workspaceId!=="string"||!/^[0-9a-f-]{36}$/i.test(workspaceId))return locked("WORKSPACE_CONTEXT_REQUIRED");
+  const client=options.client||createSupabaseServerClient();const membership=await client.from("workspace_members").select("workspace_id,role,status").eq("workspace_id",workspaceId).eq("user_id",verified.context.ownerId).maybeSingle().catch(()=>({error:true}));
+  if(membership.error||membership.data?.role!=="owner"||membership.data?.status!=="active")return locked("WORKSPACE_ACCESS_DENIED");
+  return {ok:true,context:{...verified.context,workspaceId}};
+}

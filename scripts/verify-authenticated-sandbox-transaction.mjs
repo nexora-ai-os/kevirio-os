@@ -4,6 +4,7 @@ import { resolveVerifiedOwnerContext } from "../server/verifiedOwnerContext.js";
 import { createSupabaseServerClient } from "../server/supabaseServerClient.js";
 import { createSupabaseUsageStoreAdapter } from "../server/supabaseUsageStoreAdapter.js";
 import { createLocalDevServer } from "../server/localDevServer.js";
+import { createSupabaseBrowserClient } from "../src/services/supabaseBrowserClient.js";
 
 let passed = 0;
 const check = async (name, fn) => { await fn(); passed += 1; console.log(`PASS ${name}`); };
@@ -34,6 +35,7 @@ await check("server provider rejects URL credentials", () => assert.equal(create
 await check("server provider normalizes factory exceptions to null", () => assert.equal(createSupabaseServerClient({ SUPABASE_URL: "https://dummy-project.supabase.co", SUPABASE_SECRET_KEY: "dummy-server-secret" }, () => { throw new Error("private raw provider failure"); }), null));
 const serverClientSource = readFileSync(new URL("../server/supabaseServerClient.js", import.meta.url), "utf8");
 await check("server provider exposes no raw error stack or credential state", () => { assert.equal(/console\.|error\.message|error\.stack|configured/i.test(serverClientSource), false); assert.ok(serverClientSource.includes("catch { return null; }")); });
+await check("browser provider constructs from public dummy config without network", () => { const provider = createSupabaseBrowserClient({ VITE_SUPABASE_URL: "https://dummy-project.supabase.co", VITE_SUPABASE_PUBLISHABLE_KEY: "dummy-publishable-key" }); assert.equal(typeof provider?.auth?.getSession, "function"); });
 
 const rpcCalls = [];
 const usageClient = { rpc: async (name, args) => { rpcCalls.push({ name, args }); if (name === "reserve_sandbox_request") return { data: { reservationId: "reservation-1" }, error: null }; return { data: true, error: null }; } };
@@ -68,4 +70,4 @@ await check("released and expired rows are reusable but active duplicates block"
 await check("migration preserves limits locks and reconciliation", () => { assert.ok(migration.includes("p_estimated_cost_usd > 0.03")); assert.ok(migration.includes("> 1.00")); assert.ok((migration.match(/for update/g) || []).length >= 2); assert.ok(migration.includes("v_reconciled_reserved := greatest(0")); });
 await check("migration security is fail closed and idempotent", () => { assert.ok(migration.includes("security definer") && migration.includes("set search_path = ''")); for (const role of ["public", "anon", "authenticated"]) assert.ok(migration.includes(`from ${role}`)); assert.ok(migration.includes("to service_role")); assert.equal(/\bexecute\s+format\s*\(/i.test(migration), false); assert.ok(/^begin;/.test(migration.trim()) && /commit;\s*$/.test(migration.trim())); });
 await check("migration contains no revenue or ledger fields", () => assert.equal(/actual.?revenue|ledger/i.test(migration), false));
-console.log(`Authenticated sandbox transaction verification: ${passed}/28 passed`);
+console.log(`Authenticated sandbox transaction verification: ${passed}/29 passed`);

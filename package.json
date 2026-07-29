@@ -1,4 +1,7 @@
 {
+  "name": "kevirio-os",
+  "version": "1.0.0-rc.1",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -19,14 +22,20 @@
     "audit:providers": "node scripts/provider-audit.mjs",
     "audit:providers:write": "node scripts/provider-audit.mjs --write",
     "audit:providers:health": "node --env-file-if-exists=.env.local scripts/provider-health-check.mjs --live --output provider-health.json",
-    "verify:provider-audit": "node scripts/verify-provider-audit.mjs"
+    "verify:provider-audit": "node scripts/verify-provider-audit.mjs",
+    "verify:cost-guard": "node --test tests/unit/provider-cost-guard.test.mjs tests/unit/provider-gateway.test.mjs tests/integration/provider-cost-guard-foundation.test.mjs",
+    "verify:provider-platform": "node --test tests/unit/provider-platform.test.mjs tests/unit/provider-oauth-runtime.test.mjs tests/integration/provider-platform-foundation.test.mjs",
+    "verify:ai-employees": "node --test tests/unit/ai-employee-platform.test.mjs tests/integration/ai-employee-platform-foundation.test.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.110.7",
-    "@vitejs/plugin-react": "latest",
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest"
+    "@supabase/supabase-js": "2.110.7",
+    "lucide-react": "1.23.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-router-dom": "7.18.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.0.3",
+    "vite": "8.1.3"
   }
 }

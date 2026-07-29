@@ -1,0 +1,101 @@
+:root,
+[data-kevirio-theme="light"] {
+  color-scheme: light;
+
+  --color-bg-canvas: #f7f8f6;
+  --color-bg-surface: #ffffff;
+  --color-bg-subtle: #f1f3f0;
+  --color-bg-elevated: #ffffff;
+
+  --color-text-primary: #151816;
+  --color-text-secondary: #5b625e;
+  --color-text-tertiary: #848b87;
+  --color-text-inverse: #ffffff;
+
+  --color-border-default: #e1e5e1;
+  --color-border-strong: #c9cfcb;
+  --color-border-focus: #8b7444;
+
+  --color-brand-gold-50: #fbf8f1;
+  --color-brand-gold-100: #f5eedc;
+  --color-brand-gold-300: #d7c28e;
+  --color-brand-gold-500: #a98d52;
+  --color-brand-gold-700: #715b2e;
+
+  --color-success-50: #eef8f1;
+  --color-success-500: #2f7d4a;
+  --color-success-700: #205a35;
+  --color-info-50: #eef5fb;
+  --color-info-500: #3978a8;
+  --color-info-700: #28597e;
+  --color-ai-50: #f4f1fb;
+  --color-ai-500: #7458a6;
+  --color-ai-700: #543d7b;
+  --color-warning-50: #fff6e8;
+  --color-warning-500: #a96513;
+  --color-warning-700: #7b480b;
+  --color-danger-50: #fff0ef;
+  --color-danger-500: #b2453e;
+  --color-danger-700: #82312c;
+
+  --color-mock: #7c8793;
+  --color-forecast: #3978a8;
+  --color-approved: #a98d52;
+  --color-ready: #7458a6;
+  --color-running: #2f7d4a;
+  --color-actual: #151816;
+  --color-locked: #6e7470;
+
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(20, 24, 22, 0.05);
+  --shadow-2: 0 8px 24px rgba(20, 24, 22, 0.07);
+  --shadow-3: 0 18px 50px rgba(20, 24, 22, 0.1);
+  --shadow-focus: 0 0 0 3px rgba(169, 141, 82, 0.22);
+
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 280ms;
+
+  --font-sans: Inter, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --text-display-lg-size: 40px;
+  --text-display-lg-line: 48px;
+  --text-display-md-size: 32px;
+  --text-display-md-line: 40px;
+  --text-heading-xl-size: 28px;
+  --text-heading-xl-line: 36px;
+  --text-heading-lg-size: 22px;
+  --text-heading-lg-line: 30px;
+  --text-heading-md-size: 18px;
+  --text-heading-md-line: 26px;
+  --text-body-lg-size: 16px;
+  --text-body-lg-line: 26px;
+  --text-body-md-size: 14px;
+  --text-body-md-line: 22px;
+  --text-body-sm-size: 12px;
+  --text-body-sm-line: 18px;
+  --text-label-md-size: 13px;
+  --text-label-md-line: 18px;
+  --text-label-sm-size: 11px;
+  --text-label-sm-line: 16px;
+  --text-mono-sm-size: 12px;
+  --text-mono-sm-line: 18px;
+}

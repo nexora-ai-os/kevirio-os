@@ -1,0 +1,7 @@
+# Provider Runtime Architecture
+
+Runtime requestはOwner sessionとWorkspaceをserverで確定し、Permission、Approval snapshot、Policy、Cost estimateを検査する。DB runtime adapterはMigration 010 RPCで予算を予約し、Ledgerを記録してからAdapterをdispatchする。失敗時はactual costが確定していなければfail、未使用予約はreleaseする。
+
+現在は`externalExecutionLocked`が既定trueであり、dispatchへ到達しない。Dry RunはGateway内でpreviewを返し、外部requestとtoken refreshが構造的に0件である。
+
+Crash recoveryは期限切れreservationを運用診断で検出し、Owner確認後にserver-side cleanupを行う。Global／Provider lockは自動解除しない。

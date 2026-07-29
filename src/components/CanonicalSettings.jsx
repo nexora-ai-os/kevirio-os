@@ -1,0 +1,6 @@
+import { Badge, Card, EmptyState, EnvironmentBadge, PageHeader, SectionHeader, Stack } from "../design-system/index.js";
+import "./ProductionScreens.css";
+
+export default function CanonicalSettings() {
+  return <main className="content kv-production-screen"><Stack gap="8"><PageHeader title="Settings" description="Existing Production configuration only" actions={<EnvironmentBadge environment="locked" />} /><section><SectionHeader title="Runtime policy" /><div className="kv-screen-grid"><Card><h2>Theme</h2><p>Light theme</p><Badge state="actual" label="Active" /></Card><Card><h2>External execution</h2><p>External Execution remains disabled.</p><Badge state="locked" label="LOCKED" /></Card><Card><h2>Provider credentials</h2><p>Credential values are managed only by secure server-side flows and are not editable here.</p><Badge state="locked" label="Server only" /></Card><Card><h2>Workspace settings</h2><p>No supported Workspace mutation contract is available.</p><Badge state="unknown" label="Not Implemented" /></Card></div></section><EmptyState title="No configurable settings" message="Unsupported controls are omitted. Developer Mode, feature flags and credentials are not configurable from this screen." /></Stack></main>;
+}

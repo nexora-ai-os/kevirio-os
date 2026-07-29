@@ -1,0 +1,26 @@
+{
+  "package": "KEVIRIO UI/UX Release Candidate RC1",
+  "version": "1.0.0-rc.1",
+  "date": "2026-07-29",
+  "status": "Ready for development repository verification",
+  "files": [
+    {
+      "name": "KEVIRIO_UI_UX_MASTER_SPEC_v1.0_RC1.md",
+      "role": "Normative UI/UX specification",
+      "bytes": 66822,
+      "sha256": "1529da6f4d177b4e41f62ff97be5e1ba8453043049931634cac31b3755bc725b"
+    },
+    {
+      "name": "KEVIRIO_IMPLEMENTATION_MASTER_PROMPT_v1.0_RC1.md",
+      "role": "Implementation execution prompt",
+      "bytes": 24936,
+      "sha256": "f2e42ca8164fa7e0747a9fff3e2a8addd9c97f132833275dd5192384f3ebc115"
+    },
+    {
+      "name": "KEVIRIO_UI_IMPLEMENTATION_HANDOFF_RC1.md",
+      "role": "Development handoff instructions",
+      "bytes": 2443,
+      "sha256": "7eaab7a36f643a428cc9767b3c9a5801dcdd5af228ce0404ef9b5042a8f8b6b6"
+    }
+  ]
+}

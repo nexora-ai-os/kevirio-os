@@ -1,0 +1,6 @@
+.kv-labs { min-block-size: 100vh; padding: var(--space-8); }
+.kv-labs > .kv-page-header { margin-block-end: var(--space-10); }
+.kv-labs-grid { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-4); }
+.kv-labs-form { display: grid; gap: var(--space-6); max-inline-size: 640px; }
+.kv-labs-states { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--space-4); }
+@media (max-width: 767px) { .kv-labs { padding: var(--space-4); } }
