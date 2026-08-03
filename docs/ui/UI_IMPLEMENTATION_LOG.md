@@ -136,3 +136,76 @@ Combined Phase 5–8 stops here pending Owner review. Phase 9 has not started.
 - Architecture: database, migrations, RLS, auth, repository contracts, protected RPC, Workspace, Approval protections, Evidence, Actual Revenue, Cost Guard, Provider security, Audit integrity, Google Operations Dry Run and External Execution=false remain unchanged.
 
 Final batch stops here. Deployment, push and commit were not performed.
+
+## Owner UI Design System V2.0 — Final Integration
+
+- Date: 2026-08-01
+- Scope: shared V2 tokens, surfaces, state system, Application Shell, Owner menu, mobile Drawer, all ten Production page archetypes, responsive/accessibility integration, documentation and validation.
+- Raw auth UI: `Owner session verified` debug banner removed; existing logout behavior moved into the safe Owner menu. Auth architecture and session behavior are unchanged.
+- Production behavior: repositories, protected RPCs, Approval, Evidence, Actual Revenue, Provider, Cost Guard, Workspace, Audit, Google Operations Dry Run and External Execution lock are unchanged.
+- Tests: syntax 184/184; unit 159/159; integration 85/85; E2E 2/2; source policy 273 files; credential boundary 27/27; credential exposure 20/20; migration inventory 18/18.
+- Build: PASS, 1,888 transformed modules. Initial JS 448.84 kB raw / 130.61 kB gzip. Initial CSS unchanged at 43.07 kB raw / 8.98 kB gzip. Lazy CSS increased for V2 Shell/Production screen contracts.
+- Browser: PARTIALLY VALIDATED. Headless Chrome captured unauthenticated desktop/mobile at 100% equivalent. Authenticated ten-screen validation is BLOCKED because the available profile has no Owner Session and the in-app Browser is blocked by Windows sandbox ACL. Authentication was not bypassed.
+- Screenshots: `docs/ui/screenshots/v2/owner-login-desktop-1440x900.png`, `owner-login-mobile-390x844.png`.
+- Git: no stage, commit, push or deploy.
+
+## Owner UI Final Closure Pass
+
+- Date: 2026-08-01
+- Scope: final V2 correction of width/density, typography minimums, Hero hierarchy, gold refinement, Sidebar overflow, Drawer/Owner Menu focus, Japanese-first primary copy, page hierarchy and truthful Locked/Empty guidance.
+- Page changes: Home technical boundary collapsed; AI Employee/Approval/Provider cards reordered; Operations lifecycle added before form; Insights locked analysis modules added without fake charts; Inbox links to existing Approvals; Settings policy titles Japanese-first.
+- Architecture: Auth, Database, migrations, RLS, RPC, repositories, Approval, Evidence, Actual Revenue, Provider, Cost Guard, Workspace, Audit, External Execution and Google Operations Dry Run unchanged.
+- Automated validation: syntax 184/184; unit 164/164; integration 85/85; E2E 2/2; source policy 273 files; credential boundary 27/27; credential exposure 20/20; migration inventory 18/18; build PASS.
+- Bundle: initial JS 448.84 kB unchanged / gzip 130.61→130.60 kB; initial CSS 43.07 kB unchanged; total CSS 91.20 kB; 17 JS chunks; largest chunk 448.84 kB; no dependency added.
+- Browser: BLOCKED before launch by Windows sandbox ACL. Authenticated Owner Session was not bypassed. Console, Network and authenticated screenshot package remain blocked.
+- Result: PARTIALLY COMPLETE. UI Freeze is BLOCKED only by mandatory authenticated Browser evidence.
+- Git: no stage, commit, push or deploy; `docs/audit.zip.zip` untouched.
+
+## Integrated Production Hardening & UI Implementation
+
+- Date: 2026-08-01
+- Migration 012: hardened in place because it remains remote-unapplied. AIE-001 through AIE-007 now cover composite workspace integrity, recursive safe metadata, atomic task/event lifecycle, exact one-time Approval consumption, atomic Google quota reservation, ordered fail-closed runtime gates and bounded handoff integrity.
+- Runtime: added service-role RPC adapter and an ordered AI Employee runtime gate. External Execution remains locked; global and provider enablement default false; no provider dispatch was performed.
+- UI: added the Master Spec OS visualization primitives (`CompanyStateHero`, `ProfitSummary`, `OwnerDecisionPanel`, `RevenueEngineSummary`, `WorkforceSummary`, `BottleneckList`, `DataProvenance`, `CostComposition`, `ResponsiveDetailDrawer`). They are presentation-only and do not calculate business state or create data.
+- Identity: replaced the mint/blue favicon with the approved White × Champagne Gold Gold K identity. Existing BrandMark remains the canonical metallic Gold K.
+- Tests: Unit 170/170, Integration 91/91, E2E 2/2 (263/263). Dedicated AI Employee 32/32, Provider Platform 28/28 and Cost Guard 33/33 passed. Syntax 186/186, Source Policy 276 files, Credential Boundary 27/27, Credential Exposure 20/20 and migration inventory 18/18 passed.
+- Build: PASS, 1,889 modules. Initial JS 448.84 kB raw / 130.61 kB gzip. Initial CSS 43.07 kB raw / 8.98 kB gzip. Route-level lazy chunks remain intact; no chunk exceeds 500 kB raw.
+- Dependency audit: npm reports the known React Router RSC-mode CSRF advisory as HIGH. Repository routing is a Vite SPA and contains no RSC actions or RSC mode; treated as the previously approved documented Known Risk, not an SPA behavior regression.
+- PostgreSQL runtime verification: BLOCKED. `psql`, Docker and Supabase CLI are not installed, so clean apply, rollback, concurrency and RLS execution were not falsely marked passed. Static migration and contract validation passed.
+- Browser: BLOCKED. The official in-app Browser failed during Windows sandbox read-ACL initialization. No authentication bypass or alternate workaround was used; authenticated ten-route visual validation remains incomplete.
+- Safety: remote migration, OAuth authorization, secret mutation, provider API, commit, push and deploy were not executed. `docs/audit.zip.zip` and Owner-authored dirty changes remain untouched.
+
+## Production Validation Closure — Windows Native
+
+- Date: 2026-08-02
+- Owner decision: WSL, Docker Desktop, Local Supabase and local PostgreSQL validation are intentionally excluded.
+- Browser: Owner-authenticated Windows native Playwright Chromium validation completed. Routes/history/runtime 11/11, responsive 60/60, semantic keyboard 10/10, axe WCAG 2.2 AA 10/10, reduced motion 10/10 and Data Truth 3/3 passed.
+- Browser runtime findings: console errors 0, uncaught page errors 0, critical failed requests 0, rendered mojibake 0, raw UUID 0 and credential-like text 0.
+- Fix: Owner authentication loading spinner now disables animation under `prefers-reduced-motion: reduce`; the former implementation lengthened the animation duration.
+- Migration 012: static/contract audit 44/44 passed. Re-run safety was added for constraints, tables, indexes, seed, triggers and policies. Production pre-apply and post-apply smoke SQL are read-only and transaction-rollback bounded.
+- PostgreSQL runtime: Not Executed. Clean apply, actual rollback, runtime RLS and concurrent race behavior remain unverified until Owner-operated remote/staging execution.
+- Auth safety: `playwright/.auth/owner.json`, screenshots, traces, videos and reports are git-ignored. No credential or token value was displayed or committed.
+- External Execution: LOCKED. Global false. Provider false. OAuth authorization 0. Provider API execution 0. External cost ¥0.
+
+## Company Operating System closure increment — 2026-08-03
+
+- Added a pure Company Operating System domain model for the 21-stage cycle, six Revenue Engine types, AI department/responsibility architecture, evidence-gated Business Memory candidates, currency-separated profit, Owner decision priority, and fail-closed Executive KPI derivation.
+- Added a Home Company Operating Cycle visualization sourced only from the existing Revenue and Offer Operations repositories. Unknown is never rendered as zero or completion.
+- Added Migration 013 as an unapplied local candidate for market, Revenue Engine, cycle, content, Business Memory, executive decision, and append-only event foundations. It is workspace-scoped, External Execution locked, browser mutation closed, and service-role mutation protected. It was not applied remotely.
+- Migration 012 Production activation was Owner-confirmed successful; corrected read-only smoke PASS. Migration 012 was not re-run.
+- Validation: Build PASS; Unit 179/179; Integration 95/95; E2E 2/2; authenticated Browser 104/104; Syntax 197/197; Source Policy 292 files; Credential Boundary 27/27; Credential Exposure 20/20; Migration 012 44/44; Provider 28/28; Cost Guard 33/33; AI Employee 32/32.
+- Bundle: initial JS 448.81 kB / 130.60 kB gzip; Home lazy chunk 13.46 kB / 5.18 kB gzip; initial CSS 43.06 kB / 8.97 kB gzip; Production Screens CSS 14.28 kB / 3.47 kB gzip.
+- Known Risk: React Router RSC Mode advisory remains reported by npm audit. The current Vite SPA does not use RSC Mode or Server Actions.
+- Git/Release: no stage, commit, push, deploy, tag, or release.
+## V1 Emergency Completion Gate — 2026-08-03
+
+- Added the ten-item Home Owner Control Plane using already-loaded canonical state; missing canonical facts remain Unknown and AI Employee state is not inferred from Offer Operations.
+- Hardened the 21-stage Company Operating Cycle to require exact stage evidence and support twelve fail-closed statuses.
+- Added a canonical affiliate Manual Execution Package preview with Owner-copy/download/publish guidance, Evidence instructions, expected metrics, Actual/failure capture, confirmation and External Execution locked.
+- Added and passed the real-Offer lifecycle E2E contract. No external execution, Provider call, OAuth or Production mutation was performed.
+- Migration 013 remains an unapplied local candidate. Release-quality static/contract validation is 17/17 PASS. Fixed SHA-256: B5DE02C52806E30F76565C9045C9E4E7FD9CCC5365973C746AB7EF6F563365BB.
+- Browser Validation: authenticated Windows-native Chromium 104/104 PASS across ten Production routes, six viewport profiles, keyboard/focus/landmarks, axe WCAG 2.2 AA, reduced motion, Data Truth, deep links, history and runtime health.
+- Final automated gate: Build PASS; Unit 180/180; Integration 97/97; E2E 3/3; Syntax 199/199; Source Policy 297 files; Credential Boundary 27/27; Credential Exposure 20/20.
+- Bundle: Initial JS unchanged at 448.81 kB raw / 130.60 kB gzip; Home lazy 17.93/6.54 kB; Revenue lazy 52.75/14.68 kB; Initial CSS 43.06/8.97 kB.
+- Decision: CONDITIONAL GO — OWNER ACTION ONLY. Remaining gate is Owner-operated Migration 013 pre-check, one-time application and read-only post-apply smoke.
+- Git/Release: no stage, commit, push, deploy, tag or release.

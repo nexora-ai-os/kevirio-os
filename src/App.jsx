@@ -16,7 +16,7 @@ const CanonicalInbox = lazy(() => import("./components/CanonicalInbox.jsx"));
 const CanonicalAudit = lazy(() => import("./components/CanonicalAudit.jsx"));
 const CanonicalSettings = lazy(() => import("./components/CanonicalSettings.jsx"));
 
-export default function App({ ownerSession, ownerSupabaseClient, initialPage = "home", onPageChange }) {
+export default function App({ ownerSession, ownerSupabaseClient, onOwnerLogout, initialPage = "home", onPageChange }) {
   const [page, setPageState] = useState(initialPage);
   useEffect(() => { setPageState(initialPage); }, [initialPage]);
   const setPage = useCallback((nextPage) => { setPageState(nextPage); onPageChange?.(nextPage); }, [onPageChange]);
@@ -29,9 +29,9 @@ export default function App({ ownerSession, ownerSupabaseClient, initialPage = "
     production: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     analytics: <Analytics ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     providerHub: <ProviderHub ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
-    inbox: <CanonicalInbox />,
+    inbox: <CanonicalInbox setPage={setPage} />,
     audit: <CanonicalAudit ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     settings: <CanonicalSettings />,
   }), [ownerSession, ownerSupabaseClient, setPage]);
-  return <ApplicationShell sidebar={<Sidebar page={page} setPage={setPage} />} topbar={<TopBar />}><ErrorBoundary><Suspense fallback={<main className="content" aria-busy="true"><p role="status">Loading screen</p></main>}>{pages[page] || pages.home}</Suspense></ErrorBoundary></ApplicationShell>;
+  return <ApplicationShell sidebar={<Sidebar page={page} setPage={setPage} />} topbar={<TopBar onLogout={onOwnerLogout} environment={import.meta.env.PROD ? "Production" : "ローカル開発環境"} />}><ErrorBoundary><Suspense fallback={<main className="content" aria-busy="true"><p role="status">画面を読み込み中</p></main>}>{pages[page] || pages.home}</Suspense></ErrorBoundary></ApplicationShell>;
 }

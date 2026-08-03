@@ -10,7 +10,7 @@ const main = readFileSync(new URL("../../src/main.jsx", import.meta.url), "utf8"
 const styleEntry = readFileSync(new URL("../../src/design-system/styles.css", import.meta.url), "utf8");
 
 test("semantic state registry is exhaustive and unknown fails closed", () => {
-  assert.equal(Object.values(UI_STATE).length, 16);
+  assert.equal(Object.values(UI_STATE).length, 24);
   for (const state of Object.values(UI_STATE)) assert.ok(getSemanticState(state), state);
   assert.equal(normalizeUIState("not-a-state"), UI_STATE.UNKNOWN);
   assert.equal(getSemanticState("not-a-state").label, "不明");
@@ -26,6 +26,10 @@ test("RC1 token categories and reduced motion contract exist", () => {
   for (const token of ["--color-bg-canvas", "--color-brand-gold-500", "--color-actual", "--space-20", "--radius-xl", "--shadow-focus", "--motion-base", "--text-heading-xl-size"]) assert.match(tokens, new RegExp(token));
   assert.match(base, /prefers-reduced-motion:\s*reduce/);
   assert.match(base, /:focus-visible/);
+});
+
+test("V2 token architecture defines width elevation focus and breakpoint contracts", () => {
+  for (const token of ["--content-reading", "--content-standard", "--content-wide", "--surface-hero", "--shadow-floating", "--focus-ring", "--z-drawer", "--breakpoint-wide"]) assert.match(tokens, new RegExp(token));
 });
 
 test("shared components define state, focus and responsive foundations", () => {

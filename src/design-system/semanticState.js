@@ -15,6 +15,14 @@ export const UI_STATE = Object.freeze({
   EXPIRED: "expired",
   LOCKED: "locked",
   UNKNOWN: "unknown",
+  EMPTY: "empty",
+  NO_MATCH: "no_match",
+  WAITING: "waiting",
+  QUEUED: "queued",
+  DISABLED: "disabled",
+  OFFLINE: "offline",
+  UNCONNECTED: "unconnected",
+  VERIFIED: "verified",
 });
 
 export const MATURITY = Object.freeze({
@@ -57,6 +65,14 @@ export const SEMANTIC_STATE = Object.freeze({
   expired: Object.freeze({ label: "期限切れ", icon: "TimerOff", tone: "warning", border: "solid" }),
   locked: Object.freeze({ label: "ロック中", icon: "Lock", tone: "locked", border: "solid" }),
   unknown: Object.freeze({ label: "不明", icon: "CircleHelp", tone: "neutral", border: "dotted" }),
+  empty: Object.freeze({ label: "未登録", icon: "Circle", tone: "neutral", border: "dashed" }),
+  no_match: Object.freeze({ label: "該当なし", icon: "SearchX", tone: "neutral", border: "dashed" }),
+  waiting: Object.freeze({ label: "待機中", icon: "Clock", tone: "warning", border: "solid" }),
+  queued: Object.freeze({ label: "キュー待ち", icon: "ListStart", tone: "neutral", border: "solid" }),
+  disabled: Object.freeze({ label: "無効", icon: "CircleOff", tone: "locked", border: "solid" }),
+  offline: Object.freeze({ label: "オフライン", icon: "WifiOff", tone: "danger", border: "solid" }),
+  unconnected: Object.freeze({ label: "未接続", icon: "Unplug", tone: "locked", border: "dashed" }),
+  verified: Object.freeze({ label: "検証済み", icon: "BadgeCheck", tone: "actual", border: "strong" }),
 });
 
 export const ENVIRONMENT_META = Object.freeze({

@@ -1,0 +1,2 @@
+import {test,expect} from "@playwright/test";import {ROUTES,assertOwnerPage} from "./support.mjs";
+for(const [name,path] of ROUTES)test(`${name}: reduced motion`,async({page})=>{await page.emulateMedia({reducedMotion:"reduce"});await assertOwnerPage(page,path);const motion=await page.locator("body *").evaluateAll(nodes=>nodes.map(n=>{const s=getComputedStyle(n);return {animation:s.animationName,duration:s.animationDuration};}).filter(x=>x.animation!=="none"&&!/^0(?:s|ms)$|^0\.01ms$/.test(x.duration)));expect(motion.slice(0,10)).toEqual([]);});

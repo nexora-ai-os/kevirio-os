@@ -25,7 +25,16 @@
     "verify:provider-audit": "node scripts/verify-provider-audit.mjs",
     "verify:cost-guard": "node --test tests/unit/provider-cost-guard.test.mjs tests/unit/provider-gateway.test.mjs tests/integration/provider-cost-guard-foundation.test.mjs",
     "verify:provider-platform": "node --test tests/unit/provider-platform.test.mjs tests/unit/provider-oauth-runtime.test.mjs tests/integration/provider-platform-foundation.test.mjs",
-    "verify:ai-employees": "node --test tests/unit/ai-employee-platform.test.mjs tests/integration/ai-employee-platform-foundation.test.mjs"
+    "verify:ai-employees": "node --test tests/unit/ai-employee-platform.test.mjs tests/integration/ai-employee-platform-foundation.test.mjs",
+    "verify:migration:012": "node scripts/validate-migration-012-static.mjs",
+    "verify:migration:013": "node scripts/validate-migration-013-static.mjs",
+    "test:browser:auth": "playwright test --project=auth --headed",
+    "test:browser": "playwright test --project=chromium",
+    "test:browser:routes": "playwright test tests/browser/routes.spec.mjs --project=chromium",
+    "test:browser:responsive": "playwright test tests/browser/responsive.spec.mjs --project=chromium",
+    "test:browser:accessibility": "playwright test tests/browser/accessibility.spec.mjs --project=chromium",
+    "test:browser:motion": "playwright test tests/browser/motion.spec.mjs --project=chromium",
+    "test:browser:data-truth": "playwright test tests/browser/data-truth.spec.mjs --project=chromium"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.110.7",
@@ -35,6 +44,8 @@
     "react-router-dom": "7.18.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.62.1",
     "@vitejs/plugin-react": "6.0.3",
     "vite": "8.1.3"
   }

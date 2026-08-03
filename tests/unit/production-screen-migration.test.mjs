@@ -48,7 +48,7 @@ test("Approvals use exact snapshot and existing repository command", () => {
 
 test("Operations preserves existing command callbacks and external lock", () => {
   for (const command of ["registerOffer", "prepareOperation", "decideApproval", "recordPackageAccess", "recordPerformance", "recordCost", "generateLearning"]) assert.match(operations, new RegExp(`repository\\.${command}`));
-  assert.match(operations, /External execution: LOCKED/);
+  assert.match(operations, /External execution: LOCKED|外部実行：ロック中/);
   assert.match(operations, /<Money value=\{v\.netProfitMinor\}[^>]+kind="actual" evidenceVerified/);
 });
 

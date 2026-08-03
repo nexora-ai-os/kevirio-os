@@ -21,7 +21,7 @@ test("all ten Production destinations are route-level lazy modules", () => {
 test("navigation has exactly seven primary and three utility destinations", () => {
   assert.match(sidebar, /const primaryItems = \[/);
   assert.match(sidebar, /const utilityItems = \[/);
-  for (const label of ["Home", "AI Employees", "Approvals", "Operations", "Revenue", "Insights", "Integrations", "Inbox", "Audit", "Settings"]) assert.match(sidebar, new RegExp(`"${label}"`));
+  for (const key of ["home", "googleOperations", "approval", "operations", "production", "analytics", "providerHub", "inbox", "audit", "settings"]) assert.match(sidebar, new RegExp(`"${key}"`));
   assert.doesNotMatch(sidebar, /Labs|Component Preview/);
 });
 

@@ -81,8 +81,8 @@ export default function ProductionRevenueWorkspace({ ownerSupabaseClient, ownerS
 
   return (
     <main className="content production-revenue kv-production-screen">
-      <PageHeader title="Revenue" description="Actual, Forecast, Evidence, Campaigns and Manual Packages" actions={<EnvironmentBadge environment={context ? "production" : "locked"} />} />
-      <Card variant="decision" className="kv-operation-boundary"><div><strong>Security boundary</strong><p>Owner Session · RLS · protected RPC</p></div><strong>External execution: LOCKED</strong></Card>
+      <PageHeader eyebrow="REVENUE TRUTH CONTROL" title="売上" description="実績・予測・Mock・Evidence・Cost・Approvalを混同せず、売上化までの状態を管理します。" actions={<EnvironmentBadge environment={context ? "production" : "locked"} />} />
+      <Card variant="decision" className="kv-operation-boundary"><div><strong>Revenue Security Boundary</strong><p>Owner Session · RLS · Protected RPC · Evidence</p></div><strong>外部実行：ロック中</strong></Card>
 
       {error && <div className="production-alert danger" role="alert">{error}</div>}
       {notice && <div className="production-alert success" role="status">{notice}</div>}
@@ -137,7 +137,18 @@ export default function ProductionRevenueWorkspace({ ownerSupabaseClient, ownerS
           })}
           {previewPackage && <div className="package-preview" role="region" aria-label="Manual Execution Package preview">
             <div className="panel-heading"><div><span className="eyebrow">OWNER PREVIEW</span><h3>{previewPackage.payload_snapshot.campaignTitle}</h3></div><button className="text-button" onClick={() => setPreviewPackageId("")}>閉じる</button></div>
-            <div className="package-preview-grid">
+{previewPackage.payload_snapshot.operationType === "affiliate_media_operation" ? <div className="package-preview-grid">
+              <section><h4>1. 対象チャネル</h4><strong>{previewPackage.payload_snapshot.targetChannel || previewPackage.channel}</strong><p>{previewPackage.payload_snapshot.accountDestination || previewPackage.destination}</p></section>
+              <section><h4>2. 承認済みContent</h4><strong>{previewPackage.payload_snapshot.content?.article?.headline || previewPackage.payload_snapshot.campaignTitle}</strong><ul>{previewPackage.payload_snapshot.content?.article?.outline?.map((value)=><li key={value}>{value}</li>)}</ul></section>
+              <section><h4>3. CTA / Disclosure</h4><p>{previewPackage.payload_snapshot.cta || previewPackage.payload_snapshot.content?.article?.cta || "Unknown"}</p><p>{previewPackage.payload_snapshot.disclosure}</p></section>
+              <section><h4>4. 公開Schedule</h4><p>{previewPackage.payload_snapshot.timezone || previewPackage.payload_snapshot.schedule?.timezone || "Unknown"}</p><p>{previewPackage.payload_snapshot.scheduledTime || "日時はOwnerが外部公開時に確定"}</p></section>
+              <section><h4>5. Publish checklist</h4><ol>{(previewPackage.payload_snapshot.publishChecklist || previewPackage.payload_snapshot.executionChecklist || []).map((value)=><li key={value}>{value}</li>)}</ol></section>
+              <section><h4>6. Copy / Download</h4><p>承認済みContentをCopy、Markdown、JSONで取得できます。外部送信は行いません。</p><p>Asset: {previewPackage.payload_snapshot.downloadableAssetReference || previewPackage.payload_snapshot.approvalSnapshot?.contentHash || "Unknown"}</p></section>
+              <section className="wide"><h4>7. Evidence収集手順</h4><ol>{(previewPackage.payload_snapshot.evidenceCollectionInstructions || previewPackage.payload_snapshot.evidenceInstructions || []).map((value)=><li key={value}>{value}</li>)}</ol></section>
+              <section><h4>8. Expected metrics</h4><p>{(previewPackage.payload_snapshot.expectedMetricFields || ["impressions","clicks","conversions","grossAmountMinor","costAmountMinor","currency","sourceReference"]).join(" / ")}</p></section>
+              <section><h4>9. Actual result</h4><p>{previewPackage.payload_snapshot.actualResultEntry?.status || "not_recorded"}</p><p>Evidence登録後もOwner承認まではActual Revenueではありません。</p></section>
+              <section><h4>10. Failure / Owner confirmation</h4><p>Failure記録: {previewPackage.payload_snapshot.failureRecording?.available === false ? "Unavailable" : "Available"}</p><p>Owner完了確認: {previewPackage.payload_snapshot.ownerCompletionConfirmation?.status || "not_confirmed"}</p></section>
+            </div> : <>            <div className="package-preview-grid">
               <section><h4>1. サービス概要</h4><strong>{previewPackage.payload_snapshot.serviceName}</strong><p>{previewPackage.payload_snapshot.serviceSummary}</p></section>
               <section><h4>2. 対象顧客</h4><p>{previewPackage.payload_snapshot.targetCustomer}</p><p>{previewPackage.payload_snapshot.customerProblem}</p></section>
               <section><h4>3. 提供内容</h4><ul>{previewPackage.payload_snapshot.deliverables?.map((v)=><li key={v}>{v}</li>)}</ul><details><summary>対応範囲・対象外</summary><p>対応: {previewPackage.payload_snapshot.scopeIncluded?.join(" / ")}</p><p>対象外: {previewPackage.payload_snapshot.scopeExcluded?.join(" / ")}</p></details></section>
@@ -148,8 +159,7 @@ export default function ProductionRevenueWorkspace({ ownerSupabaseClient, ownerS
               <section><h4>8. 手動実行手順</h4><ol>{previewPackage.payload_snapshot.executionChecklist?.map((v)=><li key={v}>{v}</li>)}</ol></section>
               <section><h4>9. Evidence登録手順</h4><ol>{previewPackage.payload_snapshot.evidenceInstructions?.map((v)=><li key={v}>{v}</li>)}</ol></section>
               <section className="wide disclosure"><h4>10. 注意事項</h4><p>{previewPackage.payload_snapshot.disclosure}</p></section>
-            </div>
-            <details className="technical-details"><summary>監査用Technical details</summary><p>Artifact version {previewPackage.artifact_version} · {destinationLabel[previewPackage.payload_snapshot.destinationType] || "Owner-selected manual channel"}</p></details>
+            </div>            </>}            <details className="technical-details"><summary>監査用Technical details</summary><p>Artifact version {previewPackage.artifact_version} · {destinationLabel[previewPackage.payload_snapshot.destinationType] || "Owner-selected manual channel"}</p></details>
           </div>}
         </article>
 

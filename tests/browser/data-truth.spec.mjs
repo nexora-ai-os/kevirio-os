@@ -1,0 +1,4 @@
+import {test,expect} from "@playwright/test";import {ROUTES,assertOwnerPage} from "./support.mjs";
+test("Revenue separates Actual, Forecast and Evidence",async({page})=>{await assertOwnerPage(page,"/revenue");const body=page.locator("body");await expect(body).toContainText(/実績|Actual/);await expect(body).toContainText(/予測|Forecast/);await expect(body).toContainText(/証拠|Evidence/);});
+test("AI Employee and Provider execution remain conditional or locked",async({page})=>{await assertOwnerPage(page,"/employees");await expect(page.locator("body")).toContainText(/条件付き|Conditional|ロック|Locked/);await assertOwnerPage(page,"/integrations");await expect(page.locator("body")).toContainText(/ロック|LOCKED|Locked/);});
+test("No Production route claims fabricated activity or market KPI",async({page})=>{for(const [,path] of ROUTES){await assertOwnerPage(page,path);const value=await page.locator("body").innerText();expect(value).not.toMatch(/架空AI Activity|仮の売上|サンプル市場KPI/);}});

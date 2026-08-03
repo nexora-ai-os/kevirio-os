@@ -28,27 +28,33 @@ test("landmarks, skip navigation and current-page state are explicit", () => {
   assert.match(shell, /href="#main-content"/);
   assert.match(shell, /id="main-content"/);
   assert.match(shell, /tabIndex=\{-1\}/);
-  assert.match(sidebar, /<aside[^>]+aria-label="Application navigation"/);
-  assert.match(sidebar, /<nav[^>]+aria-label="Primary navigation"/);
+  assert.match(sidebar, /<aside[^>]+aria-label=/);
+  assert.match(sidebar, /<nav[^>]+aria-label=/);
   assert.match(sidebar, /aria-current=\{page === key \? "page" : undefined\}/);
-  assert.match(topbar, /<header[^>]+aria-label="Application toolbar"/);
+  assert.match(topbar, /<header[^>]+aria-label=/);
 });
 
 test("existing navigation callback remains button and keyboard native", () => {
   assert.match(sidebar, /type="button"/);
-  assert.match(sidebar, /onClick=\{\(\) => setPage\(key\)\}/);
+  assert.match(sidebar, /setPage\(key\)/);
+  assert.match(sidebar, /onMobileClose\?\.\(\)/);
   assert.doesNotMatch(sidebar, /labs|Component Preview/i);
 });
 
 test("shell provides bounded desktop, tablet and mobile layouts", () => {
-  assert.match(shellCss, /max-inline-size: 1600px/);
-  assert.match(shellCss, /grid-template-columns: minmax\(240px, 280px\)/);
-  assert.match(shellCss, /@media \(max-width: 980px\)/);
-  assert.match(shellCss, /@media \(max-width: 600px\)/);
+  assert.match(shellCss, /max-inline-size:var\(--content-full\)/);
+  assert.match(shellCss, /grid-template-columns:minmax\(248px,276px\)/);
+  assert.match(shellCss, /@media\(max-width:1024px\)/);
+  assert.match(shellCss, /@media\(max-width:600px\)/);
   assert.match(shellCss, /\.kv-skip-link:focus/);
+  assert.match(shell, /mobileOpen/);
+  assert.match(shell, /event\.key === "Escape"/);
 });
 
 test("Production shell owns one shared TopBar", () => {
-  assert.match(app, /topbar=\{<TopBar \/>\}/);
+  assert.match(app, /topbar=\{<TopBar/);
+  assert.match(app, /onLogout=\{onOwnerLogout\}/);
+  assert.match(topbar, /kv-owner-menu/);
+  assert.match(topbar, /ログアウト/);
   assert.doesNotMatch(app, /screenHasLegacyTopBar/);
 });

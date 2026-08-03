@@ -5,7 +5,7 @@ import { StateIcon } from "./StateIcon.jsx";
 export function Badge({ state = "unknown", label, environment, size = "md", icon, ariaLabel, className = "" }) {
   const normalized = normalizeUIState(state);
   const meta = getSemanticState(normalized);
-  return <span className={`kv-badge kv-badge--${meta.tone} kv-badge--${size} kv-badge--border-${meta.border} ${className}`.trim()} aria-label={ariaLabel || label || meta.label}><StateIcon name={icon || meta.icon} className="kv-badge__icon" /><span>{label || meta.label}</span>{environment ? <span className="sr-only">{getEnvironmentMeta(environment).label}</span> : null}</span>;
+  return <span className={`kv-badge kv-badge--${meta.tone} kv-badge--${size} kv-badge--border-${meta.border} ${className}`.trim()}><StateIcon name={icon || meta.icon} className="kv-badge__icon" /><span>{label || meta.label}</span>{environment ? <span className="sr-only">{getEnvironmentMeta(environment).label}</span> : null}</span>;
 }
 
 export function EnvironmentBadge({ environment = "locked", className = "" }) {

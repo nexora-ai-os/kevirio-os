@@ -1,5 +1,13 @@
 # KEVIRIO v5.2 Social Revenue Engine
 
+## Development governance
+
+Read the [Architecture Decision Records](docs/architecture/KEVIRIO_ARCHITECTURE_DECISION_RECORDS.md) and [KEVIRIO Glossary](docs/governance/KEVIRIO_GLOSSARY.md) after the Governance Index. Both are Version 1.0 `DRAFT — OWNER REVIEW REQUIRED`; implementation does not imply Owner acceptance.
+
+Read the [Architecture Decision Records](docs/architecture/KEVIRIO_ARCHITECTURE_DECISION_RECORDS.md) and [KEVIRIO Glossary](docs/governance/KEVIRIO_GLOSSARY.md) after the Governance Index. Both are Version 1.0 `DRAFT — OWNER REVIEW REQUIRED`; implementation does not imply Owner acceptance.
+
+Before making changes, read the [KEVIRIO Governance Index](docs/governance/KEVIRIO_GOVERNANCE_INDEX.md). Version 2.1 is `DRAFT — OWNER REVIEW REQUIRED` until explicitly approved by the Owner.
+
 ## 置き換えるファイル
 ```txt
 src/App.jsx
