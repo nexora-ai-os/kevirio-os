@@ -28,6 +28,7 @@
     "verify:ai-employees": "node --test tests/unit/ai-employee-platform.test.mjs tests/integration/ai-employee-platform-foundation.test.mjs",
     "verify:migration:012": "node scripts/validate-migration-012-static.mjs",
     "verify:migration:013": "node scripts/validate-migration-013-static.mjs",
+    "verify:migration:014": "node scripts/validate-migration-014-static.mjs",
     "test:browser:auth": "playwright test --project=auth --headed",
     "test:browser": "playwright test --project=chromium",
     "test:browser:routes": "playwright test tests/browser/routes.spec.mjs --project=chromium",

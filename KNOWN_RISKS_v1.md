@@ -32,3 +32,12 @@
 - Backup or rollback evidence is missing.
 
 Automatic publishing, advanced Market Intelligence, Business Memory enrichment, advanced AI organization and JP/Global automation remain V2 Deferred.
+
+## V1.1 candidate risks
+
+- Migration 014はNot Applied。適用前のWizard保存はfail-closedとなる。
+- Existing RingConn Offerとの関連付けはOwner UI操作が必要で、migration seedは行わない。
+- A8.netのprogram terms、tracking reference、素材有効期限はOwner確認が必要。credentials/raw payloadは保存対象外。
+- Browser E2Eは認証済みlocal environmentとMigration 014 schemaを必要とする。
+- Affiliate performanceは補助Actual recordであり、Evidence承認済み`revenue_records`を置換しない。
+- ADRのV1.1 noteはPROPOSEDであり、Owner ACCEPTEDではない。

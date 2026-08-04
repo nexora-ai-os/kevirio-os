@@ -9,6 +9,7 @@ const CanonicalHome = lazy(() => import("./components/CanonicalHome.jsx"));
 const GoogleOperationsEmployee = lazy(() => import("./components/GoogleOperationsEmployee.jsx"));
 const CanonicalApprovals = lazy(() => import("./components/CanonicalApprovals.jsx"));
 const OfferOperationsWorkspace = lazy(() => import("./components/OfferOperationsWorkspace.jsx"));
+const AffiliateIntelligenceWorkspace = lazy(() => import("./components/AffiliateIntelligenceWorkspace.jsx"));
 const ProductionRevenueWorkspace = lazy(() => import("./components/ProductionRevenueWorkspace.jsx"));
 const Analytics = lazy(() => import("./components/Analytics.jsx"));
 const ProviderHub = lazy(() => import("./components/ProviderHub.jsx"));
@@ -26,6 +27,7 @@ export default function App({ ownerSession, ownerSupabaseClient, onOwnerLogout, 
     approval: <CanonicalApprovals ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     operations: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     campaign: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
+    affiliate: <AffiliateIntelligenceWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     production: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     analytics: <Analytics ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     providerHub: <ProviderHub ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,

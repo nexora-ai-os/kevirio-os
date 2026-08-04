@@ -3,6 +3,7 @@ import { createRevenueRepository } from "../repositories/revenueRepository.js";
 import { createOfferOperationsRepository } from "../repositories/offerOperationsRepository.js";
 import { buildCanonicalRevenueOverview } from "../domain/canonicalRevenueOverview.js";
 import { buildProfitByCurrency, nextOperationAction } from "../domain/offerOperations.js";
+import { deriveNextOwnerAction } from "../domain/affiliateIntelligence.js";
 import {
   Badge, Button, Card, EmptyState, EnvironmentBadge, ErrorState, KpiCard, Money,
   OwnerActionItem, PageHeader, SectionHeader, SkeletonGroup, Stack,
@@ -30,7 +31,8 @@ export default function CanonicalHome({ ownerSession, ownerSupabaseClient, setPa
   useEffect(() => { refresh(); }, [refresh]);
 
   const operation = state?.operations.operations?.[0] || null;
-  const next = operation ? { title: "オファー運用を続ける", reason: nextOperationAction(operation), page: "campaign" } : state?.overview.nextAction;
+  const affiliateNext = state ? deriveNextOwnerAction(state.operations) : null;
+  const next = affiliateNext ? { title: affiliateNext.title, reason: affiliateNext.message, page: affiliateNext.stage === "offer_registration" ? "campaign" : "affiliate" } : state?.overview.nextAction;
   const actualCount = state?.overview.revenueRecordCount;
   return <main className="content kv-production-screen kv-home-screen">
     <Stack gap="8">

@@ -126,3 +126,16 @@ Actual Revenue requires verified Evidence and Owner approval. Forecast, Mock, Te
 ## Operational success condition
 
 V1 is operating correctly when the Owner can move a genuine opportunity through Approval, Manual Execution, Evidence, Actual Revenue, Actual Cost, Net Profit and learning without bypassing any security or truth boundary.
+
+## Affiliate Intelligence V1.1 candidate operation
+
+1. Operationsで実Offerが存在することを確認する。
+2. 「運用準備」から`/operations/offers/:offerId/preparation`を開く。
+3. ASP、成果条件、Compliance、素材参照、Target、訴求、Channel、Evidence計画をDraft保存する。
+4. Owner確認後に運用準備を完了し、既存Approval / Manual Execution Packageへ進む。
+5. 公開はOwnerが外部で手動実行する。A8.netログイン、取得、投稿をKEVIRIOから自動実行しない。
+6. Evidence承認後だけ既存`revenue_records`へActual Revenueを確定する。Actual Costは既存`operating_cost_records`を使う。
+
+Migration 014は未適用candidateである。適用には別途Owner承認、backup/PITR確認、pre-check、one-time apply、post-smokeが必要。Migration未適用時はAffiliate専門readが空表示となるが、既存Offer運用は維持する。
+
+Stop conditions: Workspace/RLS anomaly、credential/tracking secret露出、External Execution true、ActualとForecast/Inferenceの混同、既存Offer IDの変更、Migration部分適用。

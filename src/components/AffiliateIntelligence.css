@@ -1,0 +1,20 @@
+.affiliate-intelligence { display: grid; gap: 1.5rem; }
+.affiliate-program-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1.5rem; margin-block: 1rem; }
+.affiliate-program-row > div:last-child { min-width: 15rem; text-align: right; }
+.affiliate-wizard-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .5rem; padding: 0; list-style: none; }
+.affiliate-wizard-steps button { width: 100%; min-height: 4.25rem; border: 1px solid var(--kv-border, #d5c29d); border-radius: .75rem; background: transparent; color: inherit; text-align: left; }
+.affiliate-wizard-steps button span { display: block; font-weight: 700; }
+.affiliate-wizard-steps .is-current button { outline: 3px solid rgba(183, 139, 62, .3); border-color: #b78b3e; }
+.affiliate-wizard-steps .is-complete button { background: rgba(183, 139, 62, .1); }
+.affiliate-wizard-panel { max-width: 58rem; width: 100%; margin-inline: auto; }
+.affiliate-wizard-panel label:not(.check-line) { display: grid; gap: .4rem; margin-block: 1rem; }
+.affiliate-wizard-panel input:not([type="checkbox"]), .affiliate-wizard-panel textarea { width: 100%; }
+.affiliate-wizard-panel textarea { min-height: 7rem; resize: vertical; }
+.affiliate-wizard-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+@media (max-width: 900px) { .affiliate-wizard-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .affiliate-program-row { grid-template-columns: 1fr; } .affiliate-program-row > div:last-child { min-width: 0; text-align: left; } .affiliate-wizard-steps { grid-template-columns: 1fr; } .affiliate-wizard-actions > button { flex: 1 1 100%; } }
+@media (prefers-reduced-motion: reduce) { .affiliate-intelligence *, .affiliate-intelligence *::before, .affiliate-intelligence *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+.affiliate-detail-tabs { display: flex; gap: .5rem; overflow-x: auto; padding-block: .25rem; }
+.affiliate-detail-tabs button { flex: 0 0 auto; min-height: 2.75rem; border: 1px solid var(--kv-border, #d5c29d); border-radius: 999px; background: transparent; color: inherit; }
+.affiliate-detail-tabs button[aria-selected="true"] { background: #b78b3e; color: #111; border-color: #b78b3e; }
+.affiliate-detail-tabs button:focus-visible { outline: 3px solid rgba(183, 139, 62, .45); outline-offset: 2px; }

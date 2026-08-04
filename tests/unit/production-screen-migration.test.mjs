@@ -8,6 +8,7 @@ const home = read("../../src/components/CanonicalHome.jsx");
 const employees = read("../../src/components/GoogleOperationsEmployee.jsx");
 const approvals = read("../../src/components/CanonicalApprovals.jsx");
 const operations = read("../../src/components/OfferOperationsWorkspace.jsx");
+const affiliate = read("../../src/components/AffiliateIntelligenceWorkspace.jsx");
 const index = read("../../src/design-system/index.js");
 
 test("four approved Production screens are route-level lazy modules", () => {
@@ -47,7 +48,8 @@ test("Approvals use exact snapshot and existing repository command", () => {
 });
 
 test("Operations preserves existing command callbacks and external lock", () => {
-  for (const command of ["registerOffer", "prepareOperation", "decideApproval", "recordPackageAccess", "recordPerformance", "recordCost", "generateLearning"]) assert.match(operations, new RegExp(`repository\\.${command}`));
+  const operationSources = `${operations}\n${affiliate}`;
+  for (const command of ["registerOffer", "prepareOperation", "decideApproval", "recordPackageAccess", "recordPerformance", "recordCost", "generateLearning"]) assert.match(operationSources, new RegExp(`(?:repository|operationsRepository)\\.${command}`));
   assert.match(operations, /External execution: LOCKED|外部実行：ロック中/);
   assert.match(operations, /<Money value=\{v\.netProfitMinor\}[^>]+kind="actual" evidenceVerified/);
 });

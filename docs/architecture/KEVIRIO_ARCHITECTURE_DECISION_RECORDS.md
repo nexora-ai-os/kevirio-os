@@ -1850,3 +1850,18 @@ Documentation rollback is removal of the unapproved proposal reference. Runtime 
 A new or revised ADR is required for material changes to authentication, workspace boundaries, repository/RPC boundaries, migration policy, Approval, Evidence/Actual Revenue, External Execution, provider credentials, Cost Guard, AI Employee contracts, multi-user roles, deployment architecture, major UI governance, revenue calculation, or audit integrity. Bug fixes, copy/CSS adjustments, tests, internal refactors and in-boundary implementation details do not require a new ADR unless they alter an invariant.
 
 No additional foundation governance document is authorized by this closure; update these records instead.
+
+## V1.1 Affiliate Intelligence candidate note (Owner acceptance pending)
+
+Status: PROPOSED / NOT ACCEPTED
+
+Migration 014 candidate introduces an Affiliate Intelligence specialization without replacing any canonical source of truth:
+
+- `affiliate_offers` remains the Offer authority.
+- Approval, Execution Package, Evidence, Actual Revenue, Actual Cost and Content remain governed by their existing canonical tables and protected workflows.
+- `affiliate_programs`, `affiliate_materials`, `affiliate_publications` and `affiliate_performance_records` hold only Affiliate-specific metadata and references.
+- Every added entity is Workspace-scoped. Active Owners receive read access; browser direct mutations remain revoked. A protected RPC validates active Owner membership for Draft persistence.
+- Actual, Forecast, Inference and Unknown remain distinct. Missing or unknown state cannot become completion or Actual.
+- External Execution remains false and fail-closed. Provider login, scraping and publication are outside the candidate.
+
+Rationale and evidence are recorded in `docs/implementation/AFFILIATE_INTELLIGENCE_V1_1.md` and the Migration 014 validation package. This note does not mark an ADR ACCEPTED; explicit Owner review is still required.
