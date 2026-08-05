@@ -85,3 +85,11 @@ NONE.
 ## Git actions
 
 Created local branch `feat/affiliate-intelligence-v2` as explicitly allowed. No add, commit, push, merge, rebase, tag, release, or deploy.
+
+## Migration 015 integrity reconciliation
+
+- Repository canonical Git-blob SHA-256: `DC45DB263D78AEDD0F57FFA144D5D0426CE238F989A8948492FF14AF5295C4F2`
+- Legacy Production recorded value: `14FF5413ECA910095A47DE6F7032739693FEC980CCF3E754DD864DBFDDAD99F1` (audit history only; unreproducible from current repository bytes)
+- Historical Production results: pre-check PASS 46/46, application SUCCESS, post-smoke PASS 78/78, External Execution LOCKED
+- Material SQL drift: UNPROVEN
+- Production reapplication: FORBIDDEN

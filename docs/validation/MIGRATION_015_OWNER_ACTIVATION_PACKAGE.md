@@ -9,7 +9,10 @@ Owner-reported validation: `M015_POST_APPLY_SMOKE_PASS` (`pass_count=78`, `fail_
 ## Frozen artifact
 
 - Migration: `supabase/migrations/015_affiliate_intelligence_v2.sql`
-- SHA-256: `14FF5413ECA910095A47DE6F7032739693FEC980CCF3E754DD864DBFDDAD99F1`
+- Repository canonical Git-blob SHA-256: `DC45DB263D78AEDD0F57FFA144D5D0426CE238F989A8948492FF14AF5295C4F2`
+- Legacy Production recorded value: `14FF5413ECA910095A47DE6F7032739693FEC980CCF3E754DD864DBFDDAD99F1`
+- The legacy value was manually synchronized; its producing bytes are unavailable. It is audit evidence only and is not equivalent to, or authority for, the current Git blob.
+- Windows working-tree SHA is non-authoritative because checkout line endings may be CRLF.
 - Pre-check: `supabase/validation/015_pre_apply_checks.sql`
 - Post-smoke: `supabase/validation/015_post_apply_smoke.sql`
 - Static validator: `scripts/validate-migration-015-static.mjs`
@@ -32,7 +35,7 @@ Existing canonical tables remain authoritative for Offer, Operation, Approval, E
 
 ## Owner-controlled activation procedure
 
-1. Confirm the exact migration SHA above.
+1. Confirm the repository canonical Git-blob SHA above. The saved pre-check reports metadata but does not calculate file bytes inside PostgreSQL.
 2. Run `015_pre_apply_checks.sql`; it is read-only and must report `fail_count=0`.
 3. Review the frozen SQL and confirm External Execution remains `LOCKED`.
 4. Obtain distinct explicit Owner approval to apply Migration 015. This package is not that approval.
@@ -46,6 +49,8 @@ The migration is transaction-wrapped, so an error before `commit` rolls back ato
 
 No destructive down migration is supplied. Application rollback is to keep V2 repository/UI integration disabled while the additive schema remains inaccessible to unauthorized principals.
 
-Fail-stop on SHA mismatch, validation failure, existing Offer change, canonical Actual mutation, browser mutation privilege, secret/raw payload storage, unlocked External Execution, or missing Workspace isolation.
+Historical Production evidence: pre-check PASS 46 / FAIL 0 / WARN 0; migration application SUCCESS; post-smoke PASS 78 / FAIL 0 / WARN 0; External Execution LOCKED. These results predate this metadata reconciliation and do not establish the original Production file bytes. Material SQL drift is UNPROVEN. Never reapply Migration 015.
+
+Fail-stop on repository canonical Git-blob SHA mismatch, validation failure, existing Offer change, canonical Actual mutation, browser mutation privilege, secret/raw payload storage, unlocked External Execution, or missing Workspace isolation.
 
 Production Mutation performed by this package: NONE.
