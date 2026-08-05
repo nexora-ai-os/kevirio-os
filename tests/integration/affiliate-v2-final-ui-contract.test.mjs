@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+const panels=await readFile(new URL("../../src/components/affiliate-v2/AffiliateV2FinalPanels.jsx",import.meta.url),"utf8");
+const host=await readFile(new URL("../../src/components/affiliate-v2/AffiliateV2Panels.jsx",import.meta.url),"utf8");
+const css=await readFile(new URL("../../src/components/affiliate-v2/AffiliateV2Final.css",import.meta.url),"utf8");
+test("all remaining Phase 4 panels are mounted",()=>{for(const name of ["OpportunityRadar","ExperimentEngine","BusinessMemory","Timeline","PromptLibrary","MarketplaceFoundation"])assert.match(host,new RegExp(name))});
+test("execution, prompt, and marketplace boundaries are explicit",()=>{assert.match(panels,/Automatic execution is disabled/);assert.match(panels,/Prompt bodies and secrets are not exposed/);assert.match(panels,/checkout, and payment are disabled/)});
+test("responsive and reduced-layout contracts prevent collapse",()=>{assert.match(css,/min-width:0/);assert.match(css,/@media\(max-width:760px\)/);assert.match(css,/grid-template-columns:1fr/);assert.match(css,/overflow-wrap:anywhere/)});
+test("dialog traps focus and restores it",()=>{assert.match(host,/restoreRef\.current=document\.activeElement/);assert.match(host,/e\.key!=="Tab"/);assert.match(host,/restoreRef\.current\?\.focus/);assert.match(host,/aria-modal="true"/)});

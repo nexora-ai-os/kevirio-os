@@ -9,7 +9,7 @@ const CanonicalHome = lazy(() => import("./components/CanonicalHome.jsx"));
 const GoogleOperationsEmployee = lazy(() => import("./components/GoogleOperationsEmployee.jsx"));
 const CanonicalApprovals = lazy(() => import("./components/CanonicalApprovals.jsx"));
 const OfferOperationsWorkspace = lazy(() => import("./components/OfferOperationsWorkspace.jsx"));
-const AffiliateIntelligenceWorkspace = lazy(() => import("./components/AffiliateIntelligenceWorkspace.jsx"));
+const AffiliateIntelligenceWorkspace = lazy(() => import("./components/affiliate-v2/AffiliateV2Experience.jsx"));
 const ProductionRevenueWorkspace = lazy(() => import("./components/ProductionRevenueWorkspace.jsx"));
 const Analytics = lazy(() => import("./components/Analytics.jsx"));
 const ProviderHub = lazy(() => import("./components/ProviderHub.jsx"));
