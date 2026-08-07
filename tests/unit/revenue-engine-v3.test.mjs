@@ -1,0 +1,8 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { V3_REVENUE_ENGINE_TYPES, calculateRevenuePerformance, validateActualRevenue, validateForecast } from "../../src/domain/revenueEngineV3.js";
+
+test("V3 exposes seven business engine contracts",()=>assert.deepEqual(V3_REVENUE_ENGINE_TYPES,["affiliate","agency","consulting","marketplace","digital_products","subscriptions","saas"]));
+test("forecast requires explicit assumptions and never becomes Actual",()=>{assert.equal(validateForecast({}).valid,false);assert.equal(validateForecast({engineType:"saas",currency:"JPY",revenueMinor:100,costMinor:20,assumption:"owner plan",sourceReference:"plan-1"}).truthClass,"Forecast")});
+test("Actual requires matching verified evidence and arithmetic integrity",()=>{const record={id:"r",evidence_candidate_id:"e",currency:"JPY",gross_amount_minor:100,cost_amount_minor:30,net_amount_minor:70};assert.equal(validateActualRevenue(record,{id:"e",verification_status:"verified"}).truthClass,"Actual");assert.equal(validateActualRevenue(record,{id:"e",verification_status:"unverified"}).valid,false)});
+test("performance isolates currencies and forecast from Actual",()=>{const result=calculateRevenuePerformance({actual:[{id:"r",evidence_candidate_id:"e",currency:"JPY",gross_amount_minor:100,cost_amount_minor:20,net_amount_minor:80}],evidence:[{id:"e",verification_status:"verified"}],forecasts:[{engineType:"saas",currency:"USD",revenueMinor:200,costMinor:50,assumption:"plan",sourceReference:"p"}]});assert.deepEqual(result.actual,[{currency:"JPY",grossMinor:100,costMinor:20,profitMinor:80,actualCount:1,roi:4,truthClass:"Actual"}]);assert.equal(result.forecast[0].truthClass,"Forecast");assert.equal(result.externalExecution,false)});

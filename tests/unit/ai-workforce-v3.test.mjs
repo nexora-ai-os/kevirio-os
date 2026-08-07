@@ -1,0 +1,8 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { V3_AI_EMPLOYEE_ROLES, authorizeEmployeeTask, runMeetingRound, validateEmployeeContract } from "../../src/domain/aiWorkforceV3.js";
+const base={role:"ceo",workspaceId:"w",mission:"propose strategy",capabilityVersion:"1",permissions:["read","propose"],maxRetries:1,maxMeetingRounds:1};
+test("V3 workforce includes every required specialist",()=>{assert.equal(V3_AI_EMPLOYEE_ROLES.length,15);for(const role of ["ceo","coo","finance","seo","research","market_intelligence","affiliate","sales","legal","support","designer","analytics","learning","automation","knowledge"])assert.ok(V3_AI_EMPLOYEE_ROLES.includes(role))});
+test("employee contract caps retry and meeting and excludes Owner authority",()=>{assert.equal(validateEmployeeContract(base).valid,true);assert.equal(validateEmployeeContract({...base,maxRetries:2}).valid,false);assert.equal(validateEmployeeContract({...base,permissions:["approve"]}).valid,false)});
+test("task authorization is workspace and capability scoped",()=>{assert.equal(authorizeEmployeeTask(base,{workspaceId:"w",action:"propose"}).allowed,true);assert.equal(authorizeEmployeeTask(base,{workspaceId:"other",action:"propose"}).reasonCode,"WORKSPACE_MISMATCH");assert.equal(authorizeEmployeeTask(base,{workspaceId:"w",action:"mutate-internal"}).allowed,false)});
+test("meeting has one round, no invented decision, and Owner escalation",()=>{const meeting=runMeetingRound({participants:[base],agenda:["strategy"],round:1});assert.equal(meeting.ok,true);assert.deepEqual(meeting.decisions,[]);assert.equal(meeting.ownerDecisionRequired,true);assert.equal(runMeetingRound({participants:[base],agenda:["strategy"],round:2}).ok,false)});
