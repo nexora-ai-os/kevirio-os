@@ -33,6 +33,10 @@ When two sources conflict, use this order:
 
 These Version 2.1 documents are drafts. They do not become `APPROVED`, effective, or higher authority than existing Owner decisions until the Owner explicitly approves them. Historical reports remain evidence of their recorded date, not automatic descriptions of the current implementation.
 
+## V3 Blueprint authority — Owner approved
+
+The Owner-approved documents `docs/v3/01_KEVIRIO_CONSTITUTION.md` through `docs/v3/12_IMPLEMENTATION_MASTER_PLAN.md` are the authoritative V3 Blueprint. This explicit Owner decision has precedence under this Index. The Blueprint is frozen: implementation may extend but may not contradict, replace or redefine it. `13_OWNER_MANIFESTO.md` is an optional appendix and is not present; its absence is not a blocker. Existing governance remains applicable where compatible, especially Approval, Evidence, Actual, Workspace isolation, Cost Guard, Provider, Audit, credential and External Execution boundaries.
+
 ## Non-negotiable boundaries
 
 - KEVIRIO is an AI Company Operating System. It is not a generic SaaS dashboard.

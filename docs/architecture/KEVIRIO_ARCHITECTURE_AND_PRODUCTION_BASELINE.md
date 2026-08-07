@@ -12,6 +12,12 @@
 | Last reviewed | 2026-07-31 |
 | Change summary | Records the repository-evidenced SPA, data, security, route, feature maturity, and constraints. |
 
+## V3 architecture reconciliation
+
+The twelve Owner-approved documents under `docs/v3/` are the V3 target architecture and Single Source of Truth for new implementation. The repository remains an incremental V2 production baseline until each V3 phase passes its release gate. V3 uses Organization → Workspace → Business → Revenue Engine ownership, a canonical relational core, append-only Audit, evidence lineage, protected commands, event/outbox integration, read projections, governed AI Employees, Company Digital Twin and Knowledge Graph.
+
+V3 may reference but not duplicate canonical Approval, Evidence, Actual Revenue, Actual Cost, Content, Audit, Provider or Workspace authority. Organization membership never bypasses Workspace isolation. Entitlement and Capability never imply Permission. Approval never alone enables External Execution. Database evolution remains additive and any remote mutation requires separate approval.
+
 ## 1. System identity
 
 | Item | Current evidence |

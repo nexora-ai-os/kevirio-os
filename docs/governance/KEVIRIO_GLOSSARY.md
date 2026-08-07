@@ -440,6 +440,10 @@
 
 Do not translate `Actual` as generic 売上 without “実績”. Do not reduce `Evidence` to attachment, `Approval` to confirmation, `Provider` to AI Employee, `Dry Run` to Mock, `Locked` to Error, or `Unknown` to zero. UI labels may be natural Japanese only when the canonical distinction remains explicit.
 
+## V3 vocabulary reconciliation
+
+The Owner-approved V3 Blueprint adds or clarifies Organization, Business, Revenue Engine, Business DNA, Company Digital Twin, Knowledge Graph, Business Memory, Asset, Strategy, Decision, Meeting, Experiment, Capability and Permission. Their complete canonical contracts are in `docs/v3/`. Organization never grants implicit cross-Workspace access; projections never replace canonical truth; Capability never implies Permission; AI proposals never replace Owner authority; public Asset commerce and External Execution remain separately gated.
+
 ## Change Policy
 
 Update this Glossary for a new business entity, maturity, role, approval state, evidence/revenue class, provider state or UI state. Do not add synonyms casually. Any definition that changes behavior also requires source/contract work and, for a major architectural boundary, an ADR.

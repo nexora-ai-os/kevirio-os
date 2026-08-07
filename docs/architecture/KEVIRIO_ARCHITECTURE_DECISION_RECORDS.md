@@ -1845,6 +1845,12 @@ Documentation rollback is removal of the unapproved proposal reference. Runtime 
 | CF-004 | README product label | “v5.2 Social Revenue Engine” | Current Constitution/Handover | Historical/narrow label differs from AI Company Operating System definition | Product misunderstanding | Treat legacy README content as historical until separately revised |
 | CF-005 | Google Operations maturity | Production candidate language | Dry Run, API call 0 | Candidate is not live Production execution | Overstatement of readiness | Retain CONDITIONAL until gates pass |
 
+## V3 reconciliation — Owner-approved Blueprint
+
+The Owner approved the twelve documents under `docs/v3/` as the immutable V3 Blueprint. They extend the existing decisions with Organization, Business, modular Revenue Engine, Company Digital Twin, Knowledge Graph, Business DNA, Strategy Engine and a governed capability model. No existing ADR is marked `ACCEPTED` by this reconciliation; recorded rationale remains evidence. Where wording differs, the latest explicit Owner-approved V3 Blueprint controls.
+
+The reconciliation preserves ADR-001 through ADR-020 invariants: Owner authority; Workspace/RLS/protected command isolation; immutable Approval snapshots; Evidence-first Actual; External Execution fail-closed; server-only credentials; Cost Guard; additive migrations; explicit maturity; Japanese-first accessible UI; lazy loading; controlled releases; layered validation; versioned AI execution.
+
 ## ADR Change Policy
 
 A new or revised ADR is required for material changes to authentication, workspace boundaries, repository/RPC boundaries, migration policy, Approval, Evidence/Actual Revenue, External Execution, provider credentials, Cost Guard, AI Employee contracts, multi-user roles, deployment architecture, major UI governance, revenue calculation, or audit integrity. Bug fixes, copy/CSS adjustments, tests, internal refactors and in-boundary implementation details do not require a new ADR unless they alter an invariant.
