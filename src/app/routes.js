@@ -1,5 +1,7 @@
-export const PAGE_PATHS = Object.freeze({
+﻿export const PAGE_PATHS = Object.freeze({
   home: "/home",
+  companyCore: "/company-core",
+  businessIntelligence: "/business-intelligence",
   googleOperations: "/employees/google_operations",
   approval: "/approvals",
   operations: "/operations",
@@ -16,6 +18,10 @@ export const PAGE_PATHS = Object.freeze({
 
 export const APP_ROUTES = Object.freeze([
   { path: "/home", page: "home" },
+  { path: "/company-core", page: "companyCore" },
+  { path: "/company-core/organizations/:organizationId", page: "companyCore" },
+  { path: "/company-core/businesses/:businessId", page: "companyCore" },
+  { path: "/business-intelligence", page: "businessIntelligence" },
   { path: "/employees", page: "googleOperations" },
   { path: "/employees/:employeeId", page: "googleOperations" },
   { path: "/employees/:employeeId/tasks/:taskId", page: "googleOperations" },
