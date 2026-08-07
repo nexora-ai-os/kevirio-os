@@ -1,6 +1,8 @@
 # Migration 013 Remote Validation Runbook
 
-Status: LOCAL RELEASE CANDIDATE — NOT APPLIED
+Status: APPLIED / VERIFIED - retained Owner-reported historical evidence
+
+Repository canonical SHA authority is the SHA-256 of the exact Git-blob bytes for supabase/migrations/013_company_operating_cycle.sql: B5DE02C52806E30F76565C9045C9E4E7FD9CCC5365973C746AB7EF6F563365BB. The Windows CRLF checkout SHA 3B8E361248D3DA6EC5EDD20700BD3FA67D5C6E267FC8E23EE8BC97E9A5B8DE7F is non-authoritative checkout metadata, not Production evidence. This repository-only reconciliation did not access original Production bytes, execute SQL, modify Production, or reapply Migration 013. The validation contract remains read-only and rollback-bounded.
 Owner authority: Production application requires explicit Owner action.
 
 ## Fixed order
@@ -43,3 +45,4 @@ The migration is transaction-wrapped. A statement error rolls back the transacti
 ## Fixed artifact
 
 Migration 013 SHA-256: `B5DE02C52806E30F76565C9045C9E4E7FD9CCC5365973C746AB7EF6F563365BB`
+Current repository validation contract: the Migration 013 pre-check emits derived PASS/FAIL/WARN rows with check_name, status and detail, plus pass_count, fail_count, warn_count and overall_status using FAIL > WARN > PASS precedence. It remains read-only and ends in explicit rollback. Migration 013 SQL and the post-smoke artifact were not modified. This was repository validation-artifact reconciliation only; Production and Database were not accessed or mutated.

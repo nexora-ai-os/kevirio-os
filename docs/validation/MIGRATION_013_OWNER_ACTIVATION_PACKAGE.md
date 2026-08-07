@@ -1,7 +1,9 @@
 # Migration 013 Owner Activation Package
 
 Date: 2026-08-03
-Status: OWNER ACTION REQUIRED — NOT APPLIED
+Status: APPLIED / VERIFIED - retained Owner-reported historical evidence
+
+Repository canonical SHA authority is the SHA-256 of the exact Git-blob bytes for supabase/migrations/013_company_operating_cycle.sql: B5DE02C52806E30F76565C9045C9E4E7FD9CCC5365973C746AB7EF6F563365BB. The Windows CRLF checkout SHA 3B8E361248D3DA6EC5EDD20700BD3FA67D5C6E267FC8E23EE8BC97E9A5B8DE7F is non-authoritative checkout metadata, not Production evidence. This repository-only reconciliation did not access original Production bytes, execute SQL, modify Production, or reapply Migration 013. The validation contract remains read-only and rollback-bounded.
 Candidate SHA-256: `B5DE02C52806E30F76565C9045C9E4E7FD9CCC5365973C746AB7EF6F563365BB`
 
 ## Authority boundary
@@ -56,3 +58,4 @@ Local PostgreSQL execution was intentionally not performed under the Owner's Win
 ## Stop state
 
 The repository is ready for the Owner action above. No commit, push, deploy, tag, release, or Production migration has been performed by Codex.
+Current repository validation contract: the Migration 013 pre-check emits derived PASS/FAIL/WARN rows with check_name, status and detail, plus pass_count, fail_count, warn_count and overall_status using FAIL > WARN > PASS precedence. It remains read-only and ends in explicit rollback. Migration 013 SQL and the post-smoke artifact were not modified. This was repository validation-artifact reconciliation only; Production and Database were not accessed or mutated.

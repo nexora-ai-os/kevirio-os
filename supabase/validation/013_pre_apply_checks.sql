@@ -98,15 +98,137 @@ begin
   end if;
 end $$;
 
+with raw_checks(check_name, severity, passed, detail) as (
+  select 'required_extension_pgcrypto', 'FAIL', exists(select 1 from pg_extension where extname='pgcrypto'), 'pgcrypto must exist'
+  union all
+  select 'required_parent_tables', 'FAIL', (
+    select count(*)=11 from unnest(array[
+      'workspaces','workspace_members','brand_profiles','offer_operations',
+      'approval_requests','evidence_candidates','revenue_records',
+      'operating_cost_records','learning_records','execution_packages','ai_employee_definitions'
+    ]) target(name) where to_regclass(format('public.%I',target.name)) is not null
+  ), 'all required parent tables must exist'
+  union all
+  select 'required_parent_columns', 'FAIL', not exists(
+    select 1 from (values
+      ('workspaces','id'),('workspace_members','workspace_id'),('workspace_members','user_id'),
+      ('brand_profiles','id'),('brand_profiles','workspace_id'),
+      ('offer_operations','id'),('offer_operations','workspace_id'),
+      ('approval_requests','id'),('approval_requests','workspace_id'),
+      ('evidence_candidates','workspace_id'),('revenue_records','workspace_id'),
+      ('operating_cost_records','workspace_id'),('learning_records','workspace_id'),
+      ('execution_packages','workspace_id'),('execution_packages','payload_snapshot')
+    ) required(table_name,column_name)
+    where not exists(
+      select 1 from information_schema.columns c
+      where c.table_schema='public' and c.table_name=required.table_name and c.column_name=required.column_name
+    )
+  ), 'all required parent columns and workspace relationships must exist'
+  union all
+  select 'canonical_revenue_cost_evidence_sources', 'FAIL',
+    to_regclass('public.revenue_records') is not null
+    and to_regclass('public.operating_cost_records') is not null
+    and to_regclass('public.evidence_candidates') is not null,
+    'Revenue, Cost and Evidence canonical sources must exist'
+  union all
+  select 'approval_workspace_authority', 'FAIL', exists(
+    select 1 from pg_constraint
+    where conrelid='public.approval_requests'::regclass and contype='u'
+      and pg_get_constraintdef(oid) like 'UNIQUE (id, workspace_id)%'
+  ), 'Approval must retain workspace-scoped unique authority'
+  union all
+  select 'candidate_tables_absent', 'FAIL', (
+    select count(*)=0 from unnest(array[
+      'revenue_engine_definitions','market_profiles','revenue_engines','company_cycle_runs',
+      'content_assets','revenue_learning_records','executive_decisions','company_operating_events'
+    ]) target(name) where to_regclass(format('public.%I',target.name)) is not null
+  ), 'Migration 013 object set must be absent before first apply'
+  union all
+  select 'function_rpc_names_available', 'FAIL',
+    to_regprocedure('public.register_revenue_engine(uuid,uuid,uuid,text,text,text,text,text)') is null
+    and to_regprocedure('public.enforce_v1_manual_package_contract()') is null
+    and to_regprocedure('public.touch_company_updated_at()') is null
+    and to_regprocedure('public.reject_company_event_mutation()') is null,
+    'Migration 013 function and RPC names must not collide'
+  union all
+  select 'trigger_names_available', 'FAIL', not exists(
+    select 1 from pg_trigger
+    where tgname in('execution_packages_v1_contract','company_touch_updated_at','company_operating_events_immutable')
+      and not tgisinternal
+  ), 'Migration 013 trigger names must not collide'
+  union all
+  select 'index_names_available', 'FAIL', not exists(
+    select 1 from pg_indexes where schemaname='public' and indexname in(
+      'revenue_engines_workspace_status_type_idx','company_cycle_runs_workspace_status_stage_idx',
+      'content_assets_workspace_status_type_idx','revenue_learning_workspace_status_expiry_idx',
+      'executive_decisions_workspace_status_deadline_idx','company_events_workspace_entity_created_idx'
+    )
+  ), 'Migration 013 index names must not collide'
+  union all
+  select 'policy_names_available', 'FAIL', not exists(
+    select 1 from pg_policies where schemaname='public' and (
+      (tablename='revenue_engine_definitions' and policyname='revenue_engine_definitions_read')
+      or (tablename in('market_profiles','revenue_engines','company_cycle_runs','content_assets','revenue_learning_records','executive_decisions','company_operating_events') and policyname='company_owner_read')
+    )
+  ), 'Migration 013 policy names must not collide'
+  union all
+  select 'required_roles_present', 'FAIL',
+    exists(select 1 from pg_roles where rolname='authenticated')
+    and exists(select 1 from pg_roles where rolname='service_role'),
+    'authenticated and service_role prerequisites must exist'
+  union all
+  select 'owner_authority_prerequisites', 'FAIL', not exists(
+    select 1 from pg_class c
+    where c.oid in('public.brand_profiles'::regclass,'public.offer_operations'::regclass,'public.execution_packages'::regclass)
+      and pg_get_userbyid(c.relowner)<>current_user
+  ), 'migration executor must own required parent objects'
+  union all
+  select 'brand_workspace_constraint_compatible', 'FAIL', not exists(
+    select 1 from pg_constraint
+    where conrelid='public.brand_profiles'::regclass and conname='brand_profiles_id_workspace_unique'
+      and pg_get_constraintdef(oid,true)<>'UNIQUE (id, workspace_id)'
+  ), 'brand workspace constraint must be absent or exact'
+  union all
+  select 'offer_workspace_constraint_compatible', 'FAIL', not exists(
+    select 1 from pg_constraint
+    where conrelid='public.offer_operations'::regclass and conname='offer_operations_id_workspace_unique'
+      and pg_get_constraintdef(oid,true)<>'UNIQUE (id, workspace_id)'
+  ), 'offer workspace constraint must be absent or exact'
+  union all
+  select 'external_execution_locked', 'FAIL', not exists(
+    select 1 from public.execution_packages
+    where coalesce(payload_snapshot->>'externalExecutionAllowed','false') <> 'false'
+  ), 'saved execution packages must not authorize External Execution'
+  union all
+  select 'transaction_read_only', 'FAIL', current_setting('transaction_read_only')='on',
+    'pre-check transaction must be read only'
+),
+checks as (
+  select check_name,
+    case when passed then 'PASS' when severity='WARN' then 'WARN' else 'FAIL' end as status,
+    detail
+  from raw_checks
+),
+results as (
+  select check_name, status, detail,
+    count(*) filter(where status='PASS') over()::integer as pass_count,
+    count(*) filter(where status='FAIL') over()::integer as fail_count,
+    count(*) filter(where status='WARN') over()::integer as warn_count
+  from checks
+)
 select
-  'M013_PRECHECK_PASS'::text as result,
-  case when count(*)=0 then 'NOT_APPLIED_READY' else 'FULL_OBJECT_SET_PRESENT_REVIEW_BEFORE_RERUN' end::text as object_state,
+  check_name,
+  status,
+  detail,
+  pass_count,
+  fail_count,
+  warn_count,
+  case when fail_count>0 then 'FAIL' when warn_count>0 then 'WARN' else 'PASS' end as overall_status,
+  case when fail_count=0 then 'M013_PRECHECK_PASS' else 'M013_PRECHECK_FAIL' end as result,
+  case when fail_count=0 then 'NOT_APPLIED_READY' else 'BLOCKED' end as object_state,
   'B5DE02C52806E30F76565C9045C9E4E7FD9CCC5365973C746AB7EF6F563365BB'::text as expected_sha256,
   true as transaction_read_only
-from unnest(array[
-  'revenue_engine_definitions','market_profiles','revenue_engines','company_cycle_runs',
-  'content_assets','revenue_learning_records','executive_decisions','company_operating_events'
-]) as target(name)
-where to_regclass(format('public.%I',target.name)) is not null;
+from results
+order by check_name;
 
 rollback;
