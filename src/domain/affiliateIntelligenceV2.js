@@ -135,16 +135,17 @@ export function detectAffiliateDuplicates(records = []) {
 }
 
 export function aggregateAffiliateKpis({ performance = [], revenue = [], costs = [] } = {}) {
-  const clicks=performance.reduce((s,r)=>s+finite(r.clicks),0);
-  const conversions=performance.reduce((s,r)=>s+finite(r.conversions),0);
+  const sumFinite=(rows,field)=>{const total=rows.reduce((sum,row)=>sum+finite(row?.[field]),0);return Number.isFinite(total)?total:0;};
+  const clicks=sumFinite(performance,"clicks");
+  const conversions=sumFinite(performance,"conversions");
   const hasRevenue=revenue.length>0;
-  const actualRevenue=hasRevenue?revenue.reduce((s,r)=>s+finite(r.gross_amount_minor),0):"Unknown";
-  const revenueInternalCost=revenue.reduce((s,r)=>s+finite(r.cost_amount_minor),0);
-  const netRevenue=hasRevenue?revenue.reduce((s,r)=>s+finite(r.net_amount_minor),0):"Unknown";
+  const actualRevenue=hasRevenue?sumFinite(revenue,"gross_amount_minor"):"Unknown";
+  const revenueInternalCost=sumFinite(revenue,"cost_amount_minor");
+  const netRevenue=hasRevenue?sumFinite(revenue,"net_amount_minor"):"Unknown";
   const actualCosts=costs.filter(r=>r.value_type==="actual");
-  const actualCost=actualCosts.length?actualCosts.reduce((s,r)=>s+finite(r.amount_minor),0):"Unknown";
-  const forecastCost=costs.filter(r=>r.value_type==="forecast").reduce((s,r)=>s+finite(r.amount_minor),0);
-  const testCost=costs.filter(r=>r.value_type==="test").reduce((s,r)=>s+finite(r.amount_minor),0);
+  const actualCost=actualCosts.length?sumFinite(actualCosts,"amount_minor"):"Unknown";
+  const forecastCost=sumFinite(costs.filter(r=>r.value_type==="forecast"),"amount_minor");
+  const testCost=sumFinite(costs.filter(r=>r.value_type==="test"),"amount_minor");
   const netProfit=typeof netRevenue==="number"&&typeof actualCost==="number"?netRevenue-actualCost:"Unknown";
   return {clicks,conversions,cvr:clicks?conversions/clicks:null,actualRevenue,revenueInternalCost,netRevenue,forecastRevenue:null,actualCost,forecastCost,testCost,netProfit,roi:typeof netProfit==="number"&&actualCost>0?netProfit/actualCost:null,epc:clicks&&typeof actualRevenue==="number"?actualRevenue/clicks:null,truthClass:typeof netProfit==="number"?"Actual":"Unknown"};
 }

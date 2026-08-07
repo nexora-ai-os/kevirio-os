@@ -64,6 +64,15 @@ test("KPI separates Actual from Forecast and uses canonical cost records", () =>
   assert.equal(noActualCost.actualCost, "Unknown");
   assert.equal(noActualCost.netProfit, "Unknown");
   assert.equal(noActualCost.roi, null);
+  const invalidValues = aggregateAffiliateKpis({
+    revenue: [{ gross_amount_minor: undefined, cost_amount_minor: "NaN", net_amount_minor: Infinity }],
+    costs: [{ amount_minor: undefined, value_type: "actual" }],
+  });
+  assert.deepEqual(
+    { actualRevenue: invalidValues.actualRevenue, revenueInternalCost: invalidValues.revenueInternalCost, netRevenue: invalidValues.netRevenue, actualCost: invalidValues.actualCost, netProfit: invalidValues.netProfit, roi: invalidValues.roi },
+    { actualRevenue: 0, revenueInternalCost: 0, netRevenue: 0, actualCost: 0, netProfit: 0, roi: null },
+  );
+  assert.ok(Object.values(invalidValues).every((value) => typeof value !== "number" || !Number.isNaN(value)));
 });
 
 test("Daily Brief returns at most three actions and keeps execution locked", () => {
