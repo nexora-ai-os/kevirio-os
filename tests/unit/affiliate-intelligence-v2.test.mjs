@@ -43,8 +43,27 @@ test("duplicate detection covers same-kind normalized values", () => {
 });
 
 test("KPI separates Actual from Forecast and uses canonical cost records", () => {
-  const kpi = aggregateAffiliateKpis({ performance: [{ clicks: 10, conversions: 2 }], revenue: [{ amount_minor: 1000, truth_class: "Actual" }, { amount_minor: 9000, truth_class: "Forecast" }], costs: [{ amount_minor: 250, truth_class: "Actual" }] });
-  assert.deepEqual({ actual: kpi.actualRevenue, forecast: kpi.forecastRevenue, cost: kpi.actualCost, profit: kpi.netProfit }, { actual: 1000, forecast: 9000, cost: 250, profit: 750 });
+  const kpi = aggregateAffiliateKpis({
+    performance: [{ clicks: 10, conversions: 2 }],
+    revenue: [{ gross_amount_minor: 1000, cost_amount_minor: 100, net_amount_minor: 900, recognized_at: "2026-08-05", campaign_id: "campaign-1" }],
+    costs: [
+      { amount_minor: 250, value_type: "actual", occurred_at: "2026-08-05", campaign_id: "campaign-1" },
+      { amount_minor: 500, value_type: "forecast", occurred_at: "2026-08-06", campaign_id: "campaign-1" },
+      { amount_minor: 750, value_type: "test", occurred_at: "2026-08-07", campaign_id: "campaign-1" },
+    ],
+  });
+  assert.deepEqual(
+    { actual: kpi.actualRevenue, internalCost: kpi.revenueInternalCost, netRevenue: kpi.netRevenue, actualCost: kpi.actualCost, forecastCost: kpi.forecastCost, testCost: kpi.testCost, forecastRevenue: kpi.forecastRevenue, profit: kpi.netProfit, roi: kpi.roi },
+    { actual: 1000, internalCost: 100, netRevenue: 900, actualCost: 250, forecastCost: 500, testCost: 750, forecastRevenue: null, profit: 650, roi: 2.6 },
+  );
+  const noRevenue = aggregateAffiliateKpis({ costs: [{ amount_minor: 250, value_type: "actual", occurred_at: "2026-08-05", campaign_id: "campaign-1" }] });
+  assert.equal(noRevenue.actualRevenue, "Unknown");
+  assert.equal(noRevenue.netRevenue, "Unknown");
+  assert.equal(noRevenue.netProfit, "Unknown");
+  const noActualCost = aggregateAffiliateKpis({ revenue: [{ gross_amount_minor: 1000, cost_amount_minor: 100, net_amount_minor: 900, recognized_at: "2026-08-05", campaign_id: "campaign-1" }] });
+  assert.equal(noActualCost.actualCost, "Unknown");
+  assert.equal(noActualCost.netProfit, "Unknown");
+  assert.equal(noActualCost.roi, null);
 });
 
 test("Daily Brief returns at most three actions and keeps execution locked", () => {

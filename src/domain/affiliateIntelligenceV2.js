@@ -135,14 +135,18 @@ export function detectAffiliateDuplicates(records = []) {
 }
 
 export function aggregateAffiliateKpis({ performance = [], revenue = [], costs = [] } = {}) {
-  const clicks = performance.reduce((sum, row) => sum + finite(row.clicks), 0);
-  const conversions = performance.reduce((sum, row) => sum + finite(row.conversions), 0);
-  const actualRevenue = revenue.filter((row) => row.truth_class === "Actual").reduce((sum, row) => sum + finite(row.amount_minor), 0);
-  const actualCost = costs.filter((row) => row.truth_class === "Actual").reduce((sum, row) => sum + finite(row.amount_minor), 0);
-  const forecastRevenue = revenue.filter((row) => row.truth_class === "Forecast").reduce((sum, row) => sum + finite(row.amount_minor), 0);
-  const netProfit = actualRevenue - actualCost;
-  return { clicks, conversions, cvr: clicks ? conversions / clicks : null, actualRevenue, forecastRevenue, actualCost, netProfit,
-    roi: actualCost ? netProfit / actualCost : null, epc: clicks ? actualRevenue / clicks : null, truthClass: "Actual" };
+  const clicks=performance.reduce((s,r)=>s+finite(r.clicks),0);
+  const conversions=performance.reduce((s,r)=>s+finite(r.conversions),0);
+  const hasRevenue=revenue.length>0;
+  const actualRevenue=hasRevenue?revenue.reduce((s,r)=>s+finite(r.gross_amount_minor),0):"Unknown";
+  const revenueInternalCost=revenue.reduce((s,r)=>s+finite(r.cost_amount_minor),0);
+  const netRevenue=hasRevenue?revenue.reduce((s,r)=>s+finite(r.net_amount_minor),0):"Unknown";
+  const actualCosts=costs.filter(r=>r.value_type==="actual");
+  const actualCost=actualCosts.length?actualCosts.reduce((s,r)=>s+finite(r.amount_minor),0):"Unknown";
+  const forecastCost=costs.filter(r=>r.value_type==="forecast").reduce((s,r)=>s+finite(r.amount_minor),0);
+  const testCost=costs.filter(r=>r.value_type==="test").reduce((s,r)=>s+finite(r.amount_minor),0);
+  const netProfit=typeof netRevenue==="number"&&typeof actualCost==="number"?netRevenue-actualCost:"Unknown";
+  return {clicks,conversions,cvr:clicks?conversions/clicks:null,actualRevenue,revenueInternalCost,netRevenue,forecastRevenue:null,actualCost,forecastCost,testCost,netProfit,roi:typeof netProfit==="number"&&actualCost>0?netProfit/actualCost:null,epc:clicks&&typeof actualRevenue==="number"?actualRevenue/clicks:null,truthClass:typeof netProfit==="number"?"Actual":"Unknown"};
 }
 
 export function deriveAffiliateAlerts({ compliance = [], publications = [], evidence = [], performance = [] } = {}) {
