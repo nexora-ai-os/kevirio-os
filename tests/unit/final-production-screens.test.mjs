@@ -18,11 +18,12 @@ test("all ten Production destinations are route-level lazy modules", () => {
   }
 });
 
-test("navigation has exactly seven primary and three utility destinations", () => {
-  assert.match(sidebar, /const primaryItems = \[/);
-  assert.match(sidebar, /const utilityItems = \[/);
-  for (const key of ["home", "googleOperations", "approval", "operations", "production", "analytics", "providerHub", "inbox", "audit", "settings"]) assert.match(sidebar, new RegExp(`"${key}"`));
-  assert.doesNotMatch(sidebar, /Labs|Component Preview/);
+test("navigation is derived from the canonical three-section metadata", () => {
+  const navigation = read("../../src/app/navigation.js");
+  for (const section of ["COMPANY", "BUSINESS", "CONTROL"]) assert.match(navigation, new RegExp(`"${section}"`));
+  for (const key of ["home", "googleOperations", "approval", "operations", "production", "analytics", "providerHub", "companyCore", "businessIntelligence", "affiliate", "inbox", "audit", "settings"]) assert.match(navigation, new RegExp(`id:\\"${key}\\"`));
+  assert.match(sidebar, /NAVIGATION_ITEMS/);
+  assert.doesNotMatch(sidebar, /const primaryItems|const utilityItems|Labs|Component Preview/);
 });
 
 test("Revenue and Insights preserve canonical repositories and Actual evidence semantics", () => {

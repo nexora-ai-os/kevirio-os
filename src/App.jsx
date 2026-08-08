@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import "./styles.css";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Sidebar from "./components/Sidebar";
@@ -38,5 +38,6 @@ export default function App({ ownerSession, ownerSupabaseClient, onOwnerLogout, 
     companyCore: <CompanyCoreV3Workspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     businessIntelligence: <CompanyCoreV3Workspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} mode="intelligence" />,
   }), [ownerSession, ownerSupabaseClient, setPage]);
-  return <ApplicationShell sidebar={<Sidebar page={page} setPage={setPage} />} topbar={<TopBar onLogout={onOwnerLogout} environment={import.meta.env.PROD ? "Production" : "ローカル開発環境"} />}><ErrorBoundary><Suspense fallback={<main className="content" aria-busy="true"><p role="status">画面を読み込み中</p></main>}>{pages[page] || pages.home}</Suspense></ErrorBoundary></ApplicationShell>;
+  const environment=typeof window!=="undefined"&&window.location.hostname.endsWith(".vercel.app")?"Preview":import.meta.env.PROD?"Production":"Local";
+  return <ApplicationShell sidebar={<Sidebar />} topbar={<TopBar onLogout={onOwnerLogout} environment={environment} />}><ErrorBoundary><Suspense fallback={<main className="content" aria-busy="true"><p role="status">画面を読み込み中</p></main>}>{pages[page] || pages.home}</Suspense></ErrorBoundary></ApplicationShell>;
 }

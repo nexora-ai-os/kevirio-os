@@ -1,4 +1,4 @@
-﻿export const PAGE_PATHS = Object.freeze({
+export const PAGE_PATHS = Object.freeze({
   home: "/home",
   companyCore: "/company-core",
   businessIntelligence: "/business-intelligence",
@@ -32,6 +32,7 @@ export const APP_ROUTES = Object.freeze([
   { path: "/operations/offers/:offerId/preparation", page: "affiliate" },
   { path: "/affiliate-intelligence", page: "affiliate" },
   { path: "/affiliate-intelligence/:programId", page: "affiliate" },
+  { path: "/affiliate-intelligence/:programId/:view", page: "affiliate" },
   { path: "/operations/workflows", page: "operations" },
   { path: "/operations/:operationId", page: "operations" },
   { path: "/revenue", page: "production" },
