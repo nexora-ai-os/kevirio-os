@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Badge, Card, EmptyState, LoadingState, PageHeader, SectionHeader } from "../design-system/index.js";
+import { Badge, Card, EmptyState, LoadingState, PageHeader, resolveFinancialValue, SectionHeader } from "../design-system/index.js";
 import { inspectOwnerWorkspace } from "../services/workspaceBootstrapService.js";
 import { createCompanyCoreV3Repository } from "../repositories/companyCoreV3Repository.js";
 import { createCompanyCoreRepository } from "../repositories/companyCoreRepository.js";
@@ -10,7 +10,7 @@ import { createRevenueEngineV3Service } from "../services/revenueEngineV3Service
 import { createAffiliateV2CommandCenterService } from "../services/affiliateV2CommandCenterService.js";
 import { createBusinessIntelligenceV3Service } from "../services/businessIntelligenceV3Service.js";
 
-const show=(value)=>typeof value==="number"?String(value):(value||"Unknown");
+const show=resolveFinancialValue;
 const count=(records,truthClass)=>truthClass==="Unknown"?"Unknown":String(records.length);
 
 export default function CompanyCoreV3Workspace(props){

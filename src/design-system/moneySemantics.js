@@ -9,3 +9,13 @@ export function resolveMoneyDisplay({ value, currency, locale, kind = "unknown",
     return { state: "unknown", kind: "unknown", text: unknownLabel };
   }
 }
+
+export function resolveFinancialValue(value, { unknownLabel = "Unknown" } = {}) {
+  return typeof value === "number" && Number.isFinite(value) ? value : unknownLabel;
+}
+
+export function resolveMinorMoneyDisplay(options) {
+  const { value, unknownLabel = "Unknown" } = options;
+  if (typeof value !== "number" || !Number.isFinite(value)) return { state: "unknown", kind: "unknown", text: unknownLabel };
+  return resolveMoneyDisplay({ ...options, value: value / 100 });
+}

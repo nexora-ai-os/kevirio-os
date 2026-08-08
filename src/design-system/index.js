@@ -11,7 +11,7 @@ export { FormField, Input, Textarea, Select, Checkbox, Radio, Switch } from "./c
 export { Modal } from "./components/Modal.jsx";
 export { PageHeader, SectionHeader } from "./components/Headers.jsx";
 export { Money } from "./components/Money.jsx";
-export { resolveMoneyDisplay } from "./moneySemantics.js";
+export { resolveFinancialValue, resolveMinorMoneyDisplay, resolveMoneyDisplay } from "./moneySemantics.js";
 export { OwnerActionItem } from "./components/OwnerActionItem.jsx";
 export { KpiCard } from "./components/KpiCard.jsx";
 export { AIEmployeeCard } from "./components/AIEmployeeCard.jsx";
