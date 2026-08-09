@@ -1,0 +1,35 @@
+import { AffiliateV2Error } from "./affiliateV2Contracts.js";
+
+export const LISTING_VERIFICATION_STATES = Object.freeze(["CONFIRMED", "NOT_CONFIRMED", "NONE_CONFIRMED", "UNKNOWN"]);
+export const AFFILIATE_LINK_STATES = Object.freeze(["NOT_REGISTERED", "ACTIVE", "PAUSED", "EXPIRED", "INVALID"]);
+
+const text = (value) => value == null ? null : String(value).trim();
+
+export function normalizeAffiliateLink(input = {}) {
+  const affiliateUrl = text(input.affiliateUrl);
+  if (!affiliateUrl) return Object.freeze({ affiliateUrl: null, linkStatus: "NOT_REGISTERED" });
+  let parsed;
+  try { parsed = new URL(affiliateUrl); } catch { throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_url", object: "affiliate_program_master" }); }
+  if (!['http:', 'https:'].includes(parsed.protocol)) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_url_scheme", object: "affiliate_program_master" });
+  const linkStatus = text(input.linkStatus) || "ACTIVE";
+  if (!AFFILIATE_LINK_STATES.includes(linkStatus) || linkStatus === "NOT_REGISTERED" || linkStatus === "INVALID") throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_link_status", object: "affiliate_program_master" });
+  return Object.freeze({ affiliateUrl, linkStatus });
+}
+
+export function mapAffiliateProgramMasterRow(row) {
+  if (!row?.id || !row.workspace_id || !row.asp_name || !row.program_id || !row.program_name) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "missing_required_field", object: "affiliate_program_master" });
+  const verification = text(row.listing_ng_words_verification_status) || "UNKNOWN";
+  if (!LISTING_VERIFICATION_STATES.includes(verification)) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_listing_verification", object: "affiliate_program_master" });
+  const words = row.listing_ng_words == null ? null : Object.freeze([...row.listing_ng_words]);
+  if (verification === "NOT_CONFIRMED" && words !== null) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "unconfirmed_listing_words_must_be_null", object: "affiliate_program_master" });
+  return Object.freeze({
+    id: row.id, workspaceId: row.workspace_id, aspName: text(row.asp_name), programId: text(row.program_id), advertiserName: text(row.advertiser_name), programName: text(row.program_name), category: text(row.category),
+    rewardType: text(row.reward_type), rewardSummary: text(row.reward_summary), rewardDetails: row.reward_details == null ? null : Object.freeze({ ...row.reward_details }), epc: row.epc == null ? null : Number(row.epc), approvalRate: row.approval_rate == null ? null : Number(row.approval_rate), revisitWindowDays: row.revisit_window_days == null ? null : Number(row.revisit_window_days), confirmationDays: row.confirmation_days == null ? null : Number(row.confirmation_days),
+    conversionConditions: text(row.conversion_conditions), rejectionConditions: text(row.rejection_conditions), prPoints: text(row.pr_points), listingPolicy: text(row.listing_policy) || "UNKNOWN", listingNgWords: words, listingNgWordsRaw: text(row.listing_ng_words_raw), listingVerificationStatus: verification, complianceNotes: text(row.compliance_notes), programStatus: text(row.program_status) || "UNKNOWN",
+    affiliateUrl: text(row.affiliate_url), affiliateLinkStatus: text(row.affiliate_link_status) || "NOT_REGISTERED", affiliateUrlUpdatedAt: text(row.affiliate_url_updated_at), affiliateUrlUpdatedBy: text(row.affiliate_url_updated_by), sourceType: text(row.source_type), sourceVerifiedAt: text(row.source_verified_at), sourceNotes: text(row.source_notes), ownerNotes: text(row.owner_notes), createdAt: text(row.created_at), updatedAt: text(row.updated_at), externalExecution: "LOCKED",
+  });
+}
+
+export function listingComplianceLabel(program) {
+  return Object.freeze({ CONFIRMED: "確認済み", NOT_CONFIRMED: "未確認", NONE_CONFIRMED: "制限なし確認済み", UNKNOWN: "不明" })[program?.listingVerificationStatus] || "不明";
+}

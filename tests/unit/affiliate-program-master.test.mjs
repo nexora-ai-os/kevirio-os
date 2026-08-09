@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { listingComplianceLabel, mapAffiliateProgramMasterRow, normalizeAffiliateLink } from "../../src/domain/affiliateProgramMaster.js";
+
+const row = (overrides = {}) => ({ id:"1",workspace_id:"w",asp_name:"A8.net",program_id:"s1",advertiser_name:"Advertiser",program_name:"Program",listing_ng_words:null,listing_ng_words_verification_status:"NOT_CONFIRMED",affiliate_link_status:"NOT_REGISTERED",...overrides });
+
+test("Program Master preserves NULL and NOT_CONFIRMED as distinct from no restrictions",()=>{const value=mapAffiliateProgramMasterRow(row());assert.equal(value.listingNgWords,null);assert.equal(value.listingVerificationStatus,"NOT_CONFIRMED");assert.equal(listingComplianceLabel(value),"未確認");assert.notEqual(listingComplianceLabel(value),"制限なし確認済み");});
+test("Program Master preserves listing word order, case, and source wording",()=>{const words=["SAZO","sazo","サゾ"];const value=mapAffiliateProgramMasterRow(row({listing_ng_words:words,listing_ng_words_raw:"SAZO、sazo、サゾ",listing_ng_words_verification_status:"CONFIRMED"}));assert.deepEqual(value.listingNgWords,words);assert.equal(value.listingNgWordsRaw,"SAZO、sazo、サゾ");});
+test("Program Master rejects non-null words for NOT_CONFIRMED",()=>assert.throws(()=>mapAffiliateProgramMasterRow(row({listing_ng_words:[]})),/VALIDATION_FAILED/));
+test("affiliate links accept only trimmed http and https URLs",()=>{assert.deepEqual(normalizeAffiliateLink({affiliateUrl:"  https://example.com/a  ",linkStatus:"ACTIVE"}),{affiliateUrl:"https://example.com/a",linkStatus:"ACTIVE"});assert.deepEqual(normalizeAffiliateLink({affiliateUrl:"",linkStatus:"ACTIVE"}),{affiliateUrl:null,linkStatus:"NOT_REGISTERED"});for(const scheme of ["javascript:","data:","file:","vbscript:"])assert.throws(()=>normalizeAffiliateLink({affiliateUrl:`${scheme}payload`,linkStatus:"ACTIVE"}),/VALIDATION_FAILED/);});
