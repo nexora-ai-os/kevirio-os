@@ -10,8 +10,8 @@ export const OPENAI_SANDBOX_BUDGET_POLICY = Object.freeze({
   maxInputCharacters: 6000,
   maxOutputTokens: 800,
   timeoutMs: 30000,
-  maxEstimatedCostUsd: 0.03,
-  monthlySandboxLimitUsd: 1.00,
+  maxEstimatedCostUsd: 0,
+  monthlySandboxLimitUsd: 0,
 });
 
 const BLOCKED_KEYS = /api.?key|credential|password|authorization|bearer|access.?token|refresh.?token|payment|email|phone|address|full.?name|health|personal.?data/i;
@@ -58,13 +58,13 @@ export function validateOpenAISandboxRequest(request) {
   return { valid: errors.length === 0, errors };
 }
 
-export function evaluateOpenAISandboxBudget({ inputCharacters, maxOutputTokens, monthlySandboxSpendUsd, pricing }) {
+export function evaluateOpenAISandboxBudget({ inputCharacters, maxOutputTokens, monthlySandboxSpendUsd, pricing, budgetPolicy = OPENAI_SANDBOX_BUDGET_POLICY }) {
   const numbers = [inputCharacters, maxOutputTokens, monthlySandboxSpendUsd, pricing?.inputPerMillion, pricing?.outputPerMillion];
   if (numbers.some((value) => !finiteNonNegative(value))) return { allowed: false, reasonCode: "BUDGET_INPUT_INVALID", costEstimateStatus: "notVerified" };
   if (pricing?.verified !== true) return { allowed: false, reasonCode: "MODEL_PRICING_NOT_VERIFIED", costEstimateStatus: "notVerified" };
   const estimatedInputTokens = Math.ceil(inputCharacters / 4);
   const estimatedUsd = (estimatedInputTokens * pricing.inputPerMillion + maxOutputTokens * pricing.outputPerMillion) / 1_000_000;
-  if (estimatedUsd > OPENAI_SANDBOX_BUDGET_POLICY.maxEstimatedCostUsd) return { allowed: false, reasonCode: "REQUEST_COST_LIMIT_EXCEEDED", costEstimateStatus: "estimated", estimatedUsd };
-  if (monthlySandboxSpendUsd + estimatedUsd > OPENAI_SANDBOX_BUDGET_POLICY.monthlySandboxLimitUsd) return { allowed: false, reasonCode: "MONTHLY_SANDBOX_LIMIT_EXCEEDED", costEstimateStatus: "estimated", estimatedUsd };
+  if (estimatedUsd > budgetPolicy.maxEstimatedCostUsd) return { allowed: false, reasonCode: "REQUEST_COST_LIMIT_EXCEEDED", costEstimateStatus: "estimated", estimatedUsd };
+  if (monthlySandboxSpendUsd + estimatedUsd > budgetPolicy.monthlySandboxLimitUsd) return { allowed: false, reasonCode: "MONTHLY_SANDBOX_LIMIT_EXCEEDED", costEstimateStatus: "estimated", estimatedUsd };
   return { allowed: true, reasonCode: "SANDBOX_BUDGET_ALLOWED", costEstimateStatus: "estimated", estimatedUsd, estimatedInputTokens };
 }

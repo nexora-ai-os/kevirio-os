@@ -1,6 +1,6 @@
 import {expect} from "@playwright/test";
 export const AUTH_FILE="playwright/.auth/owner.json";
-export const ROUTES=[["home","/home"],["employees","/employees"],["approvals","/approvals"],["operations","/operations"],["revenue","/revenue"],["insights","/insights"],["integrations","/integrations"],["inbox","/inbox"],["audit","/audit"],["settings","/settings"]];
+export const ROUTES=[["home","/home"],["employees","/employees"],["approvals","/approvals"],["operations","/operations"],["revenue","/revenue"],["insights","/insights"],["integrations","/integrations"],["inbox","/inbox"],["audit","/audit"],["settings","/settings"],["affiliate-intelligence","/affiliate-intelligence"]];
 export const VIEWPORTS=[["desktop",1440,900],["laptop",1280,800],["ipad-landscape",1180,820],["ipad-portrait",820,1180],["mobile",390,844],["small-mobile",360,800]];
 const MOJIBAKE=/[\u7e3a\u7e67\u8b41\u8700\u9089\u9b25\u9a5f]|\ufffd/u;
 const UUID=/\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/i;

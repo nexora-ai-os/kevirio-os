@@ -29,7 +29,7 @@ export function validateProviderResponse(payload, outputSchema) {
   return { valid: errors.length === 0, errors, value };
 }
 export function extractUsage(payload) { return usage(payload); }
-export function evaluateCost(request, monthlySandboxSpendUsd) { return evaluateOpenAISandboxBudget({ inputCharacters: JSON.stringify(request.input).length, maxOutputTokens: OPENAI_SANDBOX_BUDGET_POLICY.maxOutputTokens, monthlySandboxSpendUsd, pricing: MODEL_POLICY }); }
+export function evaluateCost(request, monthlySandboxSpendUsd, budgetPolicy) { return evaluateOpenAISandboxBudget({ inputCharacters: JSON.stringify(request.input).length, maxOutputTokens: OPENAI_SANDBOX_BUDGET_POLICY.maxOutputTokens, monthlySandboxSpendUsd, pricing: MODEL_POLICY, budgetPolicy }); }
 export function sanitizeProviderError() { return safeError("PROVIDER_EXECUTION_FAILED", "failed"); }
 
 async function commitReservation(store, reservation, actualCostUsd) {
@@ -61,7 +61,7 @@ export async function executeSandboxResponse(request, options = {}) {
   const transport = options.transport || fetch;
   for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
     let budget;
-    try { budget = evaluateCost(request, await store.getMonthlySpendUsd()); }
+    try { budget = evaluateCost(request, await store.getMonthlySpendUsd(), options.budgetPolicy); }
     catch (error) { return safeError(normalizedReason(error, "SERVER_USAGE_STORE_REQUIRED"), "failed"); }
     if (!budget.allowed) return { ...safeError(attempt > 0 ? "RETRY_BUDGET_EXCEEDED" : budget.reasonCode), cost: { status: budget.costEstimateStatus, estimatedUsd: budget.estimatedUsd ?? null } };
 

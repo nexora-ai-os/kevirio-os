@@ -1,5 +1,5 @@
 export const PROVIDER_COST_GUARD_VERSION="1.0.0";
-export const SAFE_BUDGET_DEFAULTS=Object.freeze({currency:"JPY",maxCostPerRequest:5,hourlyBudget:20,dailyBudget:100,monthlyBudget:1000,maxInputTokens:4000,maxOutputTokens:800,maxTotalTokens:4800,maxRequestsPerJob:1,maxRequestsPerWorkflow:3,concurrency:1,batchEnabled:false,autonomousLoopEnabled:false,maxRetries:1});
+export const SAFE_BUDGET_DEFAULTS=Object.freeze({currency:"JPY",maxCostPerRequest:0,hourlyBudget:0,dailyBudget:0,monthlyBudget:0,maxInputTokens:4000,maxOutputTokens:800,maxTotalTokens:4800,maxRequestsPerJob:1,maxRequestsPerWorkflow:3,concurrency:1,batchEnabled:false,autonomousLoopEnabled:false,maxRetries:1});
 export const PROVIDER_MODEL_ALLOWLIST=Object.freeze({
   openai:Object.freeze({generation:["gpt-5-nano"],healthCheck:[]}),
   anthropic:Object.freeze({generation:[],healthCheck:[]}),
@@ -33,6 +33,7 @@ export function evaluateProviderCostGuard(request={},context={}){
   const health=request.requestClass==="health_check";
   if(!health&&!policy.globalExecutionEnabled)return safeFailure("GLOBAL_EXECUTION_LOCKED");
   if(!health&&!policy.providerExecutionEnabled?.[request.provider])return safeFailure("PROVIDER_EXECUTION_LOCKED");
+  if(!health&&request.explicitOwnerAction!==true)return safeFailure("OWNER_EXPLICIT_ACTION_REQUIRED");
   if(!request.workspaceId||request.workspaceId!==context.workspaceId)return safeFailure("WORKSPACE_MISMATCH");
   if(!request.workflowId||!request.aiEmployeeId||!request.idempotencyKey)return safeFailure("REQUEST_CONTEXT_INCOMPLETE");
   if(request.batchSize!==undefined&&request.batchSize!==1)return safeFailure("BATCH_EXECUTION_DISABLED");
@@ -47,6 +48,7 @@ export function evaluateProviderCostGuard(request={},context={}){
   if(context.ledgerAvailable!==true)return safeFailure("LEDGER_UNAVAILABLE");
   if(context.circuitOpen===true)return safeFailure("CIRCUIT_BREAKER_OPEN");
   const estimate=estimateProviderCost(request);if(!estimate.allowed)return estimate;
+  if(!health&&!validApproval(request.approval,request,estimate))return safeFailure("OWNER_APPROVAL_REQUIRED",estimate);
   const spent=context.spent||{};const reserved=context.reserved||{};const projected=(key)=>number(spent[key])===null||number(reserved[key])===null?null:Number(spent[key])+Number(reserved[key])+estimate.reservedCostJpy;
   if(estimate.estimatedCostJpy>policy.maxCostPerRequest)return safeFailure("REQUEST_BUDGET_EXCEEDED",estimate);
   for(const [key,limit] of [["hourly",policy.hourlyBudget],["daily",policy.dailyBudget],["monthly",policy.monthlyBudget]]){const value=projected(key);if(value===null)return safeFailure("USAGE_UNAVAILABLE");if(value>limit)return safeFailure(`${key.toUpperCase()}_BUDGET_EXCEEDED`,estimate);}
