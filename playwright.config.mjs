@@ -8,5 +8,5 @@ export default defineConfig({
     {name:"auth",testMatch:/auth\.setup\.mjs/,use:{...devices["Desktop Chrome"]}},
     {name:"chromium",testIgnore:/auth\.setup\.mjs/,use:{...devices["Desktop Chrome"],storageState:authFile}}
   ],
-  webServer:{command:"npm run dev:full",url:"http://127.0.0.1:5173",reuseExistingServer:true,timeout:120_000,stdout:"pipe",stderr:"pipe"}
+  webServer:{command:"node --env-file-if-exists=.env.local server/localDevServer.js",url:"http://127.0.0.1:5173",reuseExistingServer:true,timeout:120_000,stdout:"pipe",stderr:"pipe"}
 });

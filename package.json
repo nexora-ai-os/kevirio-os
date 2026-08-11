@@ -36,7 +36,13 @@
     "test:browser:responsive": "playwright test tests/browser/responsive.spec.mjs --project=chromium",
     "test:browser:accessibility": "playwright test tests/browser/accessibility.spec.mjs --project=chromium",
     "test:browser:motion": "playwright test tests/browser/motion.spec.mjs --project=chromium",
-    "test:browser:data-truth": "playwright test tests/browser/data-truth.spec.mjs --project=chromium"
+    "test:browser:data-truth": "playwright test tests/browser/data-truth.spec.mjs --project=chromium",
+    "obsidian:sync": "node --env-file-if-exists=.env.local tools/obsidian/cli.mjs sync",
+    "obsidian:sync:revenue": "node --env-file-if-exists=.env.local tools/obsidian/cli.mjs revenue",
+    "obsidian:sync:affiliate": "node --env-file-if-exists=.env.local tools/obsidian/cli.mjs affiliate",
+    "obsidian:sync:handover": "node --env-file-if-exists=.env.local tools/obsidian/cli.mjs handover",
+    "obsidian:daily": "node tools/obsidian/cli.mjs daily",
+    "obsidian:open": "node tools/obsidian/cli.mjs open"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.110.7",

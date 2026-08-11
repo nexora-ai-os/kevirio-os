@@ -1,0 +1,4 @@
+import path from "node:path";import{realpath,stat}from"node:fs/promises";
+export const DEFAULT_VAULT_PATH="C:\\Users\\ken hosoya\\Documents\\KEVIRIO-Vault",START="<!-- KEVIRIO:AUTO:START -->",END="<!-- KEVIRIO:AUTO:END -->";
+export async function resolveVaultPath(env=process.env){const raw=env.KEVIRIO_OBSIDIAN_VAULT_PATH||DEFAULT_VAULT_PATH;if(raw.split(/[\\/]+/).includes(".."))throw Error("VAULT_PATH_TRAVERSAL");const resolved=path.resolve(raw),canonical=await realpath(resolved);if(canonical!==resolved)throw Error("VAULT_SYMLINK_OR_JUNCTION_ESCAPE");if(!(await stat(canonical)).isDirectory())throw Error("VAULT_NOT_DIRECTORY");return canonical}
+export function vaultFile(vault,relative){if(!relative||path.isAbsolute(relative)||relative.split(/[\\/]+/).includes(".."))throw Error("VAULT_PATH_TRAVERSAL");const root=path.resolve(vault),target=path.resolve(root,relative);if(!target.startsWith(root+path.sep))throw Error("VAULT_PATH_ESCAPE");return target}

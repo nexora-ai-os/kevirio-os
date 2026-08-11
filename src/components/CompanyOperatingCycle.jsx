@@ -33,6 +33,6 @@ export default function CompanyOperatingCycle({ operation, revenue, operations }
         <Badge state={stage.state} label={STATE_LABELS[stage.state] || "Unknown"} />
       </li>)}
     </ol>
-    <p className="kv-data-note">Unknown\u306f0\u4ef6\u3084\u672a\u5b8c\u4e86\u3092\u610f\u5473\u3057\u307e\u305b\u3093\u3002\u6839\u62e0\u304c\u53d6\u5f97\u3067\u304d\u306a\u3044\u72b6\u614b\u3067\u3059\u3002</p>
+    <p className="kv-data-note">{"Unknown\u306f0\u4ef6\u3084\u672a\u5b8c\u4e86\u3092\u610f\u5473\u3057\u307e\u305b\u3093\u3002\u6839\u62e0\u304c\u53d6\u5f97\u3067\u304d\u306a\u3044\u72b6\u614b\u3067\u3059\u3002"}</p>
   </Card></section>;
 }
