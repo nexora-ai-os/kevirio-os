@@ -3,6 +3,7 @@ import {createSupabaseServerClient} from "../server/supabaseServerClient.js";
 import {createProviderConnectionRuntime} from "../server/providerConnectionRuntime.js";
 import {executeProviderPlatformRequest} from "../server/providerPlatformGateway.js";
 import {createOAuthCodeExchange} from "../server/oauthProviderTransport.js";
+import {buildOAuthAuthorization,getOAuthProviderPolicy} from "../server/oauthAuthorization.js";
 const safe=(reasonCode)=>({ok:false,status:"blocked",reasonCode,externalExecution:false,productionExecution:false});
 export default async function handler(req,res){
   if(req.method!=="POST")return res.status(405).json(safe("METHOD_NOT_ALLOWED"));
@@ -12,7 +13,8 @@ export default async function handler(req,res){
     if(!["google","canva"].includes(body.provider))return res.status(400).json(safe("OAUTH_PROVIDER_INVALID"));
     if(process.env[`${body.provider.toUpperCase()}_OAUTH_ENABLED`]!=="true")return res.status(403).json(safe("OAUTH_PROVIDER_LOCKED"));
     const base=process.env.OAUTH_REDIRECT_BASE_URL;let redirectUri;try{redirectUri=new URL(`/api/oauth/${body.provider}/callback`,base).toString();}catch{return res.status(503).json(safe("OAUTH_REDIRECT_NOT_CONFIGURED"));}
-    const runtime=createProviderConnectionRuntime({client,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY,allowedRedirectUris:[redirectUri]});const result=await runtime.beginOAuth({workspaceId:verified.context.workspaceId,ownerId:verified.context.ownerId,provider:body.provider,redirectUri,scopes:Array.isArray(body.scopes)?body.scopes:[]});return res.status(result.ok?200:403).json(result);
+    const policy=getOAuthProviderPolicy(body.provider);const runtime=createProviderConnectionRuntime({client,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY,allowedRedirectUris:[redirectUri]});const result=await runtime.beginOAuth({workspaceId:verified.context.workspaceId,ownerId:verified.context.ownerId,provider:body.provider,redirectUri,scopes:policy.scopes});
+    if(!result.ok)return res.status(403).json(result);const authorization=buildOAuthAuthorization(body.provider,result.authorization);if(!authorization)return res.status(503).json(safe("OAUTH_PROVIDER_CONFIGURATION_REQUIRED"));return res.status(200).json({...result,authorization});
   }
   if(body.action==="completeOAuth"){
     if(!["google","canva"].includes(body.provider)||process.env[`${body.provider?.toUpperCase()}_OAUTH_ENABLED`]!=="true")return res.status(403).json(safe("OAUTH_PROVIDER_LOCKED"));

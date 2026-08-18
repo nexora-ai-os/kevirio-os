@@ -1,0 +1,6 @@
+import test from "node:test";import assert from "node:assert/strict";
+import {buildOAuthAuthorization,getOAuthProviderPolicy} from "../../server/oauthAuthorization.js";
+const auth={state:"state",pkceChallenge:"challenge",redirectUri:"https://kevirio-private-beta.vercel.app/api/oauth/google/callback"};
+test("google authorization is fixed to the three initial read-only scopes",()=>{const value=buildOAuthAuthorization("google",auth,{GOOGLE_CLIENT_ID:"client"}),url=new URL(value.authorizationUrl);assert.equal(url.origin,"https://accounts.google.com");assert.equal(url.searchParams.get("code_challenge_method"),"S256");assert.deepEqual(url.searchParams.get("scope").split(" ").sort(),[...getOAuthProviderPolicy("google").scopes].sort());assert.doesNotMatch(url.searchParams.get("scope"),/analytics|youtube|webmasters/)});
+test("canva authorization requests profile read only",()=>{const value=buildOAuthAuthorization("canva",{...auth,redirectUri:auth.redirectUri.replace("google","canva")},{CANVA_CLIENT_ID:"client"}),url=new URL(value.authorizationUrl);assert.equal(url.origin,"https://www.canva.com");assert.equal(url.searchParams.get("scope"),"profile:read")});
+test("missing configuration fails closed",()=>assert.equal(buildOAuthAuthorization("google",auth,{}),null));
