@@ -1,0 +1,11 @@
+import{test,expect}from"@playwright/test";import{assertOwnerPage}from"./support.mjs";
+const matrix=[
+  [320,["/home","/assistant","/content"]],
+  [360,["/opportunities","/projects","/revenue"]],
+  [375,["/team","/legal","/feedback"]],
+  [390,["/home","/content","/opportunities"]],
+  [430,["/assistant","/revenue","/feedback"]],
+  [768,["/projects","/team","/legal"]],
+  [820,["/home","/assistant","/revenue"]],
+];
+for(const[width,routes]of matrix)test(`Phase 6 interactive mobile ${width}px`,async({page})=>{test.setTimeout(120000);await page.setViewportSize({width,height:Math.max(800,Math.round(width*1.5))});await assertOwnerPage(page,routes[0]);const open=page.getByRole("button",{name:"ナビゲーションを開く"});await expect(open).toBeVisible();await open.click();await expect(page.getByRole("complementary",{name:"メインナビゲーション"})).toHaveClass(/sidebar--open/);await page.locator(".kv-sidebar-close").click();for(const route of routes){await assertOwnerPage(page,route);const undersized=await page.locator("button:visible,a:visible,input:visible,select:visible,textarea:visible").evaluateAll(nodes=>nodes.map(node=>{const box=node.getBoundingClientRect();return{w:box.width,h:box.height,label:node.getAttribute("aria-label")||node.textContent?.trim()}}).filter(item=>item.w>0&&item.h>0&&(item.w<36||item.h<36)));expect(undersized,`${route} @ ${width}: ${JSON.stringify(undersized.slice(0,5))}`).toEqual([]);const overlap=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);expect(overlap).toBeLessThanOrEqual(1)}if(width===320){await page.goto("/content");await page.getByLabel("投稿内容").fill(`Mobile ${width} ${Date.now()}`);await expect(page.getByRole("button",{name:"非公開で保存"})).toBeEnabled()}if(width===360){await page.goto("/opportunities");await page.getByLabel("案件名").fill("Mobile案件");await page.getByLabel("仕事内容").fill("モバイル入力確認");await expect(page.getByRole("button",{name:"非公開で保存"})).toBeEnabled()}if(width===375){await page.goto("/feedback");await page.getByLabel("内容").fill("モバイル入力確認");await expect(page.getByRole("button",{name:"非公開で保存"})).toBeEnabled()}if(width===430){await page.goto("/assistant");await page.getByLabel("日本語で相談").fill("CrowdWorksで案件を探したい");await expect(page.getByRole("button",{name:"整理する"})).toBeEnabled()}});

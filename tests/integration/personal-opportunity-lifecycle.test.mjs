@@ -1,0 +1,3 @@
+import assert from"node:assert/strict";import{readFileSync}from"node:fs";import test from"node:test";const sql=readFileSync(new URL("../../supabase/migrations/022_personal_opportunity_lifecycle.sql",import.meta.url),"utf8").toLowerCase();
+test("opportunity transitions are owner-bound and protected",()=>{assert.match(sql,/data_owner_id<>v_user/);assert.match(sql,/is_active_workspace_principal/);assert.match(sql,/grant execute.+authenticated/s)});
+test("WON active work is intentional and traceable",()=>{assert.match(sql,/p_create_active_work/);assert.match(sql,/sourceopportunityid/);assert.match(sql,/state','active/);assert.doesNotMatch(sql,/insert into public\.(projects|tasks|campaigns)/)});

@@ -1,0 +1,5 @@
+import assert from "node:assert/strict";import{readFileSync}from"node:fs";import test from"node:test";
+const api=readFileSync(new URL("../../api/members.js",import.meta.url),"utf8"),ui=readFileSync(new URL("../../src/components/next/NextTeamAdministration.jsx",import.meta.url),"utf8");
+test("member administration verifies server-side owner context",()=>{assert.match(api,/resolveVerifiedOwnerContext/);assert.match(api,/auth\.admin\.inviteUserByEmail/);assert.doesNotMatch(ui,/service_role|SUPABASE_SECRET_KEY/)});
+test("member lifecycle is audited and destructive delete is absent",()=>{for(const action of ["INVITED","SUSPENDED","REACTIVATED","DEACTIVATED"])assert.match(api,new RegExp(action));assert.match(api,/record_member_administration_event/);assert.doesNotMatch(api,/deleteUser|\.delete\(/)});
+test("team UI exposes lifecycle controls without private previews",()=>{for(const value of ["招待","利用停止","再開","無効化","個人データは自動共有されません"])assert.match(ui,new RegExp(value));assert.doesNotMatch(ui,/personal_operational_records|private Content|AI chat/)});

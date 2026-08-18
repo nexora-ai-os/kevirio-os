@@ -1,0 +1,6 @@
+import assert from"node:assert/strict";import{readFileSync}from"node:fs";import test from"node:test";
+const sql=readFileSync(new URL("../../supabase/migrations/023_personal_revenue_learning_loop.sql",import.meta.url),"utf8").toLowerCase();
+test("M023 extends the private personal record model without creating an Actual revenue path",()=>{assert.match(sql,/revenue_candidate/);assert.match(sql,/retrospective/);assert.match(sql,/truth_state.+forecast.+unknown/s);assert.doesNotMatch(sql,/insert into public\.revenue_records/);assert.doesNotMatch(sql,/actual_amount_minor.+values/)});
+test("Revenue candidates require Work and Opportunity traceability",()=>{assert.match(sql,/source_work_id/);assert.match(sql,/source_opportunity_id/);assert.match(sql,/personal_revenue_candidate_source_work_unique/)});
+test("Retrospectives remain personal user-reported learning",()=>{assert.match(sql,/knowledge_class.+personal/s);assert.match(sql,/claim_class.+user_reported_learning/s);assert.match(sql,/personal_retrospective_source_unique/)});
+test("M023 keeps browser writes behind the existing protected owner-bound RPC",()=>{assert.match(sql,/is_active_workspace_principal/);assert.match(sql,/data_owner_id=v_user/);assert.match(sql,/security definer/);assert.match(sql,/grant execute.+authenticated/s);assert.match(sql,/revoke all.+public,anon/s)});

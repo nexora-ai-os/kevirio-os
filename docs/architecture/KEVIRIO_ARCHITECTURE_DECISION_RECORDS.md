@@ -101,20 +101,20 @@ Documentation rollback is removal of the unapproved proposal reference. Runtime 
 - Implemented: YES within the repository scope described
 - Tested: Source/automated evidence exists as cited; coverage is not universal
 - Browser validated: BLOCKED
-- Owner approved: NO — review required
+- Owner approved: YES — explicit Owner approval recorded 2026-08-17
 - Remote verified: Not required for the local design record; affected external state may remain UNKNOWN
 - Known conflicts: See Conflict Audit
-- Known gaps: Owner acceptance and any external-state verification remain open
+- Known gaps: Any external-state verification remains open
 
-# ADR-002 — Owner-Only Authenticationを初期Production境界とする
+# ADR-002 — Personal Workspace Multi-User Authentication
 
 ## Metadata
 
-- Status: PROPOSED — IMPLEMENTED BUT OWNER APPROVAL NOT VERIFIED
-- Decision date: UNKNOWN — no reliable approval-date evidence found
-- Last reviewed: 2026-08-01
+- Status: ACCEPTED
+- Decision date: 2026-08-17
+- Last reviewed: 2026-08-17
 - Owner: KEVIRIO Owner
-- Decision authority: Owner approval required
+- Decision authority: KEVIRIO Owner — approved 2026-08-17
 - Related Constitution sections: §§1–11 as applicable
 - Related Architecture sections: current feature/boundary sections
 - Related Runbook sections: change, validation and release gates
@@ -122,11 +122,11 @@ Documentation rollback is removal of the unapproved proposal reference. Runtime 
 
 ## Context
 
-KEVIRIO must preserve product truth, security boundaries and operational recoverability while evolving. Repository implementation evidences this pattern, but implementation is not proof of formal Owner acceptance.
+KEVIRIO has evolved from the initial Owner-only authentication boundary to independent authenticated Owner and Member identities within one canonical Personal Workspace per Account. This decision preserves product truth, privacy, security boundaries and operational recoverability while enabling multi-user operation.
 
 ## Decision
 
-初期Production利用者を検証済みOwnerに限定し、Supabase AuthのsessionだけでなくOwner profileのrole/statusも検証する。Staff/Admin/Multi-userはNot ImplementedとしてFail Closedにする。
+Owner and Members have independent authenticated identities. One Account has exactly one canonical Personal Workspace. Personal data is `PRIVATE` by default; Team membership does not automatically share it, sharing requires explicit authorized visibility, and Owner administration does not grant generic access to Member private data. `service_role` remains server-only. AI follows the same identity, Workspace, lifecycle, consent and visibility boundaries, with no cross-user private-data side channel. Missing authorization evidence fails closed.
 
 ## Rationale
 
@@ -171,7 +171,7 @@ The Owner retains authority for acceptance and for any change that broadens perm
 - Mock, Forecast and Unknown never become Actual by presentation alone.
 - Workspace, credential, approval, evidence, Cost Guard and audit boundaries cannot be bypassed.
 - Missing configuration or evidence fails closed.
-- Owner approval is never inferred.
+- Owner approval is never inferred; this decision's approval is explicitly recorded below.
 
 ## Change Conditions
 
@@ -185,7 +185,7 @@ Documentation rollback is removal of the unapproved proposal reference. Runtime 
 
 - Source / Migration / Tests / Documentation / Git: src/components/SupabaseOwnerAuthGate.jsx; server/verifiedOwnerContext.js; tests/unit/owner-login-integrity.test.mjs
 - Git baseline: `4837c813c75794837ef10d83c564afdee87f3761`
-- Owner-reported evidence: prior directives establish the recorded constraints; formal acceptance of this ADR document is not yet verified.
+- Owner approval evidence: explicit statement `ADR-002承認`, dated 2026-08-17.
 
 ## Current State
 
@@ -196,6 +196,16 @@ Documentation rollback is removal of the unapproved proposal reference. Runtime 
 - Remote verified: Not required for the local design record; affected external state may remain UNKNOWN
 - Known conflicts: See Conflict Audit
 - Known gaps: Owner acceptance and any external-state verification remain open
+
+## Accepted Revision — Personal Workspace Multi-User Authentication
+
+- Revision status: ACCEPTED
+- Repository preparation date: 2026-08-12
+- Owner approval date: 2026-08-17
+
+Replace the initial Owner-only Production boundary with independent authenticated Owner and Member accounts. Normal application access requires a server-authoritative `ACTIVE` account lifecycle and all current mandatory consents. Each user operates primarily in an active Personal Workspace; personal records remain `PRIVATE` by default. Team membership does not imply access to personal records, and Owner administration does not imply access to Member private Content or Opportunities. Explicit sharing and Team visibility remain the only broader read paths defined by the protected privacy model. `service_role` remains server-only and may perform only authorized lifecycle/invitation administration; it is not a normal Owner-session private-data bypass. AI uses the same identity, Workspace, lifecycle, and visibility rules. Missing account, consent, Workspace, or permission evidence fails closed.
+
+Approval evidence: Owner statement `ADR-002承認` on 2026-08-17.
 
 # ADR-003 — Workspace BoundaryをRLS・RPC・Repositoryで多層保護する
 

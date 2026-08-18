@@ -1,0 +1,7 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {resolveVerifiedOwnerContext} from "../../server/verifiedOwnerContext.js";
+const request={method:"POST",headers:{"content-type":"application/json",authorization:"Bearer local-token",origin:"http://127.0.0.1:5173"}};
+const query=result=>({select(){return this},eq(){return this},maybeSingle(){return Promise.resolve(result)}});
+test("verified Owner context supports Supabase thenables without catch methods",async()=>{const client={auth:{getUser:async()=>({data:{user:{id:"owner-1"}},error:null})},from:()=>query({data:{role:"owner",status:"active"},error:null})};const value=await resolveVerifiedOwnerContext(request,{client,allowedOrigin:"http://127.0.0.1:5173"});assert.equal(value.ok,true)});
+test("verified Owner context remains fail closed on provider rejection",async()=>{const client={auth:{getUser:async()=>{throw new Error("offline")}}};const value=await resolveVerifiedOwnerContext(request,{client,allowedOrigin:"http://127.0.0.1:5173"});assert.deepEqual(value,{ok:false,reasonCode:"OWNER_SESSION_INVALID",context:null})});

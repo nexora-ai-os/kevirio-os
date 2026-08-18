@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const app = read("../../src/App.jsx");
-const sidebar = read("../../src/components/Sidebar.jsx");
+const sidebar = read("../../src/components/next/NextSidebar.jsx");
 const revenue = read("../../src/components/ProductionRevenueWorkspace.jsx");
 const insights = read("../../src/components/Analytics.jsx");
 const integrations = read("../../src/components/ProviderHub.jsx");
@@ -18,12 +18,12 @@ test("all ten Production destinations are route-level lazy modules", () => {
   }
 });
 
-test("navigation is derived from the canonical three-section metadata", () => {
+test("navigation is derived from the canonical five-group NEXT metadata", () => {
   const navigation = read("../../src/app/navigation.js");
-  for (const section of ["COMPANY", "BUSINESS", "CONTROL"]) assert.match(navigation, new RegExp(`"${section}"`));
-  for (const key of ["home", "googleOperations", "approval", "operations", "production", "analytics", "providerHub", "companyCore", "businessIntelligence", "affiliate", "inbox", "audit", "settings"]) assert.match(navigation, new RegExp(`id:\\"${key}\\"`));
+  for (const section of ["今日の仕事", "集客・制作", "営業・収益", "組織・知識", "管理・安全"]) assert.match(navigation, new RegExp(section));
+  for (const key of ["home", "assistant", "sns", "snsAnalytics", "content", "opportunities", "revenueCenter", "team", "feedback", "connectors", "safety", "settings"]) assert.match(navigation, new RegExp(`id:\"${key}\"`));
   assert.match(sidebar, /NAVIGATION_ITEMS/);
-  assert.doesNotMatch(sidebar, /const primaryItems|const utilityItems|Labs|Component Preview/);
+  assert.doesNotMatch(sidebar, /Labs|Component Preview/);
 });
 
 test("Revenue and Insights preserve canonical repositories and Actual evidence semantics", () => {

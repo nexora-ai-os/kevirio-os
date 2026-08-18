@@ -1,21 +1,11 @@
-export const NAVIGATION_SECTIONS = Object.freeze(["COMPANY", "BUSINESS", "CONTROL"]);
+export const NAVIGATION_SECTIONS = Object.freeze(["今日の仕事", "集客・制作", "営業・収益", "組織・知識", "管理・安全"]);
 
 export const NAVIGATION_ITEMS = Object.freeze([
-  { id:"home", label:"ホーム", route:"/home", icon:"home", section:"COMPANY", visibility:"always", exact:true, badgeSlot:null, permission:null },
-  { id:"googleOperations", label:"AI社員", route:"/employees/google_operations", icon:"employee", section:"COMPANY", visibility:"always", exact:false, badgeSlot:null, permission:null },
-  { id:"approval", label:"承認", route:"/approvals", icon:"approval", section:"COMPANY", visibility:"always", exact:false, badgeSlot:null, permission:null },
-  { id:"operations", label:"オペレーション", route:"/operations", icon:"operations", section:"COMPANY", visibility:"always", exact:false, badgeSlot:null, permission:null },
-  { id:"production", label:"売上", route:"/revenue", icon:"revenue", section:"COMPANY", visibility:"always", exact:false, badgeSlot:null, permission:null },
-  { id:"analytics", label:"インサイト", route:"/insights", icon:"analytics", section:"COMPANY", visibility:"always", exact:true, badgeSlot:null, permission:null },
-  { id:"providerHub", label:"連携", route:"/integrations", icon:"integrations", section:"COMPANY", visibility:"always", exact:false, badgeSlot:null, permission:null },
-  { id:"companyCore", label:"Company Core", route:"/company-core", icon:"company", section:"BUSINESS", visibility:"always", exact:false, badgeSlot:null, permission:null },
-  { id:"businessIntelligence", label:"Business Intelligence", route:"/business-intelligence", icon:"analytics", section:"BUSINESS", visibility:"always", exact:true, badgeSlot:null, permission:null },
-  { id:"affiliate", label:"Affiliate Intelligence", route:"/affiliate-intelligence", icon:"affiliate", section:"BUSINESS", visibility:"always", exact:false, badgeSlot:null, permission:null },
-  { id:"publicationWorkspace", label:"Publication Workspace", route:null, routeView:"publication", icon:"publication", section:"BUSINESS", visibility:"contextual", exact:true, badgeSlot:null, permission:null, parentId:"affiliate" },
-  { id:"revenueWorkspace", label:"Revenue Workspace", route:null, routeView:"revenue", icon:"revenue", section:"BUSINESS", visibility:"contextual", exact:true, badgeSlot:null, permission:null, parentId:"affiliate" },
-  { id:"inbox", label:"受信箱", route:"/inbox", icon:"inbox", section:"CONTROL", visibility:"always", exact:true, badgeSlot:null, permission:null },
-  { id:"audit", label:"監査", route:"/audit", icon:"audit", section:"CONTROL", visibility:"always", exact:true, badgeSlot:null, permission:null },
-  { id:"settings", label:"設定", route:"/settings", icon:"settings", section:"CONTROL", visibility:"always", exact:true, badgeSlot:null, permission:null },
+{id:"home",label:"ホーム",route:"/home",icon:"home",section:"今日の仕事",visibility:"always",exact:true},{id:"assistant",label:"AI秘書",route:"/assistant",icon:"employee",section:"今日の仕事",visibility:"always",exact:true},{id:"goals",label:"目標・戦略",route:"/goals",icon:"approval",section:"今日の仕事",visibility:"always",exact:true},
+{id:"sns",label:"SNS運用",route:"/sns",icon:"publication",section:"集客・制作",visibility:"always",exact:true},{id:"snsAnalytics",label:"SNS分析",route:"/sns-analytics",icon:"analytics",section:"集客・制作",visibility:"always",exact:true},{id:"content",label:"コンテンツ制作",route:"/content",icon:"publication",section:"集客・制作",visibility:"always",exact:true},{id:"note",label:"note",route:"/note",icon:"publication",section:"集客・制作",visibility:"always",exact:true},{id:"affiliate",label:"アフィリエイト",route:"/affiliate-intelligence",icon:"affiliate",section:"集客・制作",visibility:"always",exact:false},
+{id:"opportunities",label:"仕事を探す",route:"/opportunities",icon:"operations",section:"営業・収益",visibility:"always",exact:true},{id:"outreach",label:"応募・営業",route:"/outreach",icon:"inbox",section:"営業・収益",visibility:"always",exact:true},{id:"projects",label:"案件・仕事",route:"/projects",icon:"operations",section:"営業・収益",visibility:"always",exact:true},{id:"studio",label:"制作スタジオ",route:"/studio",icon:"publication",section:"営業・収益",visibility:"always",exact:true},{id:"revenueCenter",label:"収益管理",route:"/revenue",icon:"revenue",section:"営業・収益",visibility:"always",exact:false},{id:"crm",label:"顧客・営業管理",route:"/crm",icon:"company",section:"営業・収益",visibility:"always",exact:true},
+{id:"employees",label:"AI社員",route:"/employees",icon:"employee",section:"組織・知識",visibility:"always",exact:false},{id:"team",label:"チーム",route:"/team",icon:"company",section:"組織・知識",visibility:"always",exact:true},{id:"knowledge",label:"Knowledge",route:"/knowledge",icon:"publication",section:"組織・知識",visibility:"always",exact:true},{id:"analytics",label:"分析",route:"/insights",icon:"analytics",section:"組織・知識",visibility:"always",exact:true},
+{id:"feedback",label:"改善BOX",route:"/feedback",icon:"inbox",section:"管理・安全",visibility:"always",exact:true},{id:"connectors",label:"接続・API",route:"/integrations",icon:"integrations",section:"管理・安全",visibility:"always",exact:false},{id:"safety",label:"監査・安全",route:"/audit",icon:"audit",section:"管理・安全",visibility:"always",exact:true},{id:"settings",label:"設定",route:"/settings",icon:"settings",section:"管理・安全",visibility:"always",exact:true},
 ]);
 
 const byId = new Map(NAVIGATION_ITEMS.map((item) => [item.id, item]));
@@ -35,7 +25,7 @@ export function isNavigationItemActive(item, pathname) {
   const normalized = pathname.length > 1 ? pathname.replace(/\/$/, "") : pathname;
   const resolved = resolveNavigationRoute(item, normalized);
   if (!resolved) return false;
-  if (item.id === "affiliate" && contextualMatch.test(normalized)) return false;
+  if (item.id === "affiliate" && contextualMatch.test(normalized)) return true;
   return item.exact ? normalized === resolved : normalized === resolved || normalized.startsWith(`${resolved}/`);
 }
 
@@ -45,7 +35,7 @@ export function navigationContext(pathname) {
     || byId.get("home");
   const parent = current.parentId ? byId.get(current.parentId) : null;
   const crumbs = [];
-  if (current.section === "BUSINESS") crumbs.push({ id:"business", label:"Business", route:null });
+  crumbs.push({ id:"section", label:current.section, route:null });
   if (parent) crumbs.push({ id:parent.id, label:parent.label, route:resolveNavigationRoute(parent, pathname) });
   crumbs.push({ id:current.id, label:current.label, route:null, current:true });
   return { current, title:current.label, crumbs };

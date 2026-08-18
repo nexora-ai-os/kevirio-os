@@ -1,5 +1,6 @@
 export const PAGE_PATHS = Object.freeze({
   home: "/home",
+  assistant:"/assistant", goals:"/goals", sns:"/sns", snsAnalytics:"/sns-analytics", content:"/content", note:"/note", opportunities:"/opportunities", outreach:"/outreach", projects:"/projects", retrospective:"/projects/retrospective", studio:"/studio", revenueCenter:"/revenue", crm:"/crm", employees:"/employees", team:"/team", knowledge:"/knowledge", feedback:"/feedback", connectors:"/integrations", safety:"/audit", legal:"/legal",
   companyCore: "/company-core",
   businessIntelligence: "/business-intelligence",
   googleOperations: "/employees/google_operations",
@@ -18,11 +19,12 @@ export const PAGE_PATHS = Object.freeze({
 
 export const APP_ROUTES = Object.freeze([
   { path: "/home", page: "home" },
+  {path:"/assistant",page:"assistant"},{path:"/goals",page:"goals"},{path:"/sns",page:"sns"},{path:"/sns-analytics",page:"snsAnalytics"},{path:"/content",page:"content"},{path:"/note",page:"note"},{path:"/opportunities",page:"opportunities"},{path:"/outreach",page:"outreach"},{path:"/projects",page:"projects"},{path:"/projects/retrospective",page:"retrospective"},{path:"/studio",page:"studio"},{path:"/crm",page:"crm"},{path:"/team",page:"team"},{path:"/knowledge",page:"knowledge"},{path:"/feedback",page:"feedback"},{path:"/legal",page:"legal"},
   { path: "/company-core", page: "companyCore" },
   { path: "/company-core/organizations/:organizationId", page: "companyCore" },
   { path: "/company-core/businesses/:businessId", page: "companyCore" },
   { path: "/business-intelligence", page: "businessIntelligence" },
-  { path: "/employees", page: "googleOperations" },
+  { path: "/employees", page: "employees" },
   { path: "/employees/:employeeId", page: "googleOperations" },
   { path: "/employees/:employeeId/tasks/:taskId", page: "googleOperations" },
   { path: "/approvals", page: "approval" },
@@ -35,18 +37,18 @@ export const APP_ROUTES = Object.freeze([
   { path: "/affiliate-intelligence/:programId/:view", page: "affiliate" },
   { path: "/operations/workflows", page: "operations" },
   { path: "/operations/:operationId", page: "operations" },
-  { path: "/revenue", page: "production" },
+  { path: "/revenue", page: "revenueCenter" },
   { path: "/revenue/actual", page: "production" },
   { path: "/revenue/forecast", page: "production" },
   { path: "/revenue/evidence", page: "production" },
   { path: "/revenue/campaigns", page: "production" },
   { path: "/revenue/records/:recordId", page: "production" },
   { path: "/insights", page: "analytics" },
-  { path: "/integrations", page: "providerHub" },
+  { path: "/integrations", page: "connectors" },
   { path: "/integrations/:providerId", page: "providerHub" },
   { path: "/settings", page: "settings" },
   { path: "/inbox", page: "inbox" },
-  { path: "/audit", page: "audit" },
+  { path: "/audit", page: "safety" },
 ]);
 
 export const LEGACY_REDIRECTS = Object.freeze([
