@@ -69,3 +69,13 @@ test("canonical Private Beta legal documents remain byte-stable and viewable bef
   assert.match(surface, /全文を開く/);
   assert.doesNotMatch(surface, /defaultChecked/);
 });
+
+test("integration catalog is free-first, explicit, and keeps every external write locked", () => {
+  const catalog = read("../../src/data/privateBetaIntegrationCatalog.js");
+  for (const provider of ["OpenAI","Gemini","Gmail","Google Calendar","Google Drive","Google Analytics","Google Search Console","YouTube","Canva","Anthropic","Perplexity","A8.net","Instagram / Threads","X","TikTok"]) assert.match(catalog,new RegExp(provider.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")));
+  for (const state of ["COST_POLICY_BLOCKED","CONFIGURED_NOT_ACTIVATED","MANUAL_OPERATION","API_ACCESS_PENDING","ERROR"]) assert.match(catalog,new RegExp(state));
+  assert.doesNotMatch(catalog,/CONNECTED_FREE|READY_FOR_OWNER_OAUTH/);
+  const hub = read("../../src/components/ProviderHub.jsx");
+  assert.match(hub,/externalExecution=\{false\}/);
+  assert.match(hub,/PRIVATE_BETA_INTEGRATIONS/);
+});

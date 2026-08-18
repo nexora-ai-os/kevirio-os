@@ -1,0 +1,18 @@
+export const PRIVATE_BETA_INTEGRATIONS = Object.freeze([
+  {provider:"openai",label:"OpenAI",state:"COST_POLICY_BLOCKED",type:"api_key",read:"metadata確認のみ",scope:"API key / server-side",cost:"¥0維持・API生成停止",ownerAction:"なし（有料利用は別途承認が必要）"},
+  {provider:"gemini",label:"Gemini / Google AI",state:"ERROR",type:"api_key",read:"利用不可（quota exhausted）",scope:"API key / server-side",cost:"無料枠の現在利用可否を確認できないため停止",ownerAction:"Google AI Studioで対象projectのquota状態を確認"},
+  {provider:"google",label:"Google OAuth",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"OAuth完了後のみ",scope:"機能単位のread-only scope",cost:"OAuth ¥0",ownerAction:"Private Beta callbackとread-only OAuth実装完了を待つ"},
+  {provider:"gmail",label:"Gmail",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"gmail.readonly",cost:"¥0想定・OAuth未完了",ownerAction:"Google OAuth準備後に必要時だけ承認"},
+  {provider:"calendar",label:"Google Calendar",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"calendar.readonly",cost:"¥0想定・OAuth未完了",ownerAction:"Google OAuth準備後に必要時だけ承認"},
+  {provider:"drive",label:"Google Drive",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"drive.metadata.readonly",cost:"¥0想定・OAuth未完了",ownerAction:"Google OAuth準備後に必要時だけ承認"},
+  {provider:"analytics",label:"Google Analytics",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"analytics.readonly",cost:"¥0想定・property未指定",ownerAction:"利用property確定後に必要時だけ承認"},
+  {provider:"search_console",label:"Google Search Console",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"webmasters.readonly",cost:"¥0想定・site未指定",ownerAction:"利用site確定後に必要時だけ承認"},
+  {provider:"youtube",label:"YouTube",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"youtube.readonly",cost:"¥0想定・channel未指定",ownerAction:"利用channel確定後に必要時だけ承認"},
+  {provider:"canva",label:"Canva",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"最小read scope未確定",cost:"OAuth/API access条件未検証",ownerAction:"callbackと最小scope実装完了を待つ"},
+  {provider:"anthropic",label:"Anthropic",state:"COST_POLICY_BLOCKED",type:"api_key",read:"API生成停止",scope:"API key / server-side",cost:"無料経路未確認・課金停止",ownerAction:"なし（有料利用は別途承認が必要）"},
+  {provider:"perplexity",label:"Perplexity",state:"COST_POLICY_BLOCKED",type:"api_key",read:"API検索停止",scope:"API key / server-side",cost:"request課金のため停止",ownerAction:"なし（有料利用は別途承認が必要）"},
+  {provider:"a8",label:"A8.net",state:"MANUAL_OPERATION",type:"manual",read:"手動export/importのみ",scope:"API scopeなし",cost:"¥0",ownerAction:"必要なreportだけ手動で登録"},
+  {provider:"instagram_threads",label:"Instagram / Threads",state:"API_ACCESS_PENDING",type:"oauth",read:"未接続",scope:"なし",cost:"¥0",ownerAction:"API access取得後まで待つ"},
+  {provider:"x",label:"X",state:"API_ACCESS_PENDING",type:"oauth",read:"未接続",scope:"なし",cost:"¥0",ownerAction:"API access取得後まで待つ"},
+  {provider:"tiktok",label:"TikTok",state:"API_ACCESS_PENDING",type:"oauth",read:"未接続",scope:"なし",cost:"¥0",ownerAction:"API access取得後まで待つ"},
+]);
