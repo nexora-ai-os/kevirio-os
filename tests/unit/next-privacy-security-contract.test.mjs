@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
@@ -50,4 +51,21 @@ test("migration history remains additive and consent persistence is not misrepre
   assert.equal(names.filter((name) => name.startsWith("018_")).length,1);
   assert.equal(names.filter((name) => name.startsWith("019_")).length,1);
   assert.match(workspace, /追加RLSと同意記録が必要/);
+});
+
+test("canonical Private Beta legal documents remain byte-stable and viewable before consent", () => {
+  const expected = {
+    "TERMS_1.0.md": "cd718abd6cc960020308473990df1dcb2f1ad39a74c4fd4d5bce1033db01f665",
+    "PRIVACY_1.0.md": "fe78b6cf50f08d38c936e00c8e83f9b0fd2577ea96eee0b3f10a882ecdd4dc72",
+    "AI_NOTICE_1.0.md": "280b5fccf3c0a1433475eda09e385de2da8f3e277b0026d571516e5c112781f1",
+    "EXTERNAL_SERVICES_1.0.md": "11b3177ed76a15f153a9d90ccbcd841ea06602aebd42d58dbe751d357e9de922",
+  };
+  for (const [name, hash] of Object.entries(expected)) {
+    const bytes = readFileSync(new URL(`../../public/legal/${name}`, import.meta.url));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), hash);
+  }
+  const surface = read("../../src/components/next/NextDurableSurfaces.jsx");
+  assert.match(surface, /content_reference/);
+  assert.match(surface, /全文を開く/);
+  assert.doesNotMatch(surface, /defaultChecked/);
 });
