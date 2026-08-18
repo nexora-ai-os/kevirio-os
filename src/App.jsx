@@ -19,6 +19,7 @@ const CanonicalAudit = lazy(() => import("./components/CanonicalAudit.jsx"));
 const CanonicalSettings = lazy(() => import("./components/CanonicalSettings.jsx"));
 const CompanyCoreV3Workspace = lazy(() => import("./components/CompanyCoreV3Workspace.jsx"));
 const NextWorkspace = lazy(() => import("./components/next/NextWorkspace.jsx"));
+const GoogleIntegrationWorkspace = lazy(() => import("./components/GoogleIntegrationWorkspace.jsx"));
 const NextDurableSurfaces = lazy(() => import("./components/next/NextDurablePage.jsx"));
 const NextTeamAdministration = lazy(() => import("./components/next/NextTeamAdministration.jsx"));
 const NextPersonalHome = lazy(() => import("./components/next/NextPersonalHome.jsx"));
@@ -35,7 +36,7 @@ export default function App({ ownerSession, ownerSupabaseClient, onOwnerLogout, 
   const pages = useMemo(() => ({
     home:<NextPersonalHome client={ownerSupabaseClient} />, assistant:<NextDurableAssistant client={ownerSupabaseClient} />, goals:<NextWorkspace page="goals" />, sns:<NextWorkspace page="sns" />, snsAnalytics:<NextWorkspace page="snsAnalytics" />, content:<NextDurableSurfaces page="content" client={ownerSupabaseClient} />, note:<NextWorkspace page="note" />,
     opportunities:<NextOpportunityLifecyclePage client={ownerSupabaseClient} />, outreach:<NextWorkspace page="outreach" />, projects:<NextWorkPage client={ownerSupabaseClient} />, retrospective:<NextRetrospectivePage client={ownerSupabaseClient} />, studio:<NextWorkspace page="studio" />, revenueCenter:<NextRevenueCapturePage client={ownerSupabaseClient} />, crm:<NextWorkspace page="crm" />,
-    employees:<NextWorkspace page="employees" />, team:<NextTeamAdministration session={ownerSession} />, knowledge:<NextWorkspace page="knowledge" />, feedback:<NextDurableSurfaces page="feedback" client={ownerSupabaseClient} />, connectors:<NextWorkspace page="connectors" />, safety:<NextWorkspace page="safety" />, legal:<NextDurableSurfaces page="legal" client={ownerSupabaseClient} />,
+    employees:<NextWorkspace page="employees" />, team:<NextTeamAdministration session={ownerSession} />, knowledge:<NextWorkspace page="knowledge" />, feedback:<NextDurableSurfaces page="feedback" client={ownerSupabaseClient} />, connectors:<GoogleIntegrationWorkspace client={ownerSupabaseClient} session={ownerSession} />, safety:<NextWorkspace page="safety" />, legal:<NextDurableSurfaces page="legal" client={ownerSupabaseClient} />,
     googleOperations: <GoogleOperationsEmployee />,
     approval: <CanonicalApprovals ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     operations: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
