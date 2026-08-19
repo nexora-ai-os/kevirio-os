@@ -4,7 +4,7 @@ import { listingComplianceLabel } from "../../domain/affiliateProgramMaster.js";
 
 const value = (input, suffix = "") => input == null ? "Unknown" : `${input}${suffix}`;
 
-export default function AffiliateProgramMaster({ programs = [], available = true, onSaveLink }) {
+export default function AffiliateProgramMaster({ programs = [], available = true, onSaveLink, onRegister }) {
   const [selectedId, setSelectedId] = useState(null);
   const selected = useMemo(() => programs.find((program) => program.id === selectedId) || null, [programs, selectedId]);
   const columns = [
@@ -14,7 +14,15 @@ export default function AffiliateProgramMaster({ programs = [], available = true
     { key: "approvalRate", label: "Approval Rate", render: (row) => value(row.approvalRate, "%") }, { key: "programStatus", label: "Program Status" },
     { key: "affiliateLinkStatus", label: "Affiliate Link" }, { key: "compliance", label: "Listing Compliance", render: (row) => <Badge label={listingComplianceLabel(row)} state={row.listingVerificationStatus === "CONFIRMED" ? "actual" : "pending"}/> },
   ];
-  return <section aria-labelledby="affiliate-program-master-title"><SectionHeader title="Affiliate Program Master" description={`${available?programs.length:"Unknown"} programs · Source: Owner-provided A8.net screenshots`}/><Table caption="Affiliate Program Master" columns={columns} rows={programs} emptyTitle={available?"Program Masterに登録はありません":"Program Masterを確認できません"} emptyMessage={available?"最初の案件を登録してください。":"未取得をゼロとは扱いません。"}/>{selected ? <ProgramDetail program={selected} onClose={() => setSelectedId(null)} onSaveLink={onSaveLink}/> : null}</section>;
+  return <section aria-labelledby="affiliate-program-master-title"><SectionHeader title="Affiliate Program Master" description={`${available?programs.length:"Unknown"} programs · Source: Owner-provided A8.net screenshots`}/><ProgramRegistration onRegister={onRegister}/><Table caption="Affiliate Program Master" columns={columns} rows={programs} emptyTitle={available?"Program Masterに登録はありません":"Program Masterを確認できません"} emptyMessage={available?"最初の案件を登録してください。":"未取得をゼロとは扱いません。"}/>{selected ? <ProgramDetail program={selected} onClose={() => setSelectedId(null)} onSaveLink={onSaveLink}/> : null}</section>;
+}
+
+function ProgramRegistration({ onRegister }) {
+  const [form, setForm] = useState({ aspName: "", programId: "", advertiserName: "", programName: "", category: "", sourceNotes: "" });
+  const [save, setSave] = useState({ pending: false, error: null, done: false });
+  const change = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
+  const submit = async (event) => { event.preventDefault(); setSave({ pending: true, error: null, done: false }); try { await onRegister(form); setForm({ aspName: "", programId: "", advertiserName: "", programName: "", category: "", sourceNotes: "" }); setSave({ pending: false, error: null, done: true }); } catch (error) { setSave({ pending: false, error: error?.code || "AFFILIATE_REGISTRATION_FAILED", done: false }); } };
+  return <Card><SectionHeader title="最初のアフィリエイト案件を登録" description="OwnerのPersonal Workspaceへ非公開で保存します。A8.netへの接続・スクレイピング・外部実行は行いません。"/><form onSubmit={submit}><div className="av2-data-grid"><FormField label="ASP名" required><Input value={form.aspName} onChange={change("aspName")} maxLength={120} required pending={save.pending}/></FormField><FormField label="Program ID" required><Input value={form.programId} onChange={change("programId")} maxLength={120} required pending={save.pending}/></FormField><FormField label="広告主名" required><Input value={form.advertiserName} onChange={change("advertiserName")} maxLength={200} required pending={save.pending}/></FormField><FormField label="Program名" required><Input value={form.programName} onChange={change("programName")} maxLength={500} required pending={save.pending}/></FormField><FormField label="カテゴリ"><Input value={form.category} onChange={change("category")} maxLength={200} pending={save.pending}/></FormField><FormField label="Ownerメモ" error={save.error}><Input value={form.sourceNotes} onChange={change("sourceNotes")} maxLength={1000} pending={save.pending}/></FormField></div><Button type="submit" pending={save.pending}>案件を登録</Button>{save.done?<p role="status">登録し、一覧を更新しました。</p>:null}</form></Card>;
 }
 
 function ProgramDetail({ program, onClose, onSaveLink }) {

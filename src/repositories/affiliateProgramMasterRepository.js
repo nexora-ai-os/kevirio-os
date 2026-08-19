@@ -20,5 +20,11 @@ export function createAffiliateProgramMasterRepository(client) {
       try { const { data, error } = await client.rpc("save_affiliate_program_master_link", { p_workspace_id: workspaceId, p_program_master_id: id, p_affiliate_url: normalized.affiliateUrl, p_link_status: normalized.linkStatus }); if (error) throw error; return data; }
       catch (error) { throw mapRepositoryError(error, { operation: "save_link", object: "affiliate_program_master" }); }
     },
+    async registerProgram(input) {
+      const fields = ["aspName", "programId", "advertiserName", "programName"];
+      if (fields.some((field) => !String(input?.[field] || "").trim())) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "required_registration_fields", object: "affiliate_program_master" });
+      try { const { data, error } = await client.rpc("register_affiliate_program_master", { p_asp_name: input.aspName.trim(), p_program_id: input.programId.trim(), p_advertiser_name: input.advertiserName.trim(), p_program_name: input.programName.trim(), p_category: input.category?.trim() || null, p_source_notes: input.sourceNotes?.trim() || null }); if (error) throw error; return data; }
+      catch (error) { throw mapRepositoryError(error, { operation: "register", object: "affiliate_program_master" }); }
+    },
   };
 }
