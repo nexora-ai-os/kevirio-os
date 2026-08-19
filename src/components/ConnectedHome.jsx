@@ -1,0 +1,2 @@
+import {useEffect,useState} from "react";import NextPersonalHome from "./next/NextPersonalHome.jsx";import GoogleHomePanel from "./GoogleHomePanel.jsx";
+export default function ConnectedHome({client}){const[session,setSession]=useState(null);useEffect(()=>{client?.auth?.getSession().then(result=>setSession(result.data?.session||null))},[client]);return <><NextPersonalHome client={client}/><div className="next-workspace"><GoogleHomePanel client={client} session={session}/></div></>}
