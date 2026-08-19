@@ -7,6 +7,7 @@ import {buildOAuthAuthorization,getOAuthProviderPolicy} from "../server/oauthAut
 import {validateGoogleBoundedReads} from "../server/googleBoundedRead.js";
 import {validateCanvaProfile} from "../server/canvaProfileValidation.js";
 import {readGoogleProductData} from "../server/googleProductRead.js";
+import {discoverGoogleResources} from "../server/googleResourceDiscovery.js";
 const safe=(reasonCode)=>({ok:false,status:"blocked",reasonCode,externalExecution:false,productionExecution:false});
 export default async function handler(req,res){
   if(req.method!=="POST")return res.status(405).json(safe("METHOD_NOT_ALLOWED"));
@@ -30,5 +31,12 @@ export default async function handler(req,res){
   if(body.action==="connectionStatus"){const result=await client.from("provider_connections").select("provider,state,granted_scopes,token_expires_at,refresh_token_ciphertext").eq("workspace_id",verified.context.workspaceId).in("provider",["google","canva"]);if(result.error)return res.status(503).json(safe("OAUTH_STATUS_UNAVAILABLE"));return res.status(200).json({ok:true,connections:(result.data||[]).map(row=>({provider:row.provider,state:row.state,grantedScopes:row.granted_scopes||[],expiryTracked:Boolean(row.token_expires_at),refreshAvailable:Boolean(row.refresh_token_ciphertext)})),externalExecution:false});}
   if(body.action==="disconnect"){if(!["google","canva"].includes(body.provider)||body.ownerConfirmed!==true)return res.status(400).json(safe("OWNER_CONFIRMATION_REQUIRED"));const runtime=createProviderConnectionRuntime({client,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY});const result=await runtime.disconnect({workspaceId:verified.context.workspaceId,ownerId:verified.context.ownerId,provider:body.provider});return res.status(result.ok?200:403).json(result);}
   if(body.action==="readGoogleProductData"){if(process.env.GOOGLE_OAUTH_ENABLED!=="true")return res.status(403).json(safe("OAUTH_PROVIDER_LOCKED"));const result=await readGoogleProductData({client,workspaceId:verified.context.workspaceId,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY,query:body.query});return res.status(result.ok?200:403).json(result);}
+  if(body.action==="discoverGoogleResources"){if(process.env.GOOGLE_OAUTH_ENABLED!=="true")return res.status(403).json(safe("OAUTH_PROVIDER_LOCKED"));const result=await discoverGoogleResources({client,workspaceId:verified.context.workspaceId,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY});return res.status(result.ok?200:403).json(result);}
+  if(body.action==="providerExpansionStatus")return res.status(200).json({ok:true,providers:[
+    {provider:"gemini",state:process.env.GEMINI_API_KEY?"FREE_TIER_UNVERIFIED":"CREDENTIAL_MISSING",purpose:"PRIMARY_FREE_AI candidate",cost:"FREE_UNVERIFIED"},
+    {provider:"openai",state:process.env.OPENAI_API_KEY?"CONNECTED_COST_LOCKED":"CREDENTIAL_MISSING",purpose:"premium reasoning",cost:"LOCKED_0_JPY"},
+    {provider:"anthropic",state:process.env.ANTHROPIC_API_KEY?"CONNECTED_COST_LOCKED":"CREDENTIAL_MISSING",purpose:"long-form analysis",cost:"LOCKED_0_JPY"},
+    {provider:"perplexity",state:process.env.PERPLEXITY_API_KEY?"CONNECTED_COST_LOCKED":"CREDENTIAL_MISSING",purpose:"web research",cost:"LOCKED_0_JPY"},
+  ],paidFallback:false,externalExecution:false});
   return res.status(400).json(safe("UNKNOWN_ACTION"));
 }
