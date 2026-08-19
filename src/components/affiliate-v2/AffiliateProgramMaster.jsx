@@ -4,7 +4,7 @@ import { listingComplianceLabel } from "../../domain/affiliateProgramMaster.js";
 
 const value = (input, suffix = "") => input == null ? "Unknown" : `${input}${suffix}`;
 
-export default function AffiliateProgramMaster({ programs = [], onSaveLink }) {
+export default function AffiliateProgramMaster({ programs = [], available = true, onSaveLink }) {
   const [selectedId, setSelectedId] = useState(null);
   const selected = useMemo(() => programs.find((program) => program.id === selectedId) || null, [programs, selectedId]);
   const columns = [
@@ -14,7 +14,7 @@ export default function AffiliateProgramMaster({ programs = [], onSaveLink }) {
     { key: "approvalRate", label: "Approval Rate", render: (row) => value(row.approvalRate, "%") }, { key: "programStatus", label: "Program Status" },
     { key: "affiliateLinkStatus", label: "Affiliate Link" }, { key: "compliance", label: "Listing Compliance", render: (row) => <Badge label={listingComplianceLabel(row)} state={row.listingVerificationStatus === "CONFIRMED" ? "actual" : "pending"}/> },
   ];
-  return <section aria-labelledby="affiliate-program-master-title"><SectionHeader title="Affiliate Program Master" description={`${programs.length} programs · Source: Owner-provided A8.net screenshots`}/><Table caption="Affiliate Program Master" columns={columns} rows={programs} emptyTitle="Program Master is unavailable" emptyMessage="Migration 017 has not been applied, or the Owner workspace has no registered records."/>{selected ? <ProgramDetail program={selected} onClose={() => setSelectedId(null)} onSaveLink={onSaveLink}/> : null}</section>;
+  return <section aria-labelledby="affiliate-program-master-title"><SectionHeader title="Affiliate Program Master" description={`${available?programs.length:"Unknown"} programs · Source: Owner-provided A8.net screenshots`}/><Table caption="Affiliate Program Master" columns={columns} rows={programs} emptyTitle={available?"Program Masterに登録はありません":"Program Masterを確認できません"} emptyMessage={available?"最初の案件を登録してください。":"未取得をゼロとは扱いません。"}/>{selected ? <ProgramDetail program={selected} onClose={() => setSelectedId(null)} onSaveLink={onSaveLink}/> : null}</section>;
 }
 
 function ProgramDetail({ program, onClose, onSaveLink }) {
