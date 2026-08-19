@@ -18,3 +18,14 @@ export async function discoverGoogleResources({client,workspaceId,encryptionKey,
   const youtube=youtubeResult.ok?(youtubeResult.data.items||[]).slice(0,5).map(channel=>({id:channel.id,name:channel.snippet?.title||"名称なし"})):[];
   return {ok:true,status:"google_resources_discovered",services:{analytics:{scope:"GRANTED",api:"Analytics Admin API",http:analyticsResult.http,error:analyticsResult.ok?null:analyticsResult.error,resourceCount:analytics.length,state:state(analyticsResult,analytics.length)},searchConsole:{scope:"GRANTED",api:"Search Console API",http:searchResult.http,error:searchResult.ok?null:searchResult.error,resourceCount:searchConsole.length,state:state(searchResult,searchConsole.length)},youtube:{scope:"GRANTED",api:"YouTube Data API v3",http:youtubeResult.http,error:youtubeResult.ok?null:youtubeResult.error,resourceCount:youtube.length,state:state(youtubeResult,youtube.length)}},analytics,searchConsole,youtube,requestBounds:{analytics:20,searchConsole:20,youtube:5},writes:0,polling:false,externalExecution:false};
 }
+
+export async function validateYouTubeChannel({client,workspaceId,encryptionKey,channelId,transport=fetch}){
+  if(typeof channelId!=="string"||!/^[A-Za-z0-9_-]{10,64}$/.test(channelId))return {ok:false,reasonCode:"YOUTUBE_CHANNEL_INVALID",externalExecution:false};
+  const auth=await getPersistentAccessToken({client,workspaceId,provider:"google",encryptionKey,transport});if(!auth.ok)return auth;
+  if(!auth.scopes?.includes(scope("youtube.readonly")))return {ok:false,reasonCode:"SCOPE_MISSING",externalExecution:false};
+  const channelResult=await get(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails&id=${encodeURIComponent(channelId)}&mine=true&maxResults=1`,auth.accessToken,transport);
+  const channel=channelResult.ok?channelResult.data.items?.[0]:null;if(!channel)return {ok:false,reasonCode:channelResult.error||"YOUTUBE_CHANNEL_NOT_AUTHORIZED",http:channelResult.http,externalExecution:false};
+  const uploads=channel.contentDetails?.relatedPlaylists?.uploads;let videosResult={ok:true,http:200,data:{items:[]}};if(uploads)videosResult=await get(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${encodeURIComponent(uploads)}&maxResults=5`,auth.accessToken,transport);
+  if(!videosResult.ok)return {ok:false,reasonCode:videosResult.error,http:videosResult.http,externalExecution:false};
+  return {ok:true,status:"CONNECTED_FREE",resourceState:"RESOURCE_SELECTED",channel:{id:channel.id,name:channel.snippet?.title||"名称なし",videoCount:channel.statistics?.videoCount||null},recentVideos:(videosResult.data.items||[]).slice(0,5).map(item=>({id:item.contentDetails?.videoId||item.id,title:item.snippet?.title||"名称なし",publishedAt:item.contentDetails?.videoPublishedAt||item.snippet?.publishedAt||null})),requestCount:uploads?2:1,maxItems:5,writes:0,polling:false,externalExecution:false,costClassification:"FREE"};
+}
