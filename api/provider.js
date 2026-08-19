@@ -4,6 +4,7 @@ import {createProviderConnectionRuntime} from "../server/providerConnectionRunti
 import {executeProviderPlatformRequest} from "../server/providerPlatformGateway.js";
 import {createOAuthCodeExchange} from "../server/oauthProviderTransport.js";
 import {buildOAuthAuthorization,getOAuthProviderPolicy} from "../server/oauthAuthorization.js";
+import {validateGoogleBoundedReads} from "../server/googleBoundedRead.js";
 const safe=(reasonCode)=>({ok:false,status:"blocked",reasonCode,externalExecution:false,productionExecution:false});
 export default async function handler(req,res){
   if(req.method!=="POST")return res.status(405).json(safe("METHOD_NOT_ALLOWED"));
@@ -22,5 +23,6 @@ export default async function handler(req,res){
     const exchangeCode=createOAuthCodeExchange(body.provider);if(!exchangeCode)return res.status(503).json(safe("OAUTH_PROVIDER_CONFIGURATION_REQUIRED"));
     const runtime=createProviderConnectionRuntime({client,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY,allowedRedirectUris:[redirectUri]});const result=await runtime.completeOAuth({workspaceId:verified.context.workspaceId,ownerId:verified.context.ownerId,provider:body.provider,redirectUri,state:body.state,code:body.code,exchangeCode});return res.status(result.ok?200:403).json(result);
   }
+  if(body.action==="validateGoogleReads"){if(process.env.GOOGLE_OAUTH_ENABLED!=="true")return res.status(403).json(safe("OAUTH_PROVIDER_LOCKED"));const result=await validateGoogleBoundedReads({client,workspaceId:verified.context.workspaceId,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY});return res.status(result.ok?200:403).json(result);}
   return res.status(400).json(safe("UNKNOWN_ACTION"));
 }

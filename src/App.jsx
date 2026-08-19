@@ -19,7 +19,7 @@ const CanonicalAudit = lazy(() => import("./components/CanonicalAudit.jsx"));
 const CanonicalSettings = lazy(() => import("./components/CanonicalSettings.jsx"));
 const CompanyCoreV3Workspace = lazy(() => import("./components/CompanyCoreV3Workspace.jsx"));
 const NextWorkspace = lazy(() => import("./components/next/NextWorkspace.jsx"));
-const GoogleIntegrationWorkspace = lazy(() => import("./components/GoogleIntegrationWorkspace.jsx"));
+const GoogleIntegrationWorkspace = lazy(() => import("./components/IntegrationActivationWorkspace.jsx"));
 const NextDurableSurfaces = lazy(() => import("./components/next/NextDurablePage.jsx"));
 const NextTeamAdministration = lazy(() => import("./components/next/NextTeamAdministration.jsx"));
 const NextPersonalHome = lazy(() => import("./components/next/NextPersonalHome.jsx"));
