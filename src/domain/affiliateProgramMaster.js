@@ -2,6 +2,8 @@ import { AffiliateV2Error } from "./affiliateV2Contracts.js";
 
 export const LISTING_VERIFICATION_STATES = Object.freeze(["CONFIRMED", "NOT_CONFIRMED", "NONE_CONFIRMED", "UNKNOWN"]);
 export const AFFILIATE_LINK_STATES = Object.freeze(["NOT_REGISTERED", "ACTIVE", "PAUSED", "EXPIRED", "INVALID"]);
+export const AFFILIATE_PROGRAM_STATES = Object.freeze(["ACTIVE", "PAUSED", "ARCHIVED", "EXPIRED", "UNKNOWN"]);
+export const AFFILIATE_PROGRAM_EDIT_FIELDS = Object.freeze(["aspName", "programId", "advertiserName", "programName", "category", "rewardSummary", "conversionConditions", "rejectionConditions", "complianceNotes", "sourceNotes", "ownerNotes", "programStatus"]);
 
 const text = (value) => value == null ? null : String(value).trim();
 
@@ -14,6 +16,15 @@ export function normalizeAffiliateLink(input = {}) {
   const linkStatus = text(input.linkStatus) || "ACTIVE";
   if (!AFFILIATE_LINK_STATES.includes(linkStatus) || linkStatus === "NOT_REGISTERED" || linkStatus === "INVALID") throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_link_status", object: "affiliate_program_master" });
   return Object.freeze({ affiliateUrl, linkStatus });
+}
+
+export function normalizeAffiliateProgramUpdate(input = {}) {
+  if (!input.expectedUpdatedAt || Number.isNaN(new Date(input.expectedUpdatedAt).valueOf())) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "expected_updated_at_required", object: "affiliate_program_master" });
+  const changes = {};
+  for (const field of AFFILIATE_PROGRAM_EDIT_FIELDS) if (Object.prototype.hasOwnProperty.call(input.changes || {}, field)) changes[field.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)] = text(input.changes[field]);
+  if (!Object.keys(changes).length) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "changes_required", object: "affiliate_program_master" });
+  if (changes.program_status && !AFFILIATE_PROGRAM_STATES.includes(changes.program_status)) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_program_status", object: "affiliate_program_master" });
+  return Object.freeze({ expectedUpdatedAt: new Date(input.expectedUpdatedAt).toISOString(), changes: Object.freeze(changes) });
 }
 
 export function mapAffiliateProgramMasterRow(row) {
