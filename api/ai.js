@@ -69,7 +69,7 @@ export default async function handler(req, res) {
     const verified = await resolveVerifiedOwnerWorkspaceContext(req, body.workspaceId);
     if (!verified.ok) return res.status(403).json(normalizedApiFailure({ reasonCode: verified.reasonCode }));
     const result = await executeGeminiFreeRequest({ ...body, explicitOwnerAction: true }, { credential: process.env.GEMINI_API_KEY });
-    const statusCode = result.ok ? 200 : result.reasonCode === "GEMINI_FREE_QUOTA_EXHAUSTED" ? 429 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : 403;
+    const statusCode = result.ok ? 200 : result.reasonCode === "GEMINI_QUOTA_EXHAUSTED" ? 429 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : result.httpStatus && result.httpStatus >= 400 ? 502 : 403;
     return res.status(statusCode).json(result);
   }
   if (body.action === "sandboxGenerateRevenueLanes") {

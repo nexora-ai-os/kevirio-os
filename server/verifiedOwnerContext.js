@@ -1,9 +1,11 @@
 import { createSupabaseServerClient } from "./supabaseServerClient.js";
 function locked(reasonCode) { return { ok: false, reasonCode, context: null }; }
+function normalizedOrigin(value) { const text=String(value||"").trim().replace(/\/$/,""); return /^https?:\/\/[^/]+$/i.test(text)?text:null; }
+export function allowedRequestOrigins(options={}) { const values=[options.allowedOrigin||process.env.KEVIRIO_ALLOWED_ORIGIN,process.env.VERCEL_BRANCH_URL?`https://${process.env.VERCEL_BRANCH_URL}`:null,process.env.VERCEL_URL?`https://${process.env.VERCEL_URL}`:null]; return new Set(values.map(normalizedOrigin).filter(Boolean)); }
 export async function resolveVerifiedOwnerContext(req, options = {}) {
   if (req?.method !== "POST" || !String(req?.headers?.["content-type"] || "").toLowerCase().startsWith("application/json")) return locked("REQUEST_INTEGRITY_REQUIRED");
   const authorization = req.headers?.authorization || ""; if (!/^Bearer\s+\S+$/.test(authorization)) return locked("OWNER_SESSION_INVALID");
-  const origin = req.headers?.origin; const allowedOrigin = options.allowedOrigin || process.env.KEVIRIO_ALLOWED_ORIGIN; if (!allowedOrigin || origin !== allowedOrigin) return locked("REQUEST_ORIGIN_NOT_ALLOWED");
+  const origin = normalizedOrigin(req.headers?.origin); if (!origin || !allowedRequestOrigins(options).has(origin)) return locked("REQUEST_ORIGIN_NOT_ALLOWED");
   const client = options.client || createSupabaseServerClient(); if (!client?.auth?.getUser) return locked("OWNER_AUTH_PROVIDER_REQUIRED");
   let userResult;try{userResult=await client.auth.getUser(authorization.slice(7).trim())}catch{return locked("OWNER_SESSION_INVALID")};const ownerId = userResult?.data?.user?.id; if (!ownerId) return locked("OWNER_SESSION_INVALID");
   let profile;try{profile=await client.from("owner_profiles").select("role,status").eq("owner_id", ownerId).maybeSingle()}catch{return locked("OWNER_PROFILE_NOT_ACTIVE")};if (profile?.error || profile?.data?.role !== "owner" || profile?.data?.status !== "active") return locked("OWNER_PROFILE_NOT_ACTIVE");
