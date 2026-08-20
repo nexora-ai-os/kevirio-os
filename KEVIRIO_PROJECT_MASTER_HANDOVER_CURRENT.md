@@ -1,4 +1,16 @@
 # KEVIRIO PROJECT MASTER HANDOVER
+
+## Current status override — 2026-08-20 REAL OPERATIONS
+
+This section supersedes older phase/readiness statements in this draft where they conflict.
+
+- Product Phase: `REAL_OPERATIONS_PRIVATE_BETA`.
+- Gemini Verdict: `REAL_OPERATIONS_AI_READY`.
+- Owner iPad acceptance: PASS on canonical Private Beta release `805c347`.
+- Acceptance evidence: Provider Gemini; Mode LIVE AI; Cost FREE; exactly three priorities; data basis limited to explicit Owner text; local fallback not used.
+- New feature development: FROZEN by default. Reopen only for evidenced operational `BUG`, `UX`, `IDEA`, `MISSING`, or `AUTOMATION_CANDIDATE` work accepted through 改善BOX.
+- Improvement policy: use real operational data and preserve Workspace, Member privacy, RLS, credential, truth, Cost Guard, Approval, Evidence, Actual, Audit, and External Execution boundaries.
+- Paid AI remains ¥0; paid fallback OFF; External Execution LOCKED.
 ## Current status override — 2026-08-03
 
 This section supersedes older status statements in this draft where they conflict.

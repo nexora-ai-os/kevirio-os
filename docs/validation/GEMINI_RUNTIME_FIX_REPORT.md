@@ -2,7 +2,9 @@
 
 ## Verdict
 
-`OWNER_RECHECK_REQUIRED`
+`REAL_OPERATIONS_AI_READY`
+
+Owner iPad acceptance completed on 2026-08-20 against the canonical Private Beta deployment. Confirmed: Provider Gemini, Mode LIVE AI, Cost FREE, three priorities, minimum explicit Owner text as the data basis, and no local fallback.
 
 ## Owner Browser Failure
 
@@ -56,8 +58,8 @@ The fix strictly allowlists the configured Origin plus Vercel-provided `VERCEL_B
 
 ## Ready for Owner Recheck
 
-YES. Runtime browser acceptance remains required on the fixed Private Beta deployment.
+PASS. Owner completed the authenticated iPad acceptance on the fixed canonical Private Beta deployment.
 
 ## Exact Owner Action
 
-On the canonical Private Beta AI Secretary, submit `今日やることを3つに絞って` once and confirm Provider `Gemini`, Mode `LIVE AI`, Cost `FREE`, and three priorities.
+None for Gemini activation. Continue normal Private Beta operation and record evidenced improvements in 改善BOX.
