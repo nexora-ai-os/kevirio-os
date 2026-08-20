@@ -34,7 +34,7 @@ export default async function handler(req,res){
   if(body.action==="discoverGoogleResources"){if(process.env.GOOGLE_OAUTH_ENABLED!=="true")return res.status(403).json(safe("OAUTH_PROVIDER_LOCKED"));const result=await discoverGoogleResources({client,workspaceId:verified.context.workspaceId,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY});return res.status(result.ok?200:403).json(result);}
   if(body.action==="validateYouTubeChannel"){if(process.env.GOOGLE_OAUTH_ENABLED!=="true")return res.status(403).json(safe("OAUTH_PROVIDER_LOCKED"));const result=await validateYouTubeChannel({client,workspaceId:verified.context.workspaceId,encryptionKey:process.env.OAUTH_TOKEN_ENCRYPTION_KEY,channelId:body.channelId});return res.status(result.ok?200:403).json(result);}
   if(body.action==="providerExpansionStatus")return res.status(200).json({ok:true,providers:[
-    {provider:"gemini",state:process.env.GEMINI_API_KEY?"FREE_TIER_UNVERIFIED":"CREDENTIAL_MISSING",purpose:"PRIMARY_FREE_AI candidate",cost:"FREE_UNVERIFIED"},
+    {provider:"gemini",state:process.env.GEMINI_API_KEY?"CONNECTED_FREE":"CREDENTIAL_MISSING",purpose:"PRIMARY_FREE_AI",cost:"FREE"},
     {provider:"openai",state:process.env.OPENAI_API_KEY?"CONNECTED_COST_LOCKED":"CREDENTIAL_MISSING",purpose:"premium reasoning",cost:"LOCKED_0_JPY"},
     {provider:"anthropic",state:process.env.ANTHROPIC_API_KEY?"CONNECTED_COST_LOCKED":"CREDENTIAL_MISSING",purpose:"long-form analysis",cost:"LOCKED_0_JPY"},
     {provider:"perplexity",state:process.env.PERPLEXITY_API_KEY?"CONNECTED_COST_LOCKED":"CREDENTIAL_MISSING",purpose:"web research",cost:"LOCKED_0_JPY"},

@@ -1,0 +1,10 @@
+const MODEL = "gemini-2.5-flash";
+import { dispatchGeminiFree } from "./geminiFreeAdapter.js";
+const BLOCKED_CONTEXT = /(?:api[_ -]?key|access[_ -]?token|refresh[_ -]?token|password|authorization|gmail body|drive file|member private)/i;
+const blocked = (reasonCode) => ({ ok: false, status: "blocked", reasonCode, provider: "gemini", model: MODEL, cost: "FREE", paidFallbackCalls: 0, externalExecution: false });
+export function validateGeminiFreeRequest(request = {}) { const text = String(request.text || "").trim(); if (!request.explicitOwnerAction) return blocked("OWNER_ACTION_REQUIRED"); if (!request.workspaceId || !request.feature) return blocked("AI_CONTEXT_REQUIRED"); if (!text || text.length > 4000) return blocked("AI_INPUT_INVALID"); if (BLOCKED_CONTEXT.test(text) || request.selectedSensitiveContext === true) return blocked("AI_PRIVATE_CONTEXT_BLOCKED"); return { ok: true, text }; }
+export async function executeGeminiFreeRequest(request, options = {}) {
+  const valid = validateGeminiFreeRequest(request); if (!valid.ok) return valid; if (!options.credential) return blocked("PROVIDER_CREDENTIAL_REQUIRED");
+  const prompt = ["You are KEVIRIO's Japanese AI secretary. Use only the supplied user text.", "Never treat UNKNOWN as zero, FORECAST as ACTUAL, a revenue candidate as ACTUAL, or AI output as Evidence.", "Do not execute external actions. Clearly mark inference and uncertainty. Answer concisely in Japanese.", `Area: ${request.feature}`, `Owner request: ${valid.text}`].join("\n");
+  try { const response = await dispatchGeminiFree(prompt, options); if (response.quota) return { ...blocked("GEMINI_FREE_QUOTA_EXHAUSTED"), status: "fallback" }; if (!response.ok) return blocked(response.empty ? "PROVIDER_EMPTY_RESPONSE" : "PROVIDER_EXECUTION_FAILED"); return { ok: true, status: "completed", text: response.text, provider: "gemini", model: MODEL, mode: "LIVE AI", cost: "FREE", quota: "AVAILABLE", paidFallbackCalls: 0, externalExecution: false, dataBasis: "Ownerが明示入力した最小限のテキストのみ", timestamp: new Date().toISOString() }; } catch { return blocked("PROVIDER_EXECUTION_FAILED"); }
+}

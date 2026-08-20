@@ -65,6 +65,13 @@ export default async function handler(req, res) {
   }
 
   const body = isPlainObject(req.body) ? req.body : {};
+  if (body.action === "geminiDailyGenerate") {
+    const verified = await resolveVerifiedOwnerWorkspaceContext(req, body.workspaceId);
+    if (!verified.ok) return res.status(403).json(normalizedApiFailure({ reasonCode: verified.reasonCode }));
+    const result = await executeGeminiFreeRequest({ ...body, explicitOwnerAction: true }, { credential: process.env.GEMINI_API_KEY });
+    const statusCode = result.ok ? 200 : result.reasonCode === "GEMINI_FREE_QUOTA_EXHAUSTED" ? 429 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : 403;
+    return res.status(statusCode).json(result);
+  }
   if (body.action === "sandboxGenerateRevenueLanes") {
     try {
       const verified = await resolveVerifiedOwnerContext(req);
@@ -106,6 +113,7 @@ export default async function handler(req, res) {
   });
 }
 import { executeOpenAIProviderGateway } from "../server/openAIProviderGateway.js";
-import { resolveVerifiedOwnerContext } from "../server/verifiedOwnerContext.js";
+import { resolveVerifiedOwnerContext, resolveVerifiedOwnerWorkspaceContext } from "../server/verifiedOwnerContext.js";
 import { createSupabaseServerClient } from "../server/supabaseServerClient.js";
 import { createVerifiedSupabaseUsageStoreAdapter } from "../server/supabaseUsageStoreAdapter.js";
+import { executeGeminiFreeRequest } from "../server/geminiFreeGateway.js";

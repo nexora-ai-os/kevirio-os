@@ -12,7 +12,7 @@ for (const file of tracked) {
   if (normalized.startsWith("src/") && /localStorage\.(?:setItem|getItem)\([^)]*(?:token|secret|password|credential)/i.test(source)) failures.push(`${normalized}: credential-like localStorage access`);
   if (/console\.(?:log|error|warn)\([^)]*(?:access_token|refresh_token|authorization|password)/i.test(source)) failures.push(`${file}: sensitive logging pattern`);
   const providerNetwork=/api\.openai\.com|api\.anthropic\.com|api\.perplexity\.ai|generativelanguage\.googleapis\.com/i;
-  const approvedNetwork=normalized==="server/openaiSandboxAdapter.js"||normalized==="scripts/provider-health-check.mjs"||normalized==="scripts/gemini-quota-diagnostic.mjs"||normalized.startsWith("scripts/verify-")||normalized.startsWith("tests/");
+  const approvedNetwork=normalized==="server/openaiSandboxAdapter.js"||normalized==="server/geminiFreeAdapter.js"||normalized==="scripts/provider-health-check.mjs"||normalized==="scripts/gemini-quota-diagnostic.mjs"||normalized.startsWith("scripts/verify-")||normalized.startsWith("tests/");
   if(providerNetwork.test(source)&&!approvedNetwork)failures.push(`${normalized}: direct provider endpoint outside approved adapter or health check`);
   if(/from\s+["'](?:openai|@anthropic-ai\/sdk|@google\/genai)["']/.test(source)&&!normalized.startsWith("server/"))failures.push(`${normalized}: direct provider SDK import outside server adapter`);
   const adapterImport=/openaiSandboxAdapter/.test(source);const adapterImportAllowed=normalized==="server/openAIProviderGateway.js"||normalized==="scripts/check-source-policy.mjs"||normalized.startsWith("scripts/verify-")||normalized.startsWith("tests/");
