@@ -1,6 +1,6 @@
 export const PRIVATE_BETA_INTEGRATIONS = Object.freeze([
   {provider:"openai",label:"OpenAI",state:"COST_POLICY_BLOCKED",type:"api_key",read:"metadata確認のみ",scope:"API key / server-side",cost:"¥0維持・API生成停止",ownerAction:"なし（有料利用は別途承認が必要）"},
-  {provider:"gemini",label:"Gemini / Google AI",state:"ERROR",type:"api_key",read:"利用不可（quota exhausted）",scope:"API key / server-side",cost:"無料枠の現在利用可否を確認できないため停止",ownerAction:"Google AI Studioで対象projectのquota状態を確認"},
+  {provider:"gemini",label:"Gemini / Google AI",state:"FREE_TIER_UNVERIFIED",type:"api_key",read:"Credential・API・model疎通確認済み（最終診断HTTP 200）",scope:"API key / server-side",cost:"Free eligibility未確認のため日常生成は停止",ownerAction:"Google AI Studioで対象Projectが無料枠のみであることを確認"},
   {provider:"google",label:"Google OAuth",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"OAuth完了後のみ",scope:"機能単位のread-only scope",cost:"OAuth ¥0",ownerAction:"Private Beta callbackとread-only OAuth実装完了を待つ"},
   {provider:"gmail",label:"Gmail",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"gmail.readonly",cost:"¥0想定・OAuth未完了",ownerAction:"Google OAuth準備後に必要時だけ承認"},
   {provider:"calendar",label:"Google Calendar",state:"CONFIGURED_NOT_ACTIVATED",type:"oauth",read:"停止中",scope:"calendar.readonly",cost:"¥0想定・OAuth未完了",ownerAction:"Google OAuth準備後に必要時だけ承認"},
