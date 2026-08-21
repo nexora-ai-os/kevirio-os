@@ -11,6 +11,12 @@ begin
   if v<>8 then raise exception 'm028_policy_count_invalid:%',v;end if;
   select count(*) into v from information_schema.role_table_grants where table_schema='public' and table_name in('operational_objects','operational_object_drafts','operational_object_links','operational_activity_events','research_sources','research_findings','internal_action_records','provider_free_quota_states') and grantee in('anon','authenticated') and privilege_type in('INSERT','UPDATE','DELETE');
   if v<>0 then raise exception 'm028_browser_dml_exposed:%',v;end if;
+  select count(*) into v from information_schema.role_table_grants where table_schema='public' and table_name='operational_activity_events' and grantee='service_role' and privilege_type in('UPDATE','DELETE');
+  if v<>0 then raise exception 'm028_timeline_not_append_only:%',v;end if;
+  if not exists(select 1 from pg_constraint where conrelid='public.operational_activity_events'::regclass and contype='u' and pg_get_constraintdef(oid) like '%idempotency_key%') then raise exception 'm028_timeline_idempotency_missing';end if;
+  if not exists(select 1 from pg_constraint where conrelid='public.internal_action_records'::regclass and contype='u' and pg_get_constraintdef(oid) like '%idempotency_key%') then raise exception 'm028_action_idempotency_missing';end if;
+  select count(*) into v from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in('m028_safe_json','m028_safe_text','m028_reference_exists','save_operational_object','save_operational_draft','archive_operational_object','link_operational_objects','prepare_internal_action','complete_internal_action','register_research_source','upsert_provider_free_quota_state','record_research_finding','set_ai_memory_owner_state') and p.proconfig@>array['search_path=""'];
+  if v<>13 then raise exception 'm028_function_search_path_invalid:%',v;end if;
   if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='ai_memory_records' and column_name='pinned_at') then raise exception 'm028_memory_extension_missing';end if;
 end $$;
 

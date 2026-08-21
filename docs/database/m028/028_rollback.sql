@@ -12,6 +12,8 @@ drop function if exists public.archive_operational_object(uuid,bigint);
 drop function if exists public.save_operational_draft(uuid,bigint,bigint,jsonb,text);
 drop function if exists public.save_operational_object(uuid,text,text,text,text,text,timestamptz,jsonb,text,bigint);
 drop function if exists public.m028_safe_json(jsonb,integer);
+drop function if exists public.m028_safe_text(text,integer);
+drop function if exists public.m028_reference_exists(text,uuid,uuid,uuid);
 
 drop table if exists public.provider_free_quota_states;
 drop table if exists public.internal_action_records;

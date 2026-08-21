@@ -9,6 +9,27 @@ M001–M027 do not provide canonical, privacy-safe persistence for universal obj
 
 M028 consolidates every identified schema gap. It does not replace Affiliate, Revenue, Evidence, AI conversation or M027 memory truth.
 
+## Canonical data ownership matrix
+
+Canonical domain data always wins. M028 owns mutable business fields only for the two new native types shown below; all other types are resolver-validated references and are never copied into `operational_objects`.
+
+| Type | Canonical table/read-write path | M028 role | Projection/backfill | Archive/delete and retrieval |
+|---|---|---|---|---|
+| `GOAL` | `campaigns` / existing protected campaign path | reference/link/timeline | reference only; no backfill | closed/cancelled stops resolving |
+| `STRATEGY` | `owner_decisions` / existing decision path | reference/link/timeline | reference only | inactive decision stops resolving |
+| `WORK` | `tasks` / existing task path | reference/link/timeline | reference only | cancelled stops resolving |
+| `APPLICATION` | `opportunities` / existing opportunity path | reference/link/timeline | reference only | rejected/expired stops resolving |
+| `CLIENT` | `clients` / existing client path | reference/link/timeline | reference only | archived stops resolving |
+| `CONTENT` | private `personal_operational_records(CONTENT)` path | private reference/link | reference only | archived/deleted stops resolving |
+| `SNS_ITEM` | `content_assets` SNS types / existing content path | reference/link | reference only | archived stops resolving |
+| `KNOWLEDGE` | `business_memory_records` / existing memory path | reference/link | reference only | deletion state stops resolving |
+| `IMPROVEMENT` | private `personal_operational_records(FEEDBACK)` path | private reference/link | reference only | archived/deleted stops resolving |
+| `GLOBAL_OPPORTUNITY` | active `research_findings(OPPORTUNITY)` | reference/link | created by research RPC | superseded/retracted/archived stops resolving |
+| `RESEARCH_PACKAGE` | `operational_objects` | M028 native owner | new objects only | optimistic archive; no hard delete |
+| `QUICK_CAPTURE` | `operational_objects` | M028 native owner | new objects only | optimistic archive; no hard delete |
+
+AI retrieval and Search must retrieve canonical domain rows first and may use M028 only to discover validated relations. An unresolved reference is omitted and reported by the health check; M028 never overwrites canonical state.
+
 ## New tables
 
 1. `operational_objects`
@@ -100,6 +121,10 @@ Before Production apply, create a scoped snapshot only for the three new nullabl
 
 If apply fails, the single transaction rolls back automatically. If post-apply acceptance fails, run `028_rollback.sql` only after confirming no accepted M028 operational data must be exported. The rollback does not touch M001–M027 business data other than dropping the three additive memory columns.
 
+After M028 has accepted real data, rollback is always: revoke M028 mutation RPCs with `028_freeze_export_before_rollback.sql`, verify the locked export manifest, run rollback, restore M001–M027 service, and retain the export. After a corrected M028 reapply, `028_reimport_after_reapply.sql` restores the accepted M028 rows and Owner memory state. Never run the empty-data rollback assumption after practical use.
+
+`owner_visibility='PRIVATE'` is a deliberate safe Phase-1 limitation. Future sharing must be additive and explicitly Owner-approved; no current Member or Owner-admin bypass is created.
+
 ## Supabase Web SQL Editor apply procedure
 
 1. Confirm the Production project and retain `m027_recovery`.
@@ -117,9 +142,13 @@ If apply fails, the single transaction rolls back automatically. If post-apply a
 - `028_preflight_and_scoped_snapshot.sql` – private, metadata-only preflight snapshot
 - `028_recovery_verification.sql` – read-only snapshot/current comparison
 - `028_read_only_verification.sql` – post-apply read-only assertions
+- `028_data_health_check.sql` – read-only corruption and orphan detection
 - `028_security_test_plan.sql` – isolated security/concurrency suite
 - `028_rollback.sql` – bounded rollback
+- `028_freeze_export_before_rollback.sql` – freeze and locked post-use export
+- `028_reimport_after_reapply.sql` – verified restoration after corrected reapply
 - `028_cleanup_recovery.sql` – separately approved post-acceptance cleanup
+- `VALIDATION_EVIDENCE.md` – executed isolated-runtime evidence and limits
 
 ## What M028 does not authorize
 
