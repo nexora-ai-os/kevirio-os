@@ -74,14 +74,18 @@ export default async function handler(req, res) {
     const threadId = String(body.threadId || "");
     const threadResult = await client.from("ai_conversation_threads").select("id,workspace_id,owner_user_id,rolling_summary,status").eq("id", threadId).eq("workspace_id", body.workspaceId).eq("owner_user_id", ownerId).eq("status", "ACTIVE").maybeSingle();
     if (threadResult.error || !threadResult.data) return res.status(404).json({ ok: false, reasonCode: "AI_THREAD_NOT_FOUND" });
-    const [messageResult, memoryResult] = await Promise.all([
+    const [messageResult, memoryResult, operationalResult, personalResult, affiliateResult] = await Promise.all([
       client.from("ai_conversation_messages").select("sequence,role,content_text,truth_class").eq("thread_id", threadId).eq("owner_user_id", ownerId).order("sequence", { ascending: false }).limit(12),
       client.from("ai_memory_records").select("memory_kind,content_text,confidence,updated_at").eq("workspace_id", body.workspaceId).eq("owner_user_id", ownerId).eq("status", "ACTIVE").order("updated_at", { ascending: false }).limit(8),
+      client.from("operational_objects").select("id,object_type,title,state,attention_state,due_at").eq("workspace_id",body.workspaceId).eq("owner_user_id",ownerId).neq("lifecycle_status","ARCHIVED").order("updated_at",{ascending:false}).limit(40),
+      client.from("personal_operational_records").select("id,record_type,title,lifecycle_status").eq("workspace_id",body.workspaceId).eq("owner_user_id",ownerId).neq("lifecycle_status","DELETED").order("updated_at",{ascending:false}).limit(40),
+      client.from("affiliate_program_master").select("id,program_name,program_status,next_action,next_action_due_at").eq("workspace_id",body.workspaceId).order("updated_at",{ascending:false}).limit(40),
     ]);
     if (messageResult.error || memoryResult.error) return res.status(503).json({ ok: false, reasonCode: "ASSISTANT_CONTEXT_UNAVAILABLE" });
     const recent = (messageResult.data || []).reverse().map((item) => `${item.role} [${item.truth_class}]: ${String(item.content_text).slice(0, 1200)}`).join("\n");
     const memories = (memoryResult.data || []).map((item) => `${item.memory_kind}: ${String(item.content_text).slice(0, 700)}`).join("\n");
-    const boundedContext = [`Rolling summary:\n${threadResult.data.rolling_summary || "none"}`, `Recent messages:\n${recent || "none"}`, `Active personal memory:\n${memories || "none"}`].join("\n\n").slice(0, 16000);
+    const liveContext=assembleLiveOperationalContext({query:body.text,feature:body.feature,operational:operationalResult.error?[]:operationalResult.data,personal:personalResult.error?[]:personalResult.data,affiliate:affiliateResult.error?[]:affiliateResult.data});
+    const boundedContext = [`Rolling summary:\n${threadResult.data.rolling_summary || "none"}`, `Recent messages:\n${recent || "none"}`, `Active personal memory:\n${memories || "none"}`,`Live operational context:\n${liveContext.text}`].join("\n\n").slice(0, 20000);
     const result = await executeGeminiFreeRequest({ ...body, boundedContext, explicitOwnerAction: true }, { credential: process.env.GEMINI_API_KEY });
     if (!result.ok) {
       const statusCode = result.reasonCode === "GEMINI_QUOTA_EXHAUSTED" ? 429 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : 502;
@@ -105,7 +109,7 @@ export default async function handler(req, res) {
         if (!existing.data && !existing.error) await client.rpc("upsert_ai_memory", { p_owner_user_id: ownerId, p_source_thread_id: threadId, p_source_message_id: sourceMessageId, p_memory_kind: memoryKind, p_content: String(body.text).trim().slice(0, 8000), p_normalized_key: normalizedKey, p_provenance: { source: "OWNER_INPUT", source_message_id: sourceMessageId, extraction: "EXPLICIT_ONLY" }, p_confidence: 1, p_supersedes_id: null });
       }
     }
-    return res.status(200).json({ ...result, messageId: persisted.data, contextPolicy: "BOUNDED_PERSONAL", rollingSummary: "UPDATED_OR_DEFERRED", memoryPolicy: "EXPLICIT_OWNER_INPUT_ONLY" });
+    return res.status(200).json({ ...result, messageId: persisted.data, contextPolicy: "BOUNDED_PERSONAL_LIVE_OPERATIONAL", contextItemCount:liveContext.itemCount, rollingSummary: "UPDATED_OR_DEFERRED", memoryPolicy: "EXPLICIT_OWNER_INPUT_ONLY" });
   }
   if (body.action === "geminiDailyGenerate") {
     const verified = await resolveVerifiedOwnerWorkspaceContext(req, body.workspaceId);
@@ -159,3 +163,4 @@ import { resolveVerifiedOwnerContext, resolveVerifiedOwnerWorkspaceContext } fro
 import { createSupabaseServerClient } from "../server/supabaseServerClient.js";
 import { createVerifiedSupabaseUsageStoreAdapter } from "../server/supabaseUsageStoreAdapter.js";
 import { executeGeminiFreeRequest } from "../server/geminiFreeGateway.js";
+import { assembleLiveOperationalContext } from "../server/assistantContextBroker.js";

@@ -34,6 +34,10 @@ export async function saveOperationalDraft(client,{objectId,expectedDraftVersion
 
 export async function archiveOperationalObject(client,{id,version}){const{data,error}=await requireClient(client).rpc("archive_operational_object",{p_object_id:id,p_expected_version:version});if(error)throw error;return data}
 
+export async function listInternalActions(client,{limit=50}={}){const{data,error}=await requireClient(client).from("internal_action_records").select("id,employee_id,target_type,target_id,action_type,autonomy_level,risk_class,status,result_summary,result_truth_class,version,created_at,updated_at").order("updated_at",{ascending:false}).limit(Math.min(Math.max(limit,1),100));if(error)throw error;return data||[]}
+
+export async function prepareInternalAction(client,{employeeId,targetType="QUICK_CAPTURE",targetId=null,actionType,autonomyLevel="L2_PREPARE",description}){const idempotencyKey=`owner:${employeeId}:${globalThis.crypto?.randomUUID?.()||Date.now()}`;const{data,error}=await requireClient(client).rpc("prepare_internal_action",{p_employee_id:trim(employeeId,80),p_target_type:targetType,p_target_id:targetId,p_action_type:actionType,p_autonomy_level:autonomyLevel,p_risk_class:"LOW",p_policy_approval:"AUTO_LOW_RISK",p_payload:{idempotency_key:idempotencyKey,description:trim(description,4000),external_execution:"LOCKED",paid_ai_jpy:0}});if(error)throw error;return data}
+
 export async function loadOperationalCommandContext(client){const[objects,timeline]=await Promise.all([listOperationalObjects(client),listOperationalTimeline(client)]);return{objects,timeline}}
 
 export function searchOperationalContext(objects,query){const q=trim(query,120).toLocaleLowerCase("ja-JP");if(!q)return[];return(objects||[]).filter(item=>[item.title,item.summary,item.details?.body,item.details?.intent,item.object_type,item.attention_state].some(value=>String(value||"").toLocaleLowerCase("ja-JP").includes(q))).slice(0,30)}
