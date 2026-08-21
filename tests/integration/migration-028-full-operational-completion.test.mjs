@@ -1,0 +1,14 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const sql=readFileSync(new URL("../../docs/database/m028/028_full_operational_completion.sql",import.meta.url),"utf8");
+const rollback=readFileSync(new URL("../../docs/database/m028/028_rollback.sql",import.meta.url),"utf8");
+const snapshot=readFileSync(new URL("../../docs/database/m028/028_preflight_and_scoped_snapshot.sql",import.meta.url),"utf8");
+
+test("M028 is one additive transaction and preserves M001-M027 truth",()=>{assert.match(sql,/^begin;/m);assert.match(sql,/commit;\s*$/);assert.doesNotMatch(sql,/drop table public\.(revenue_records|evidence_candidates|affiliate_program_master|ai_conversation_threads)/);assert.doesNotMatch(sql,/insert into public\.(revenue_records|evidence_candidates)/)});
+test("M028 creates eight force-RLS private tables with browser read only",()=>{for(const table of["operational_objects","operational_object_drafts","operational_object_links","operational_activity_events","research_sources","research_findings","internal_action_records","provider_free_quota_states"]){assert.match(sql,new RegExp(`create table public\\.${table}\\(`));assert.match(sql,new RegExp(`alter table public\\.${table} force row level security`))}assert.match(sql,/revoke all on table[\s\S]*from public,anon,authenticated/)});
+test("M028 structurally denies paid unknown and external execution",()=>{assert.match(sql,/paid_cost_jpy numeric\(12,4\) not null default 0 check\(paid_cost_jpy=0\)/);assert.match(sql,/external_execution boolean not null default false check\(external_execution=false\)/);assert.match(sql,/paid_fallback boolean not null default false check\(paid_fallback=false\)/);assert.match(sql,/p_cost_class in\('PAID','UNKNOWN'\)/)});
+test("M028 supports optimistic drafts links research actions and memory hygiene",()=>{for(const value of["operational_object_stale_or_not_found","operational_draft_stale_or_not_found","link_operational_objects","research_findings_supersedes_fk","prepare_internal_action","set_ai_memory_owner_state"])assert.ok(sql.includes(value))});
+test("M028 rollback is bounded to M028 and three additive memory columns",()=>{assert.match(rollback,/drop table if exists public\.operational_objects/);assert.match(rollback,/drop column if exists pinned_at/);assert.doesNotMatch(rollback,/drop table if exists public\.(revenue_records|affiliate_program_master|ai_memory_records)/)});
+test("M028 scoped recovery stores metadata hashes only and is not browser exposed",()=>{const executable=snapshot.replace(/^--.*$/gm,"");assert.match(executable,/create schema m028_recovery authorization postgres/);assert.match(executable,/revoke all on all tables in schema m028_recovery from public, anon, authenticated, service_role/);assert.doesNotMatch(executable,/content_text|provenance|audit_metadata|revenue_records|affiliate_program_master/)});
