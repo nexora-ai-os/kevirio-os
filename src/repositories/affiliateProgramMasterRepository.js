@@ -1,7 +1,7 @@
 import { AffiliateV2Error, mapRepositoryError } from "../domain/affiliateV2Contracts.js";
 import { mapAffiliateProgramMasterRow, normalizeAffiliateLink, normalizeAffiliateProgramUpdate } from "../domain/affiliateProgramMaster.js";
 
-export const AFFILIATE_PROGRAM_MASTER_COLUMNS = "id,workspace_id,asp_name,program_id,advertiser_name,program_name,category,reward_type,reward_summary,reward_details,epc,approval_rate,revisit_window_days,confirmation_days,conversion_conditions,rejection_conditions,pr_points,listing_policy,listing_ng_words,listing_ng_words_raw,listing_ng_words_verification_status,compliance_notes,program_status,affiliate_url,affiliate_link_status,affiliate_url_updated_at,affiliate_url_updated_by,source_type,source_verified_at,source_notes,owner_notes,created_at,updated_at";
+export const AFFILIATE_PROGRAM_MASTER_COLUMNS = "id,workspace_id,asp_name,program_id,advertiser_name,program_name,category,reward_type,reward_summary,reward_details,epc,approval_rate,revisit_window_days,confirmation_days,conversion_conditions,rejection_conditions,pr_points,listing_policy,listing_ng_words,listing_ng_words_raw,listing_ng_words_verification_status,compliance_notes,program_status,affiliate_url,affiliate_link_status,affiliate_url_updated_at,affiliate_url_updated_by,source_type,source_verified_at,source_notes,owner_notes,business_goal,target_audience,promotion_channels,content_plan,compliance_checklist,priority,next_action,next_action_due_at,publication_status,publication_url,business_version,created_at,updated_at";
 
 export function createAffiliateProgramMasterRepository(client) {
   if (!client?.from || !client?.rpc) throw new AffiliateV2Error("RPC_UNAVAILABLE", { operation: "client_required", object: "affiliate_program_master" });
@@ -32,5 +32,8 @@ export function createAffiliateProgramMasterRepository(client) {
       try { const { data, error } = await client.rpc("update_affiliate_program_master", { p_program_master_id: id, p_expected_updated_at: normalized.expectedUpdatedAt, p_changes: normalized.changes }); if (error) throw error; return data; }
       catch (error) { throw mapRepositoryError(error, { operation: "update", object: "affiliate_program_master" }); }
     },
+    async getDraft(id){const{data,error}=await client.from("affiliate_program_drafts").select("program_master_id,draft_payload,draft_version,base_program_updated_at,updated_at").eq("program_master_id",id).maybeSingle();if(error)throw mapRepositoryError(error,{operation:"get_draft",object:"affiliate_program_drafts"});return data||null},
+    async saveDraft(id,{expectedDraftVersion=0,baseProgramUpdatedAt,draftPayload}){const{data,error}=await client.rpc("save_affiliate_program_draft",{p_program_master_id:id,p_expected_draft_version:expectedDraftVersion,p_base_program_updated_at:baseProgramUpdatedAt,p_draft_payload:draftPayload});if(error)throw mapRepositoryError(error,{operation:"save_draft",object:"affiliate_program_drafts"});return data},
+    async updateOperational(id,{expectedBusinessVersion,changes}){const{data,error}=await client.rpc("update_affiliate_program_operational",{p_program_master_id:id,p_expected_business_version:expectedBusinessVersion,p_changes:changes});if(error)throw mapRepositoryError(error,{operation:"update_operational",object:"affiliate_program_master"});return data},
   };
 }
