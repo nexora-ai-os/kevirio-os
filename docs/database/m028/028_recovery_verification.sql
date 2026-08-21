@@ -1,7 +1,7 @@
 -- Read-only verification while the M028 recovery snapshot is retained.
 with current_manifest as (
   select count(*)::bigint as memory_rows,
-         encode(digest(coalesce(string_agg(
+         encode(extensions.digest(coalesce(string_agg(
            concat_ws('|',id,workspace_id,owner_user_id,version,status,content_sha256,
                      extract(epoch from updated_at)), E'\n' order by id),''),'sha256'),'hex') as checksum
   from public.ai_memory_records

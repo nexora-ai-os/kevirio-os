@@ -45,7 +45,7 @@ create table m028_recovery.snapshot_manifest(
 
 insert into m028_recovery.snapshot_manifest
 select clock_timestamp(), count(*),
-       encode(digest(coalesce(string_agg(
+       encode(extensions.digest(coalesce(string_agg(
          concat_ws('|',id,workspace_id,owner_user_id,version,status,content_sha256,
                    extract(epoch from updated_at)), E'\n' order by id),''),'sha256'),'hex')
 from m028_recovery.memory_manifest;
@@ -56,7 +56,7 @@ revoke all on all tables in schema m028_recovery from public, anon, authenticate
 commit;
 
 select case when s.memory_rows=count(m.id)
-              and s.deterministic_checksum=encode(digest(coalesce(string_agg(
+              and s.deterministic_checksum=encode(extensions.digest(coalesce(string_agg(
                 concat_ws('|',m.id,m.workspace_id,m.owner_user_id,m.version,m.status,
                           m.content_sha256,extract(epoch from m.updated_at)), E'\n' order by m.id),''),
                 'sha256'),'hex')

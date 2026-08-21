@@ -18,7 +18,7 @@ set local role authenticated;
 select set_config('request.jwt.claims','{"role":"authenticated","sub":"28000000-0000-4000-8000-000000000001"}',true);
 insert into m028_ids select 'a1',object_id,object_version from public.save_operational_object(null,'QUICK_CAPTURE','A private','', 'READY',null,null,'{}','OWNER_STATED',null);
 insert into m028_ids select 'a2',object_id,object_version from public.save_operational_object(null,'RESEARCH_PACKAGE','A research','', 'READY',null,null,'{}','OWNER_STATED',null);
-insert into m028_ids values('thread_a',public.create_ai_conversation_thread('A private thread',gen_random_uuid()),null);
+insert into m028_ids values('thread_a',public.create_ai_conversation_thread('A private thread',extensions.gen_random_uuid()),null);
 do $$ declare v_msg uuid; begin select message_id into v_msg from public.append_ai_user_message((select id from m028_ids where k='thread_a'),'28000000-0000-4000-8000-000000000201','Owner memory source'); insert into m028_ids values('message_a',v_msg,null); end $$;
 select public.save_operational_draft((select id from m028_ids where k='a1'),null,1,'{"text":"draft-a"}','PC');
 insert into m028_ids values('link_a',public.link_operational_objects('QUICK_CAPTURE',(select id from m028_ids where k='a1'),'RESEARCH_PACKAGE',(select id from m028_ids where k='a2'),'RELATES_TO','{"source":"owner"}'),null);
@@ -38,11 +38,11 @@ do $$ declare v bigint; begin
  begin perform public.save_operational_draft((select id from m028_ids where k='a1'),1,2,'{"text":"stale"}','iPad'); raise exception 'stale_draft_allowed'; exception when raise_exception then if sqlerrm='stale_draft_allowed' then raise; elsif sqlerrm<>'operational_draft_stale_or_not_found' then raise; end if; end;
 end $$;
 do $$ begin
- begin insert into public.operational_objects(id) values(gen_random_uuid()); raise exception 'browser_insert_allowed'; exception when insufficient_privilege then null; end;
+ begin insert into public.operational_objects(id) values(extensions.gen_random_uuid()); raise exception 'browser_insert_allowed'; exception when insufficient_privilege then null; end;
  begin update public.operational_activity_events set event_type='FORGED'; raise exception 'timeline_update_allowed'; exception when insufficient_privilege then null; end;
  begin delete from public.operational_activity_events; raise exception 'timeline_delete_allowed'; exception when insufficient_privilege then null; end;
  begin perform public.register_research_source('28000000-0000-4000-8000-000000000001','https://example.com','x','example.com',null,null,'OTHER_WEB','LOW','FREE_CONFIRMED',null,'{}'); raise exception 'service_rpc_allowed'; exception when insufficient_privilege then null; end;
- begin perform public.link_operational_objects('QUICK_CAPTURE',gen_random_uuid(),'RESEARCH_PACKAGE',(select id from m028_ids where k='a2'),'RELATES_TO','{"source":"x"}'); raise exception 'missing_link_allowed'; exception when raise_exception then if sqlerrm='missing_link_allowed' then raise; end if; end;
+ begin perform public.link_operational_objects('QUICK_CAPTURE',extensions.gen_random_uuid(),'RESEARCH_PACKAGE',(select id from m028_ids where k='a2'),'RELATES_TO','{"source":"x"}'); raise exception 'missing_link_allowed'; exception when raise_exception then if sqlerrm='missing_link_allowed' then raise; end if; end;
  begin perform public.link_operational_objects('WRONG',(select id from m028_ids where k='a1'),'RESEARCH_PACKAGE',(select id from m028_ids where k='a2'),'RELATES_TO','{"source":"x"}'); raise exception 'wrong_type_allowed'; exception when raise_exception then if sqlerrm='wrong_type_allowed' then raise; end if; end;
  begin perform public.link_operational_objects('QUICK_CAPTURE',(select id from m028_ids where k='a1'),'QUICK_CAPTURE',(select id from m028_ids where k='a1'),'RELATES_TO','{"source":"x"}'); raise exception 'self_link_allowed'; exception when check_violation then null; end;
  begin perform public.save_operational_object(null,'QUICK_CAPTURE','secret-test','', 'READY',null,null,'{"client_secret":"hidden"}','OWNER_STATED',null); raise exception 'secret_allowed'; exception when raise_exception then if sqlerrm='secret_allowed' then raise; end if; end;

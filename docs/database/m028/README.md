@@ -128,17 +128,19 @@ After M028 has accepted real data, rollback is always: revoke M028 mutation RPCs
 ## Supabase Web SQL Editor apply procedure
 
 1. Confirm the Production project and retain `m027_recovery`.
-2. Run a read-only inventory for the eight table names, eleven function signatures and three memory columns; all must be absent.
-3. Capture the scoped `ai_memory_records` manifest described above.
-4. Paste the complete `028_full_operational_completion.sql` into a new SQL Editor query.
-5. Run the whole transaction once. Do not select fragments.
-6. Run `028_read_only_verification.sql`.
-7. Run bounded Production security smoke without fixture insertion.
-8. Stop for Owner cross-device practical acceptance. Do not delete either recovery snapshot.
+2. Run `028_namespace_compatibility_audit.sql` with the Production-compatible restricted search path.
+3. Run a read-only inventory for the eight table names, thirteen function signatures and three memory columns; all must be absent.
+4. Run `028_preflight_and_scoped_snapshot.sql`, then `028_recovery_verification.sql`.
+5. Paste the complete `028_full_operational_completion.sql` into a new SQL Editor query.
+6. Run the whole transaction once. Do not select fragments.
+7. Run `028_read_only_verification.sql` and `028_data_health_check.sql`.
+8. Run bounded Production security smoke without fixture insertion.
+9. Stop for Owner cross-device practical acceptance. Do not delete either recovery snapshot.
 
 ## Package files
 
 - `028_full_operational_completion.sql` – forward migration
+- `028_namespace_compatibility_audit.sql` – read-only pgcrypto/schema-resolution audit under a Production-compatible restricted search path
 - `028_preflight_and_scoped_snapshot.sql` – private, metadata-only preflight snapshot
 - `028_recovery_verification.sql` – read-only snapshot/current comparison
 - `028_read_only_verification.sql` – post-apply read-only assertions

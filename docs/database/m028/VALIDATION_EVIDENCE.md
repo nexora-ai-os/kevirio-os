@@ -49,3 +49,44 @@ Synthetic isolated data: 1,001 native objects, 201 drafts, 10,001 timeline event
 ## Scope limits
 
 This proves the M028 database package to system-readiness scope. It does not claim iOS Safari acceptance, real Provider availability, full application L5 reliability, or real-client readiness. Those remain post-Production-approval implementation and acceptance gates.
+
+## Production-compatible namespace validation V2
+
+Date: 2026-08-22
+
+Trigger: Production preflight safely rolled back because unqualified `digest(text, text)` did not resolve outside the isolated environment's extension search path. Production remained M028-not-applied and its M027 recovery remained unchanged.
+
+Remediation and audit:
+
+- all three M028 package `digest` calls are explicitly `extensions.digest`
+- all nine M028 package and executable-fixture UUID calls are explicitly `extensions.gen_random_uuid`
+- static package scan found zero unqualified pgcrypto calls
+- `028_namespace_compatibility_audit.sql` ran with `search_path=pg_catalog, public`
+- exact `extensions.digest(text,text)` and `extensions.gen_random_uuid()` resolution: PASS
+- scoped snapshot under the restricted search path: `M028_SCOPED_SNAPSHOT_PASS`
+- independent snapshot comparison: `M028_RECOVERY_VERIFICATION_PASS`
+
+Free/Nano isolated rerun:
+
+- clean M027 baseline after isolated-only rollback: PASS
+- revised M028 forward apply: PASS
+- read-only RLS/grant/function verification: `M028_READ_ONLY_VERIFICATION_PASS`
+- corruption/orphan health check: `M028_DATA_HEALTH_PASS`
+- executable privacy/cross-user/cross-workspace/DML/cost/secret/concurrency/idempotency suite: PASS and rolled back
+- M028 rollback: PASS
+- M027 regression verification after rollback: PASS
+- revised M028 reapply: PASS
+- recovery verification after reapply: PASS
+- read-only verification after reapply: PASS
+- data health after reapply: PASS
+
+Repository verification:
+
+- full unit/integration/e2e suite: PASS
+- M028 namespace regression tests: 13/13 PASS
+- JavaScript syntax check: 334/334 PASS
+- Production build: PASS
+
+Severity: SEV-0 = 0; SEV-1 = 0.
+
+Production mutation during V2 remediation and validation: 0. Production alias and M027 recovery were unchanged.

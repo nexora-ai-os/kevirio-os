@@ -33,7 +33,7 @@ alter table public.ai_memory_records
   add column owner_archived_at timestamptz;
 
 create table public.operational_objects(
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key default extensions.gen_random_uuid(),
   workspace_id uuid not null,
   owner_user_id uuid not null,
   -- M028 owns only object classes without an existing canonical table. Existing
@@ -78,7 +78,7 @@ create table public.operational_object_drafts(
 );
 
 create table public.operational_object_links(
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key default extensions.gen_random_uuid(),
   workspace_id uuid not null,
   owner_user_id uuid not null,
   from_type text not null check(from_type~'^[A-Z][A-Z0-9_]{1,63}$'),
@@ -115,7 +115,7 @@ create table public.operational_activity_events(
 );
 
 create table public.research_sources(
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key default extensions.gen_random_uuid(),
   workspace_id uuid not null,
   owner_user_id uuid not null,
   canonical_url text not null check(length(canonical_url) between 9 and 2000 and canonical_url~'^https://[^[:space:]]+$'),
@@ -139,7 +139,7 @@ create table public.research_sources(
 );
 
 create table public.research_findings(
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key default extensions.gen_random_uuid(),
   workspace_id uuid not null,
   owner_user_id uuid not null,
   source_id uuid not null,
@@ -174,7 +174,7 @@ alter table public.research_findings add constraint research_findings_supersedes
   references public.research_findings(id,workspace_id,owner_user_id) on delete restrict;
 
 create table public.internal_action_records(
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key default extensions.gen_random_uuid(),
   workspace_id uuid not null,
   owner_user_id uuid not null,
   employee_id text not null check(length(employee_id) between 1 and 80),
@@ -202,7 +202,7 @@ create table public.internal_action_records(
 );
 
 create table public.provider_free_quota_states(
-  id uuid primary key default gen_random_uuid(),
+  id uuid primary key default extensions.gen_random_uuid(),
   workspace_id uuid not null,
   owner_user_id uuid not null,
   provider text not null check(provider~'^[a-z0-9_-]{1,40}$'),
