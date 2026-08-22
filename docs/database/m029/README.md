@@ -8,7 +8,8 @@ timeline append, conversion, and guarded linking without changing M001-M028.
 ## Normal package order
 
 1. `029_preflight_and_scoped_snapshot.sql`
-2. Confirm `M029_SCOPED_SNAPSHOT_PASS` and eight manifest rows.
+2. Run `029_pre_apply_recovery_verification.sql`; require
+   `M029_PRE_APPLY_RECOVERY_VERIFICATION_PASS`.
 3. `029_canonical_mutation_foundation.sql` as one transaction.
 4. `029_read_only_verification.sql`
 5. `029_data_health_check.sql`
@@ -37,6 +38,21 @@ acceptance; cleanup requires separate approval and uses
 
 Production execution remains prohibited until separate Owner approval. Keep the Production
 alias and M027/M028 recovery unchanged.
+
+## Recovery layers
+
+`_m029_recovery` is the sealed pre-apply recovery source. It holds complete rows for only
+the eight existing canonical tables changed by M029, plus deterministic manifests and
+security metadata. The schema is private, FORCE RLS, policy-free, and grants no access to
+browser roles or `service_role`. It must remain until Owner practical acceptance.
+
+The `_m029_recovery_*` public tables are a separate post-use accepted-data export. They do
+not replace the pre-apply snapshot. On a failed M029 rollout: freeze writes; export and
+verify accepted M029 data; run `029_rollback.sql`; run
+`029_restore_pre_apply_business_state.sql`; require
+`M029_PRE_APPLY_RESTORE_VERIFICATION_PASS` from `029_post_restore_verification.sql`; verify
+M028 health; and only then decide whether quarantined accepted data can be reimported.
+Never concatenate these execution units or silently merge conflicting post-M029 values.
 
 ## Security contract
 

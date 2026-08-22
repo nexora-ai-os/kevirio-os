@@ -1,0 +1,16 @@
+begin read only;
+with
+f as(select count(*) total,count(*) filter(where p.prosecdef) secdef,count(*) filter(where p.prosecdef and coalesce(array_to_string(p.proconfig,','),'') like '%search_path=""%') safe_path from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname in('m029_owned_reference_exists','m029_append_event','save_personal_operational_record_v2','save_canonical_domain_draft','save_canonical_domain_object','archive_canonical_domain_object','link_canonical_domain_objects','convert_canonical_domain_object')),
+e as(select count(*) n from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='extensions' and p.proname in('digest','gen_random_uuid')),
+s as(select count(*) tables,count(*) filter(where c.relrowsecurity and c.relforcerowsecurity) force_rls from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname in('canonical_domain_drafts','canonical_domain_conversions')),
+dml as(select count(*) n from information_schema.role_table_grants where table_schema='public' and table_name in('canonical_domain_drafts','canonical_domain_conversions') and grantee in('anon','authenticated') and privilege_type in('INSERT','UPDATE','DELETE','TRUNCATE')),
+health as(
+ select count(*) violations from public.canonical_domain_drafts d where not public.m029_owned_reference_exists(d.object_type,d.object_id,d.owner_user_id,d.workspace_id)
+ union all select count(*) from public.canonical_domain_drafts where base_object_version<=0 or draft_version<=0
+ union all select count(*) from public.operational_object_links l where l.from_type in('GOAL','STRATEGY','WORK','APPLICATION','CLIENT','CONTENT','SNS_ITEM','KNOWLEDGE','IMPROVEMENT') and not public.m029_owned_reference_exists(l.from_type,l.from_id,l.owner_user_id,l.workspace_id)
+ union all select count(*) from public.canonical_domain_conversions c where not public.m029_owned_reference_exists(c.source_type,c.source_id,c.owner_user_id,c.workspace_id) or not public.m029_owned_reference_exists(c.target_type,c.target_id,c.owner_user_id,c.workspace_id)
+ union all select count(*) from (select version from public.clients union all select version::bigint from public.opportunities union all select version from public.owner_decisions union all select version::bigint from public.campaigns union all select version from public.tasks union all select version::bigint from public.content_assets union all select version from public.business_memory_records union all select version from public.personal_operational_records)x where version<=0
+ union all select count(*) from public.campaigns where external_execution_allowed
+),h as(select sum(violations) violations from health)
+select jsonb_build_object('result',case when f.total=8 and f.secdef=8 and f.safe_path=8 and e.n>=2 and s.tables=2 and s.force_rls=2 and dml.n=0 and h.violations=0 then 'M029_POST_REAPPLY_CONSOLIDATED_PASS' else 'FAIL' end,'tables',s.tables,'force_rls',s.force_rls,'functions',f.total,'security_definer',f.secdef,'safe_search_path',f.safe_path,'extension_functions',e.n,'browser_direct_dml',dml.n,'health_violations',h.violations,'paid_ai_jpy',0,'external_execution','LOCKED') verification from f,e,s,dml,h;
+rollback;

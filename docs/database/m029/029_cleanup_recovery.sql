@@ -1,3 +1,3 @@
 begin;
-drop table if exists public._m029_backup_manifest;
+drop schema if exists _m029_recovery cascade;
 commit;

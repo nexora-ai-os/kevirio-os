@@ -43,3 +43,31 @@ test("M029 uses restricted namespace and has bounded rollback",()=>{
   assert.match(rollback,/drop table public\.canonical_domain_drafts/);
   assert.doesNotMatch(rollback,/delete from public\.(revenue_records|evidence_candidates|affiliate_program_master)/i);
 });
+
+test("M029 pre-apply recovery stores restorable rows and exact security state",()=>{
+  const preflight=fs.readFileSync("docs/database/m029/029_preflight_and_scoped_snapshot.sql","utf8");
+  const verify=fs.readFileSync("docs/database/m029/029_pre_apply_recovery_verification.sql","utf8");
+  const restore=fs.readFileSync("docs/database/m029/029_restore_pre_apply_business_state.sql","utf8");
+  const post=fs.readFileSync("docs/database/m029/029_post_restore_verification.sql","utf8");
+  for(const table of ["clients","opportunities","owner_decisions","campaigns","tasks","content_assets","business_memory_records","personal_operational_records"]) assert.match(preflight,new RegExp(table));
+  assert.match(preflight,/create schema _m029_recovery authorization postgres/);
+  assert.match(preflight,/revoke all on schema _m029_recovery from public,anon,authenticated,service_role/);
+  assert.match(preflight,/business_rows/);
+  for(const kind of ["TABLE_SECURITY","POLICY","GRANT","FUNCTION","INDEX"]) assert.match(preflight,new RegExp(kind));
+  assert.match(verify,/M029_PRE_APPLY_RECOVERY_VERIFICATION_PASS/);
+  assert.match(restore,/jsonb_populate_record/);
+  assert.match(restore,/disable trigger user/);
+  assert.match(restore,/grant %s on %I\.%I to %I/);
+  assert.match(post,/M029_PRE_APPLY_RESTORE_VERIFICATION_PASS/);
+  assert.doesNotMatch(preflight,/(?<!extensions\.)\b(?:digest|gen_random_uuid)\s*\(/);
+});
+
+test("M029 recovery artifacts deny browser and service access with FORCE RLS",()=>{
+  const fixture=fs.readFileSync("docs/database/m029/029_recovery_00_create_accepted_fixture.sql","utf8");
+  const freeze=fs.readFileSync("docs/database/m029/029_freeze_accepted_data.sql","utf8");
+  for(const source of [fixture,freeze]){
+    assert.match(source,/enable row level security/);
+    assert.match(source,/force row level security/);
+    assert.match(source,/revoke all .* from public,anon,authenticated,service_role/);
+  }
+});

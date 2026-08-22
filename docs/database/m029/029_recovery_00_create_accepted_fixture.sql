@@ -7,6 +7,8 @@ insert into public.account_personal_workspaces(user_id,workspace_id) values('290
 insert into public.brand_profiles(id,workspace_id,name,slug) values('29000000-0000-4000-8000-0000000000a3','29000000-0000-4000-8000-0000000000a2','M029 recovery','m029-recovery') on conflict(id) do nothing;
 drop table if exists public._m029_recovery_expected;
 create table public._m029_recovery_expected(owner_user_id uuid,workspace_id uuid,client_id uuid,application_id uuid,goal_id uuid,work_id uuid,content_id uuid,knowledge_id uuid,quick_capture_id uuid,converted_content_id uuid,draft_version bigint,content_version bigint,work_version bigint,link_id uuid,conversion_id uuid,timeline_count bigint,timeline_max_id bigint,timeline_hash text,state_hash text);
+alter table public._m029_recovery_expected enable row level security;
+alter table public._m029_recovery_expected force row level security;
 revoke all on public._m029_recovery_expected from public,anon,authenticated,service_role;
 do $fixture$
 declare u uuid:='29000000-0000-4000-8000-0000000000a1';w uuid:='29000000-0000-4000-8000-0000000000a2';b uuid:='29000000-0000-4000-8000-0000000000a3';cl uuid;ap uuid;g uuid;wk uuid;ct uuid;kn uuid;q uuid;cc uuid;li uuid;ci uuid;v bigint;cv bigint;wv bigint;dv bigint;tc bigint;tm bigint;th text;sh text;
