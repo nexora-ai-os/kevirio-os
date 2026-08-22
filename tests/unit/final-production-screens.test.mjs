@@ -48,7 +48,8 @@ test("Inbox and Settings are truthful non-mutating boundaries", () => {
 });
 
 test("Audit is Owner-workspace scoped and redacts unsafe summaries", () => {
-  assert.match(audit, /workspace_members/);
+  assert.match(audit, /resolve_personal_workspace/);
+  assert.doesNotMatch(audit, /workspace_members/);
   assert.match(audit, /audit_logs/);
   assert.match(audit, /validateCredentialFreePayload/);
   assert.match(audit, /\[redacted\]/);

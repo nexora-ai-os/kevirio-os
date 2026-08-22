@@ -8,3 +8,14 @@ export function createSupabaseServerClient(env = process.env, clientFactory = cr
     return clientFactory(url, key, { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } });
   } catch { return null; }
 }
+
+export function createSupabaseUserServerClient(req, env = process.env, clientFactory = createClient) {
+  const url = env?.SUPABASE_URL; const key = env?.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const authorization = String(req?.headers?.authorization || "");
+  if (!url || !key || !/^Bearer\s+\S+$/.test(authorization) || typeof clientFactory !== "function") return null;
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) return null;
+    return clientFactory(url, key, { global: { headers: { Authorization: authorization } }, auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } });
+  } catch { return null; }
+}

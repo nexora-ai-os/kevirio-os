@@ -29,6 +29,7 @@ const NextWorkPage = lazy(() => import("./components/next/NextWorkRevenueLearnin
 const NextRevenueCapturePage = lazy(() => import("./components/next/NextWorkRevenueLearning.jsx").then(module=>({default:module.NextRevenueCapturePage})));
 const NextRetrospectivePage = lazy(() => import("./components/next/NextWorkRevenueLearning.jsx").then(module=>({default:module.NextRetrospectivePage})));
 const CanonicalDomainWorkspace = lazy(() => import("./components/next/CanonicalDomainWorkspace.jsx"));
+const GlobalIntelligenceWorkspace = lazy(() => import("./components/next/GlobalIntelligenceWorkspace.jsx"));
 
 export default function App({ ownerSession, ownerSupabaseClient, onOwnerLogout, initialPage = "home", onPageChange }) {
   const [page, setPageState] = useState(initialPage);
@@ -50,7 +51,7 @@ export default function App({ ownerSession, ownerSupabaseClient, onOwnerLogout, 
     audit: <CanonicalAudit ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     settings: <CanonicalSettings ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     companyCore: <CompanyCoreV3Workspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
-    businessIntelligence: <CompanyCoreV3Workspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} mode="intelligence" />,
+    businessIntelligence: <GlobalIntelligenceWorkspace client={ownerSupabaseClient} />,
   }), [ownerSession, ownerSupabaseClient, setPage]);
   const environment=typeof window!=="undefined"&&window.location.hostname.endsWith(".vercel.app")?"Preview":import.meta.env.PROD?"Production":"Local";
   return <ApplicationShell sidebar={<Sidebar />} topbar={<TopBar onLogout={onOwnerLogout} environment={environment} />}><ErrorBoundary><Suspense fallback={<main className="content" aria-busy="true"><p role="status">画面を読み込み中</p></main>}>{pages[page] || pages.home}</Suspense></ErrorBoundary></ApplicationShell>;
