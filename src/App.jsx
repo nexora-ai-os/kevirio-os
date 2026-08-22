@@ -28,26 +28,27 @@ const NextOpportunityLifecyclePage = lazy(() => import("./components/next/NextOp
 const NextWorkPage = lazy(() => import("./components/next/NextWorkRevenueLearning.jsx").then(module=>({default:module.NextWorkPage})));
 const NextRevenueCapturePage = lazy(() => import("./components/next/NextWorkRevenueLearning.jsx").then(module=>({default:module.NextRevenueCapturePage})));
 const NextRetrospectivePage = lazy(() => import("./components/next/NextWorkRevenueLearning.jsx").then(module=>({default:module.NextRetrospectivePage})));
+const CanonicalDomainWorkspace = lazy(() => import("./components/next/CanonicalDomainWorkspace.jsx"));
 
 export default function App({ ownerSession, ownerSupabaseClient, onOwnerLogout, initialPage = "home", onPageChange }) {
   const [page, setPageState] = useState(initialPage);
   useEffect(() => { setPageState(initialPage); }, [initialPage]);
   const setPage = useCallback((nextPage) => { setPageState(nextPage); onPageChange?.(nextPage); }, [onPageChange]);
   const pages = useMemo(() => ({
-    home:<NextPersonalHome client={ownerSupabaseClient} />, assistant:<NextDurableAssistant client={ownerSupabaseClient} />, goals:<NextWorkspace page="goals" client={ownerSupabaseClient} />, sns:<NextWorkspace page="sns" client={ownerSupabaseClient} />, snsAnalytics:<NextWorkspace page="snsAnalytics" client={ownerSupabaseClient} />, content:<NextDurableSurfaces page="content" client={ownerSupabaseClient} />, note:<NextWorkspace page="note" client={ownerSupabaseClient} />,
-    opportunities:<NextOpportunityLifecyclePage client={ownerSupabaseClient} />, outreach:<NextWorkspace page="outreach" client={ownerSupabaseClient} />, projects:<NextWorkPage client={ownerSupabaseClient} />, retrospective:<NextRetrospectivePage client={ownerSupabaseClient} />, studio:<NextWorkspace page="studio" client={ownerSupabaseClient} />, revenueCenter:<NextRevenueCapturePage client={ownerSupabaseClient} />, crm:<NextWorkspace page="crm" client={ownerSupabaseClient} />,
-    employees:<NextWorkspace page="employees" client={ownerSupabaseClient} />, team:<NextTeamAdministration session={ownerSession} />, knowledge:<NextWorkspace page="knowledge" client={ownerSupabaseClient} />, feedback:<NextDurableSurfaces page="feedback" client={ownerSupabaseClient} />, connectors:<GoogleIntegrationWorkspace client={ownerSupabaseClient} session={ownerSession} />, safety:<NextWorkspace page="safety" client={ownerSupabaseClient} />, legal:<NextDurableSurfaces page="legal" client={ownerSupabaseClient} />,
+    home:<NextPersonalHome client={ownerSupabaseClient} />, assistant:<NextDurableAssistant client={ownerSupabaseClient} />, goals:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="GOAL" />, sns:<NextWorkspace page="sns" client={ownerSupabaseClient} />, snsAnalytics:<NextWorkspace page="snsAnalytics" client={ownerSupabaseClient} />, content:<NextDurableSurfaces page="content" client={ownerSupabaseClient} />, note:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="CONTENT" />,
+    opportunities:<NextOpportunityLifecyclePage client={ownerSupabaseClient} />, outreach:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="APPLICATION" />, projects:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="WORK" />, retrospective:<NextRetrospectivePage client={ownerSupabaseClient} />, studio:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="CONTENT" />, revenueCenter:<NextRevenueCapturePage client={ownerSupabaseClient} />, crm:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="CLIENT" />,
+    employees:<NextWorkspace page="employees" client={ownerSupabaseClient} />, team:<NextTeamAdministration session={ownerSession} />, knowledge:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="KNOWLEDGE" />, feedback:<CanonicalDomainWorkspace client={ownerSupabaseClient} type="IMPROVEMENT" />, connectors:<GoogleIntegrationWorkspace client={ownerSupabaseClient} session={ownerSession} />, safety:<CanonicalAudit ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />, legal:<NextDurableSurfaces page="legal" client={ownerSupabaseClient} />,
     googleOperations: <GoogleOperationsEmployee />,
     approval: <CanonicalApprovals ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     operations: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     campaign: <OfferOperationsWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     affiliate: <AffiliateIntelligenceWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     production: <ProductionRevenueWorkspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
-    analytics: <NextWorkspace page="analytics" client={ownerSupabaseClient} />,
+    analytics: <Analytics ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     providerHub: <ProviderHub ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     inbox: <CanonicalInbox setPage={setPage} />,
     audit: <CanonicalAudit ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
-    settings: <NextWorkspace page="settings" client={ownerSupabaseClient} />,
+    settings: <CanonicalSettings ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     companyCore: <CompanyCoreV3Workspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} />,
     businessIntelligence: <CompanyCoreV3Workspace ownerSupabaseClient={ownerSupabaseClient} ownerSession={ownerSession} mode="intelligence" />,
   }), [ownerSession, ownerSupabaseClient, setPage]);
