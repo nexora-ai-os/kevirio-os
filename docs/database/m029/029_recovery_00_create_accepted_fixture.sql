@@ -1,0 +1,32 @@
+begin;
+insert into auth.users(id) values('29000000-0000-4000-8000-0000000000a1') on conflict(id) do nothing;
+insert into public.owner_profiles(owner_id,role,status) values('29000000-0000-4000-8000-0000000000a1','owner','active') on conflict(owner_id) do update set status='active';
+insert into public.workspaces(id,owner_id,slug,name,status) values('29000000-0000-4000-8000-0000000000a2','29000000-0000-4000-8000-0000000000a1','m029-recovery','M029 recovery','active') on conflict(id) do nothing;
+insert into public.workspace_members(workspace_id,user_id,role,status) values('29000000-0000-4000-8000-0000000000a2','29000000-0000-4000-8000-0000000000a1','owner','active') on conflict(workspace_id,user_id) do nothing;
+insert into public.account_personal_workspaces(user_id,workspace_id) values('29000000-0000-4000-8000-0000000000a1','29000000-0000-4000-8000-0000000000a2') on conflict(user_id) do update set workspace_id=excluded.workspace_id;
+insert into public.brand_profiles(id,workspace_id,name,slug) values('29000000-0000-4000-8000-0000000000a3','29000000-0000-4000-8000-0000000000a2','M029 recovery','m029-recovery') on conflict(id) do nothing;
+drop table if exists public._m029_recovery_expected;
+create table public._m029_recovery_expected(owner_user_id uuid,workspace_id uuid,client_id uuid,application_id uuid,goal_id uuid,work_id uuid,content_id uuid,knowledge_id uuid,quick_capture_id uuid,converted_content_id uuid,draft_version bigint,content_version bigint,work_version bigint,link_id uuid,conversion_id uuid,timeline_count bigint,timeline_max_id bigint,timeline_hash text,state_hash text);
+revoke all on public._m029_recovery_expected from public,anon,authenticated,service_role;
+do $fixture$
+declare u uuid:='29000000-0000-4000-8000-0000000000a1';w uuid:='29000000-0000-4000-8000-0000000000a2';b uuid:='29000000-0000-4000-8000-0000000000a3';cl uuid;ap uuid;g uuid;wk uuid;ct uuid;kn uuid;q uuid;cc uuid;li uuid;ci uuid;v bigint;cv bigint;wv bigint;dv bigint;tc bigint;tm bigint;th text;sh text;
+begin
+ perform set_config('request.jwt.claim.role','authenticated',true);perform set_config('request.jwt.claim.sub',u::text,true);
+ select object_id,object_version into cl,v from public.save_canonical_domain_object('CLIENT',null,null,jsonb_build_object('display_name','Recovery client'),'m029:recovery:client');
+ select object_id,object_version into ap,v from public.save_canonical_domain_object('APPLICATION',null,null,jsonb_build_object('brand_id',b,'client_id',cl,'title','Recovery application','summary','safe','lane','service','provenance',jsonb_build_object('source','M029_RECOVERY')),'m029:recovery:application');
+ select object_id,object_version into g,v from public.save_canonical_domain_object('GOAL',null,null,jsonb_build_object('brand_id',b,'client_id',cl,'opportunity_id',ap,'business_mode','own_business','lane','service','channel','internal'),'m029:recovery:goal');
+ select object_id,object_version into wk,wv from public.save_canonical_domain_object('WORK',null,null,jsonb_build_object('campaign_id',g,'type','recovery_task','status','pending'),'m029:recovery:work');
+ select object_id,object_version into ct,cv from public.save_personal_operational_record_v2(null,'CONTENT','Recovery content',jsonb_build_object('status','DRAFT','body','safe accepted fixture'),'DRAFT',null,'m029:recovery:content');
+ select object_id,object_version into kn,v from public.save_canonical_domain_object('KNOWLEDGE',null,null,jsonb_build_object('brand_id',b,'client_id',cl,'record_type','fact','sensitivity_level','internal','provenance',jsonb_build_object('source','M029_RECOVERY'),'content_json',jsonb_build_object('summary','safe'),'retention_policy','standard'),'m029:recovery:knowledge');
+ select public.save_canonical_domain_draft('CONTENT',ct,0,cv,jsonb_build_object('body','durable accepted fixture'),'PC') into dv;
+ insert into public.operational_objects(workspace_id,owner_user_id,object_type,title,state) values(w,u,'QUICK_CAPTURE','Recovery capture','READY') returning id into q;
+ select public.link_canonical_domain_objects('CONTENT',ct,'QUICK_CAPTURE',q,'RELATES_TO',jsonb_build_object('source','M029_RECOVERY')) into li;
+ select public.convert_canonical_domain_object('QUICK_CAPTURE',q,'CONTENT',jsonb_build_object('title','Recovery converted','payload',jsonb_build_object('status','DRAFT')),'m029:recovery:convert',jsonb_build_object('source','M029_RECOVERY')) into cc;
+ select id into ci from public.canonical_domain_conversions where owner_user_id=u and idempotency_key='m029:recovery:convert';
+ select public.archive_canonical_domain_object('WORK',wk,wv,'m029:recovery:archive:work') into wv;
+ select count(*),max(id),encode(extensions.digest(coalesce(string_agg(id::text||':'||object_id::text||':'||event_type,',' order by id),''),'sha256'),'hex') into tc,tm,th from public.operational_activity_events where owner_user_id=u;
+ sh:=encode(extensions.digest(concat_ws(':',cl,ap,g,wk,ct,kn,q,cc,dv,cv,wv,li,ci),'sha256'),'hex');
+ insert into public._m029_recovery_expected values(u,w,cl,ap,g,wk,ct,kn,q,cc,dv,cv,wv,li,ci,tc,tm,th,sh);
+end $fixture$;
+commit;
+select jsonb_build_object('result','M029_RECOVERY_FIXTURE_PASS','objects',8,'drafts',1,'links',2,'conversions',1,'archived_work',1) verification;

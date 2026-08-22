@@ -1,0 +1,3 @@
+begin read only;
+with e as(select * from public._m029_recovery_expected),v as(select count(*) n from public._m029_recovery_canonical_versions where owner_user_id=(select owner_user_id from e)),d as(select count(*) n from public._m029_recovery_drafts where owner_user_id=(select owner_user_id from e)),c as(select count(*) n from public._m029_recovery_conversions where owner_user_id=(select owner_user_id from e)) select jsonb_build_object('result',case when v.n>=7 and d.n=1 and c.n=1 then 'M029_RECOVERY_EXPORT_PASS' else 'FAIL' end,'version_rows',v.n,'draft_rows',d.n,'conversion_rows',c.n) verification from v,d,c;
+rollback;
