@@ -20,6 +20,8 @@ test("canonical workspaces expose persistence search timeline and conflict UX", 
   for (const type of ["GOAL", "APPLICATION", "WORK", "CLIENT", "CONTENT", "KNOWLEDGE", "IMPROVEMENT"])
     assert.match(app, new RegExp(`type=\\"${type}\\"`));
   assert.match(component, /Canonical timeline/);
+  assert.match(component, /<main className="next-workspace"/);
+  assert.match(component, /<h1>\{LABELS\[type\]\}<\/h1>/);
   assert.match(component, /type="search"/);
   assert.match(component, /別端末で更新されています/);
   assert.match(component, /External Execution LOCKED/);

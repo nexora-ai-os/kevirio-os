@@ -54,7 +54,9 @@ export default function CanonicalDomainWorkspace({ client, type }) {
   };
   const needsBrand = type === "APPLICATION"; const needsApplication = type === "GOAL"; const needsGoal = type === "WORK";
   const blocked = (needsBrand && !state.dependencies.brands.length) || (needsApplication && !state.dependencies.applications.length) || (needsGoal && !state.dependencies.goals.length);
-  return <div className="next-grid" aria-busy={state.loading}>
+  return <main className="next-workspace" aria-busy={state.loading}>
+    <header className="next-header"><div><span>KEVIRIO NEXT</span><h1>{LABELS[type]}</h1><p>Personal Workspaceの正規データを、M029の保護された経路で管理します。</p></div><div className="next-header__state"><span className="next-state next-state--blocked">外部実行 停止中</span><small>Paid AI ¥0</small></div></header>
+    <div className="next-grid">
     <section className="next-card next-card--wide"><header><h2>{LABELS[type]}を登録</h2></header>
       <form className="next-form" onSubmit={submit}>
         <label className="next-span">タイトル<input name="title" required maxLength={300}/></label>
@@ -73,5 +75,6 @@ export default function CanonicalDomainWorkspace({ client, type }) {
     {editing ? <section className="next-card next-card--wide"><header><h2>端末間で継続できる下書き</h2></header><p>{editing.canonical_title} / 基準 v{editing.version}</p><textarea value={draftText} onChange={(e) => setDraftText(e.target.value)}/><div className="next-actions"><button className="next-primary" onClick={saveDraft}>下書きを保存</button><button className="next-link" onClick={() => setEditing(null)}>閉じる</button></div><p className="next-note">別端末が先に更新した場合は上書きせず、競合として停止します。</p></section> : null}
     <section className="next-card"><header><h2>Canonical timeline</h2></header>{state.timeline.length ? <ul className="next-list">{state.timeline.slice(0, 10).map((event) => <li key={event.id}><b>{event.event_type}</b><span>{new Date(event.created_at).toLocaleString("ja-JP")}</span></li>)}</ul> : <p>履歴はまだありません。</p>}</section>
     <section className="next-card"><header><h2>安全境界</h2></header><p>Private by default / Paid AI ¥0 / External Execution LOCKED</p></section>
-  </div>;
+    </div>
+  </main>;
 }
