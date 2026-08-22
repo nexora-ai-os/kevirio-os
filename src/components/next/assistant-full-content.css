@@ -1,0 +1,8 @@
+.assistant-2__messages{max-height:none;overflow:visible;overscroll-behavior:auto}
+.assistant-2__messages article{max-width:min(92%,880px);min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.assistant-2__markdown{white-space:normal}
+.assistant-2__markdown p,.assistant-2__markdown ul,.assistant-2__markdown ol,.assistant-2__markdown pre{margin:10px 0}
+.assistant-2__markdown ul,.assistant-2__markdown ol{padding-inline-start:24px}
+.assistant-2__markdown pre{max-width:100%;padding:12px;border-radius:10px;background:#24211d;color:#fff;overflow-x:auto;white-space:pre-wrap}
+.assistant-2__limit{padding:8px 10px;border-left:3px solid #9a742d;background:#fff8e8;color:#6d4d12;font-weight:700}
+@media(max-width:800px){.assistant-2__messages{max-height:none;overflow:visible}}

@@ -91,9 +91,14 @@ export default async function handler(req, res) {
       const statusCode = result.reasonCode === "GEMINI_QUOTA_EXHAUSTED" ? 429 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : 502;
       return res.status(statusCode).json(result);
     }
+    const apiReceivedLength = result.text.length;
+    if (apiReceivedLength > 12000) return res.status(502).json({ ok: false, reasonCode: "ASSISTANT_RESPONSE_EXCEEDS_M027_LIMIT", providerRawLength: result.rawLength, apiReceivedLength, paidFallbackCalls: 0, externalExecution: false });
     const requestId = globalThis.crypto?.randomUUID?.() || `gemini-${Date.now()}`;
-    const persisted = await client.rpc("append_ai_assistant_message", { p_owner_user_id: ownerId, p_thread_id: threadId, p_content: result.text, p_provider: "gemini", p_model: result.model, p_provider_request_id: requestId, p_provenance: { source: "GEMINI_FREE", truth_class: "AI_OUTPUT", evidence_status: "NOT_EVIDENCE" }, p_audit_metadata: { feature: body.feature, paid_ai_jpy: 0, external_execution: "LOCKED" } });
+    const persisted = await client.rpc("append_ai_assistant_message", { p_owner_user_id: ownerId, p_thread_id: threadId, p_content: result.text, p_provider: "gemini", p_model: result.model, p_provider_request_id: requestId, p_provenance: { source: "GEMINI_FREE", truth_class: "AI_OUTPUT", evidence_status: "NOT_EVIDENCE" }, p_audit_metadata: { feature: body.feature, paid_ai_jpy: 0, external_execution: "LOCKED", provider_raw_length: result.rawLength, api_received_length: apiReceivedLength, finish_reason: result.finishReason, model_output_limited: result.modelOutputLimited } });
     if (persisted.error) return res.status(503).json({ ok: false, reasonCode: "ASSISTANT_RESPONSE_PERSIST_FAILED" });
+    const stored = await client.from("ai_conversation_messages").select("content_text").eq("id", persisted.data).eq("owner_user_id", ownerId).maybeSingle();
+    const dbStoredLength = stored.data?.content_text?.length ?? null;
+    if (stored.error || dbStoredLength !== apiReceivedLength) return res.status(503).json({ ok: false, reasonCode: "ASSISTANT_RESPONSE_LENGTH_MISMATCH" });
     const currentThread = await client.from("ai_conversation_threads").select("version,next_message_sequence").eq("id", threadId).eq("owner_user_id", ownerId).maybeSingle();
     const summaryMessages = [...(messageResult.data || []).reverse(), { role: "ASSISTANT", truth_class: "AI_OUTPUT", content_text: result.text }].slice(-8);
     const summary = ["Subject: current Owner conversation", "Constraints: Paid AI ¥0; External Execution LOCKED; AI output is not Evidence.", ...summaryMessages.map((item) => `${item.role === "USER" ? "USER_STATED" : "AI_PROPOSAL"}: ${String(item.content_text).replace(/\s+/g, " ").slice(0, 700)}`)].join("\n").slice(0, 12000);
@@ -109,7 +114,7 @@ export default async function handler(req, res) {
         if (!existing.data && !existing.error) await client.rpc("upsert_ai_memory", { p_owner_user_id: ownerId, p_source_thread_id: threadId, p_source_message_id: sourceMessageId, p_memory_kind: memoryKind, p_content: String(body.text).trim().slice(0, 8000), p_normalized_key: normalizedKey, p_provenance: { source: "OWNER_INPUT", source_message_id: sourceMessageId, extraction: "EXPLICIT_ONLY" }, p_confidence: 1, p_supersedes_id: null });
       }
     }
-    return res.status(200).json({ ...result, messageId: persisted.data, contextPolicy: "BOUNDED_PERSONAL_LIVE_OPERATIONAL", contextItemCount:liveContext.itemCount, rollingSummary: "UPDATED_OR_DEFERRED", memoryPolicy: "EXPLICIT_OWNER_INPUT_ONLY" });
+    return res.status(200).json({ ...result, messageId: persisted.data, providerRawLength: result.rawLength, apiReceivedLength, dbStoredLength, contextPolicy: "BOUNDED_PERSONAL_LIVE_OPERATIONAL", contextItemCount:liveContext.itemCount, rollingSummary: "UPDATED_OR_DEFERRED", memoryPolicy: "EXPLICIT_OWNER_INPUT_ONLY" });
   }
   if (body.action === "geminiDailyGenerate") {
     const verified = await resolveVerifiedOwnerWorkspaceContext(req, body.workspaceId);
