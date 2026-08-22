@@ -7,5 +7,7 @@ test("audit resolves the server-derived Personal Workspace without assuming one 
   assert.match(source, /rpc\("resolve_personal_workspace"\)/);
   assert.doesNotMatch(source, /from\("workspace_members"\)/);
   assert.match(source, /\.eq\("workspace_id", workspace\.data\)/);
+  assert.match(source, /from\("operational_activity_events"\)/);
+  assert.match(source, /source: "OPERATIONAL_ACTIVITY"/);
   assert.doesNotMatch(source, /insert\(|update\(|delete\(/);
 });
