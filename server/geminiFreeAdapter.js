@@ -1,5 +1,5 @@
 const MODEL = "gemini-2.5-flash";
-export const GEMINI_FREE_MAX_OUTPUT_TOKENS = 8192;
+export const GEMINI_FREE_MAX_OUTPUT_TOKENS = 10000;
 export async function dispatchGeminiFree(prompt, options = {}) {
   const transport = options.transport || fetch;
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
