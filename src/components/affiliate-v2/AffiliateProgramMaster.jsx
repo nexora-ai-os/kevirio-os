@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { restoreAffiliateProposedChanges } from "./affiliateDraftRestore.js";
 import {
   Badge,
   Button,
@@ -531,6 +532,18 @@ function Detail({
       ["ownerNotes", program.ownerNotes || ""],
     ]),
   );
+  useEffect(() => {
+    let active = true;
+    onLoadDraft(program.id)
+      .then((draft) => {
+        const restored = restoreAffiliateProposedChanges(draft?.draft_payload);
+        if (active && restored) setEdit((current) => ({ ...current, ...restored }));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [program.id]);
   const update = async (changes) => {
     setNotice("保存中…");
     try {
