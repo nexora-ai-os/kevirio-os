@@ -1,0 +1,6 @@
+do $$ declare n int;begin
+ select count(*) into n from pg_proc p join pg_namespace s on s.oid=p.pronamespace where s.nspname='public' and p.oid::regprocedure::text in('update_affiliate_program_master_practical(uuid,timestamp with time zone,bigint,jsonb)','delete_affiliate_program_master_if_safe(uuid,timestamp with time zone,bigint,text)') and p.prosecdef and p.proowner='postgres'::regrole and p.proconfig@>array['search_path=""'];if n<>2 then raise exception 'm030_function_security_invalid:%',n;end if;
+ if exists(select 1 from information_schema.role_table_grants where table_schema='public' and table_name='affiliate_program_master' and grantee in('anon','authenticated') and privilege_type in('INSERT','UPDATE','DELETE')) then raise exception 'm030_browser_dml_exposed';end if;
+ if exists(select 1 from information_schema.routine_privileges where specific_schema='public' and routine_name in('update_affiliate_program_master_practical','delete_affiliate_program_master_if_safe') and grantee in('PUBLIC','anon')) then raise exception 'm030_anon_rpc_exposed';end if;
+end$$;
+select jsonb_build_object('result','M030_READ_ONLY_VERIFICATION_PASS','functions',2,'browser_direct_dml',0,'paid_ai_jpy',0,'external_execution','LOCKED') verification;

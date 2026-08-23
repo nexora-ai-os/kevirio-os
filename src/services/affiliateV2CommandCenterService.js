@@ -19,6 +19,8 @@ export function createAffiliateV2CommandCenterService(client){
     saveProgramMasterAffiliateLink:(workspaceId,programId,input)=>programMaster.saveAffiliateLink(workspaceId,programId,input),
     registerProgramMaster:(input)=>programMaster.registerProgram(input),
     updateProgramMaster:(programId,input)=>programMaster.updateProgram(programId,input),
+    updateProgramMasterPractical:(programId,input)=>programMaster.updatePractical(programId,input),
+    deleteProgramMasterIfSafe:(programId,input)=>programMaster.deleteIfSafe(programId,input),
     getProgramMasterDraft:(programId)=>programMaster.getDraft(programId),
     saveProgramMasterDraft:(programId,input)=>programMaster.saveDraft(programId,input),
     updateProgramMasterOperational:(programId,input)=>programMaster.updateOperational(programId,input),

@@ -4,6 +4,7 @@ export const LISTING_VERIFICATION_STATES = Object.freeze(["CONFIRMED", "NOT_CONF
 export const AFFILIATE_LINK_STATES = Object.freeze(["NOT_REGISTERED", "ACTIVE", "PAUSED", "EXPIRED", "INVALID"]);
 export const AFFILIATE_PROGRAM_STATES = Object.freeze(["ACTIVE", "PAUSED", "ARCHIVED", "EXPIRED", "UNKNOWN"]);
 export const AFFILIATE_PROGRAM_EDIT_FIELDS = Object.freeze(["aspName", "programId", "advertiserName", "programName", "category", "rewardSummary", "conversionConditions", "rejectionConditions", "complianceNotes", "sourceNotes", "ownerNotes", "programStatus"]);
+export const AFFILIATE_PROGRAM_PRACTICAL_FIELDS = Object.freeze(["aspName","programId","advertiserName","programName","category","rewardType","rewardSummary","rewardDetails","epc","approvalRate","revisitWindowDays","confirmationDays","conversionConditions","rejectionConditions","prPoints","listingPolicy","listingNgWords","listingNgWordsRaw","listingVerificationStatus","complianceNotes","sourceType","sourceVerifiedAt","sourceNotes","ownerNotes"]);
 
 const text = (value) => value == null ? null : String(value).trim();
 
@@ -25,6 +26,13 @@ export function normalizeAffiliateProgramUpdate(input = {}) {
   if (!Object.keys(changes).length) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "changes_required", object: "affiliate_program_master" });
   if (changes.program_status && !AFFILIATE_PROGRAM_STATES.includes(changes.program_status)) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_program_status", object: "affiliate_program_master" });
   return Object.freeze({ expectedUpdatedAt: new Date(input.expectedUpdatedAt).toISOString(), changes: Object.freeze(changes) });
+}
+
+export function normalizeAffiliateProgramPracticalUpdate(input={}){
+  if(!input.expectedUpdatedAt||!Number.isInteger(Number(input.expectedBusinessVersion))||Number(input.expectedBusinessVersion)<1)throw new AffiliateV2Error("VALIDATION_FAILED",{operation:"practical_version_required",object:"affiliate_program_master"});
+  const changes={};for(const field of AFFILIATE_PROGRAM_PRACTICAL_FIELDS)if(Object.prototype.hasOwnProperty.call(input.changes||{},field)){const key=field.replace(/[A-Z]/g,l=>`_${l.toLowerCase()}`);const value=input.changes[field];changes[key]=typeof value==="string"?value.trim():value}
+  if(!Object.keys(changes).length)throw new AffiliateV2Error("VALIDATION_FAILED",{operation:"practical_changes_required",object:"affiliate_program_master"});
+  return Object.freeze({expectedUpdatedAt:new Date(input.expectedUpdatedAt).toISOString(),expectedBusinessVersion:Number(input.expectedBusinessVersion),changes:Object.freeze(changes)});
 }
 
 export function mapAffiliateProgramMasterRow(row) {
