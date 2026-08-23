@@ -29,10 +29,11 @@ export function normalizeAffiliateProgramUpdate(input = {}) {
 }
 
 export function normalizeAffiliateProgramPracticalUpdate(input={}){
-  if(!input.expectedUpdatedAt||!Number.isInteger(Number(input.expectedBusinessVersion))||Number(input.expectedBusinessVersion)<1)throw new AffiliateV2Error("VALIDATION_FAILED",{operation:"practical_version_required",object:"affiliate_program_master"});
+  const expectedUpdatedAt=String(input.expectedUpdatedAt||"").trim();
+  if(!expectedUpdatedAt||Number.isNaN(new Date(expectedUpdatedAt).valueOf())||!Number.isInteger(Number(input.expectedBusinessVersion))||Number(input.expectedBusinessVersion)<1)throw new AffiliateV2Error("VALIDATION_FAILED",{operation:"practical_version_required",object:"affiliate_program_master"});
   const changes={};for(const field of AFFILIATE_PROGRAM_PRACTICAL_FIELDS)if(Object.prototype.hasOwnProperty.call(input.changes||{},field)){const key=field==="listingVerificationStatus"?"listing_ng_words_verification_status":field.replace(/[A-Z]/g,l=>`_${l.toLowerCase()}`);const value=input.changes[field];changes[key]=typeof value==="string"?value.trim():value}
   if(!Object.keys(changes).length)throw new AffiliateV2Error("VALIDATION_FAILED",{operation:"practical_changes_required",object:"affiliate_program_master"});
-  return Object.freeze({expectedUpdatedAt:new Date(input.expectedUpdatedAt).toISOString(),expectedBusinessVersion:Number(input.expectedBusinessVersion),changes:Object.freeze(changes)});
+  return Object.freeze({expectedUpdatedAt,expectedBusinessVersion:Number(input.expectedBusinessVersion),changes:Object.freeze(changes)});
 }
 
 export function mapAffiliateProgramMasterRow(row) {
