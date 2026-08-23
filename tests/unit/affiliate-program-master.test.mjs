@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { listingComplianceLabel, mapAffiliateProgramMasterRow, normalizeAffiliateLink, normalizeAffiliateProgramUpdate } from "../../src/domain/affiliateProgramMaster.js";
+import { listingComplianceLabel, mapAffiliateProgramMasterRow, normalizeAffiliateLink, normalizeAffiliateProgramPracticalUpdate, normalizeAffiliateProgramUpdate } from "../../src/domain/affiliateProgramMaster.js";
 
 const row = (overrides = {}) => ({ id:"1",workspace_id:"w",asp_name:"A8.net",program_id:"s1",advertiser_name:"Advertiser",program_name:"Program",listing_ng_words:null,listing_ng_words_verification_status:"NOT_CONFIRMED",affiliate_link_status:"NOT_REGISTERED",...overrides });
 
@@ -10,3 +10,4 @@ test("Program Master rejects non-null words for NOT_CONFIRMED",()=>assert.throws
 test("affiliate links accept only trimmed http and https URLs",()=>{assert.deepEqual(normalizeAffiliateLink({affiliateUrl:"  https://example.com/a  ",linkStatus:"ACTIVE"}),{affiliateUrl:"https://example.com/a",linkStatus:"ACTIVE"});assert.deepEqual(normalizeAffiliateLink({affiliateUrl:"",linkStatus:"ACTIVE"}),{affiliateUrl:null,linkStatus:"NOT_REGISTERED"});for(const scheme of ["javascript:","data:","file:","vbscript:"])assert.throws(()=>normalizeAffiliateLink({affiliateUrl:`${scheme}payload`,linkStatus:"ACTIVE"}),/VALIDATION_FAILED/);});
 test("program updates bind an exact timestamp and editable snake-case fields",()=>assert.deepEqual(normalizeAffiliateProgramUpdate({expectedUpdatedAt:"2026-08-20T00:00:00Z",changes:{programName:" Edited ",programStatus:"PAUSED"}}),{expectedUpdatedAt:"2026-08-20T00:00:00.000Z",changes:{program_name:"Edited",program_status:"PAUSED"}}));
 test("program updates reject missing snapshots and invalid lifecycle states",()=>{assert.throws(()=>normalizeAffiliateProgramUpdate({changes:{programName:"x"}}),/VALIDATION_FAILED/);assert.throws(()=>normalizeAffiliateProgramUpdate({expectedUpdatedAt:"2026-08-20",changes:{programStatus:"DELETED"}}),/VALIDATION_FAILED/);});
+test("practical update maps listing verification to the exact M030 RPC key",()=>assert.deepEqual(normalizeAffiliateProgramPracticalUpdate({expectedUpdatedAt:"2026-08-20T00:00:00Z",expectedBusinessVersion:2,changes:{listingVerificationStatus:" CONFIRMED ",listingNgWords:["禁止語"]}}),{expectedUpdatedAt:"2026-08-20T00:00:00.000Z",expectedBusinessVersion:2,changes:{listing_ng_words_verification_status:"CONFIRMED",listing_ng_words:["禁止語"]}}));
