@@ -43,3 +43,16 @@ test("Affiliate Program Master constrains mobile grid tracks and wraps its bound
   assert.match(styles, /\.av2-program-master>\.av2-boundary\{[^}]*overflow-wrap:anywhere/);
   assert.match(styles, /\.av2-program-stats\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 });
+
+test("Affiliate assisted entry replaces developer inputs and keeps Owner confirmation boundary", () => {
+  assert.match(source, /資料から入力/);
+  assert.match(source, /AIで候補を抽出（FREE）/);
+  assert.match(source, /CONFLICT DETECTED/);
+  assert.match(source, /選択項目をDraftへ適用/);
+  assert.match(source, /canonical保存にはOwner/);
+  assert.doesNotMatch(source, /報酬詳細（JSON）/);
+  assert.match(source, /報酬額/);
+  assert.match(source, /報酬率/);
+  assert.match(source, /raw_file_content_stored:false/);
+  assert.match(source, /Actual Revenue \/ Evidence \/ Conversionは作成しません/);
+});

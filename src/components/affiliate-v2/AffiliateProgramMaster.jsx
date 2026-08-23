@@ -7,8 +7,10 @@ import {
   Input,
   SectionHeader,
   Select,
+  Textarea,
 } from "../../design-system/index.js";
 import { listingComplianceLabel } from "../../domain/affiliateProgramMaster.js";
+import { AFFILIATE_FIELD_GUIDANCE, OWNER_LABELS, fieldDescription, fieldLabel } from "../../domain/affiliateFieldGuidance.js";
 import "./AffiliateProgramMaster.css";
 
 const ASP = [
@@ -61,7 +63,8 @@ export default function AffiliateProgramMaster(props) {
   const [selectedId, setSelectedId] = useState(null),
     [query, setQuery] = useState(""),
     [state, setState] = useState("ALL"),
-    [registering, setRegistering] = useState(false);
+    [registering, setRegistering] = useState(false),
+    [helpOpen,setHelpOpen]=useState(false);
   const selected = programs.find((p) => p.id === selectedId);
   const rows = useMemo(
     () =>
@@ -89,10 +92,9 @@ export default function AffiliateProgramMaster(props) {
           title="Affiliate Programs"
           description="提携案件を探す・整える・次の行動へ進めるProgram Master"
         />
-        <Button onClick={() => setRegistering((v) => !v)}>
-          {registering ? "登録を閉じる" : "＋ 新しいProgram"}
-        </Button>
+        <div className="av2-action-row"><Button variant="secondary" onClick={()=>setHelpOpen(v=>!v)}>この画面の使い方</Button><Button onClick={() => setRegistering((v) => !v)}>{registering ? "登録を閉じる" : "＋ 新しいProgram"}</Button></div>
       </div>
+      {helpOpen?<Card className="av2-page-help"><h3>Affiliate Programの進め方</h3><p>登録 → 条件確認 → 不足確認 → Research readiness → Research の順に進めます。未確認は推測で埋めず、資料またはOwner入力で確認してください。</p><p>AIの抽出結果は候補です。Draftへ適用後、Ownerが明示保存するまでcanonical factにはなりません。</p></Card>:null}
       <p className="av2-boundary">
         Owner Personal Workspace · External Execution LOCKED · Browser direct
         DML 0
@@ -389,12 +391,7 @@ function Operational({
   }, [dirty, form, version, program.id, program.updatedAt, onSaveDraft]);
   const change = (k) => (e) => {
     const value =
-      k === "promotion_channels"
-        ? e.target.value
-            .split(",")
-            .map((x) => x.trim())
-            .filter(Boolean)
-        : k === "priority"
+      k === "priority"
           ? e.target.value
             ? Number(e.target.value)
             : null
@@ -434,13 +431,8 @@ function Operational({
             <Input value={form[k]} onChange={change(k)} />
           </FormField>
         ))}
-        <FormField label="推奨チャネル（カンマ区切り）">
-          <Input
-            value={form.promotion_channels.join(", ")}
-            onChange={change("promotion_channels")}
-          />
-        </FormField>
-        <FormField label="優先度 1–5">
+        <FormField label="推奨チャネル" description={fieldDescription("promotionChannels")}><div className="av2-channel-options">{["ブログ","note","Instagram","Threads","X","YouTube","メール"].map(channel=><label key={channel}><input type="checkbox" checked={form.promotion_channels.includes(channel)} onChange={e=>{setForm(v=>({...v,promotion_channels:e.target.checked?[...new Set([...v.promotion_channels,channel])]:v.promotion_channels.filter(x=>x!==channel)}));setDirty(true)}}/>{channel}</label>)}</div></FormField>
+        <FormField label="優先度" description={fieldDescription("priority")}>
           <Input
             type="number"
             min="1"
@@ -498,6 +490,7 @@ function Detail({
   onLoadDraft,
   onSaveDraft,
   onUpdateOperational,
+  onExtractAttachments,
 }) {
   const [tab, setTab] = useState("overview"),
     [notice, setNotice] = useState(null),
@@ -506,7 +499,7 @@ function Detail({
       program.affiliateLinkStatus === "NOT_REGISTERED"
         ? "ACTIVE"
         : program.affiliateLinkStatus,
-    );
+    ),[intakeOpen,setIntakeOpen]=useState(false);
   const [edit, setEdit] = useState(
     Object.fromEntries([
       ["aspName", program.aspName],
@@ -516,7 +509,10 @@ function Detail({
       ["category", program.category || ""],
       ["rewardType", program.rewardType || "UNKNOWN"],
       ["rewardSummary", program.rewardSummary || ""],
-      ["rewardDetails", program.rewardDetails ? JSON.stringify(program.rewardDetails) : ""],
+      ["rewardAmount", program.rewardDetails?.amount ?? ""],
+      ["rewardCurrency", program.rewardDetails?.currency || "JPY"],
+      ["rewardRate", program.rewardDetails?.rate ?? ""],
+      ["rewardNotes", program.rewardDetails?.notes || ""],
       ["epc", program.epc ?? ""],
       ["approvalRate", program.approvalRate ?? ""],
       ["revisitWindowDays", program.revisitWindowDays ?? ""],
@@ -550,7 +546,9 @@ function Detail({
   const savePractical = async (event) => {
     event.preventDefault(); setNotice("保存中…");
     try {
-      const changes={...edit,rewardDetails:edit.rewardDetails?JSON.parse(edit.rewardDetails):null,epc:edit.epc===""?null:Number(edit.epc),approvalRate:edit.approvalRate===""?null:Number(edit.approvalRate),revisitWindowDays:edit.revisitWindowDays===""?null:Number(edit.revisitWindowDays),confirmationDays:edit.confirmationDays===""?null:Number(edit.confirmationDays),listingNgWords:edit.listingVerificationStatus==="NOT_CONFIRMED"?null:edit.listingNgWords.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),sourceVerifiedAt:edit.sourceVerifiedAt?new Date(edit.sourceVerifiedAt).toISOString():null};
+      const {rewardAmount,rewardCurrency,rewardRate,rewardNotes,...base}=edit;
+      const rewardDetails=rewardAmount!==""||rewardRate!==""||rewardNotes?{amount:rewardAmount===""?null:Number(rewardAmount),currency:rewardCurrency||"JPY",rate:rewardRate===""?null:Number(rewardRate),notes:rewardNotes||null}:null;
+      const changes={...base,rewardDetails,epc:edit.epc===""?null:Number(edit.epc),approvalRate:edit.approvalRate===""?null:Number(edit.approvalRate),revisitWindowDays:edit.revisitWindowDays===""?null:Number(edit.revisitWindowDays),confirmationDays:edit.confirmationDays===""?null:Number(edit.confirmationDays),listingNgWords:edit.listingVerificationStatus==="NOT_CONFIRMED"?null:edit.listingNgWords.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),sourceVerifiedAt:edit.sourceVerifiedAt?new Date(edit.sourceVerifiedAt).toISOString():null};
       await onUpdatePractical(program.id,{expectedUpdatedAt:program.updatedAt,expectedBusinessVersion:program.businessVersion,changes});
       setNotice("全項目をcanonical保存しました。再読み込み後も維持されます");
     } catch { setNotice("入力形式、競合、または保存に失敗しました。再読み込みしてください"); }
@@ -575,6 +573,7 @@ function Detail({
         </div>
         <div className="av2-action-row">
           <Badge label={program.programStatus} />
+          <Button variant="secondary" onClick={()=>setIntakeOpen(v=>!v)}>資料から入力</Button>
           <Button
             variant="secondary"
             onClick={() =>
@@ -598,6 +597,7 @@ function Detail({
           <Button variant="secondary" onClick={remove}>Delete</Button>
         </div>
       </div>
+      {intakeOpen?<AffiliateAttachmentIntake program={program} onExtract={onExtractAttachments} onLoadDraft={onLoadDraft} onSaveDraft={onSaveDraft} onApplyToForm={(values)=>setEdit(v=>({...v,...values}))}/>:null}
       <div className="av2-readiness">
         <strong>情報充足度 {completeness(program)}%</strong>
         <span>
@@ -605,6 +605,7 @@ function Detail({
         </span>
         {miss.length ? <small>不足: {miss.join("、")}</small> : null}
       </div>
+      <p><a className="next-link" href={`/assistant?feature=affiliate&programId=${encodeURIComponent(program.id)}&prompt=${encodeURIComponent("この案件でResearch開始前に足りない項目だけ教えて")}`}>AI秘書にこの案件について聞く</a></p>
       <nav className="av2-tabs">
         {[
           ["overview", "概要"],
@@ -659,9 +660,8 @@ function Detail({
                   category: "カテゴリ",
                   rewardType: "報酬種別",
                   rewardSummary: "報酬概要",
-                  rewardDetails: "報酬詳細（JSON）",
                   epc: "EPC",
-                  approvalRate: "承認率 %",
+                  approvalRate: "承認率",
                   revisitWindowDays: "Cookie / 再訪問日数",
                   confirmationDays: "確定日数",
                   conversionConditions: "成果条件",
@@ -677,15 +677,9 @@ function Detail({
                   sourceNotes: "情報源メモ",
                   ownerNotes: "Ownerメモ",
                 }).map(([k, l]) => (
-                  <FormField key={k} label={l}>
-                    <Input
-                      value={edit[k]}
-                      onChange={(e) =>
-                        setEdit((v) => ({ ...v, [k]: e.target.value }))
-                      }
-                    />
-                  </FormField>
+                  <GuidedAffiliateField key={k} field={k} fallbackLabel={l} value={edit[k]} onChange={(value)=>setEdit(v=>({...v,[k]:value}))}/>
                 ))}
+                <fieldset className="av2-reward-details"><legend>報酬詳細 <small>任意 · 未確認でも保存可</small></legend><FormField label="報酬額" description="例: 3000 · 通貨単位"><Input type="number" min="0" value={edit.rewardAmount} onChange={e=>setEdit(v=>({...v,rewardAmount:e.target.value}))}/></FormField><FormField label="通貨"><Select value={edit.rewardCurrency} onChange={e=>setEdit(v=>({...v,rewardCurrency:e.target.value}))}><option value="JPY">日本円 (JPY)</option><option value="USD">米ドル (USD)</option><option value="OTHER">その他</option></Select></FormField><FormField label="報酬率" description="例: 10 · %"><Input type="number" min="0" max="100" value={edit.rewardRate} onChange={e=>setEdit(v=>({...v,rewardRate:e.target.value}))}/></FormField><FormField label="報酬備考"><Input value={edit.rewardNotes} onChange={e=>setEdit(v=>({...v,rewardNotes:e.target.value}))}/></FormField></fieldset>
               </div>
               <Button type="submit">変更を保存</Button>
             </form>
@@ -802,4 +796,22 @@ function Data({ label, value }) {
       <dd>{value == null || value === "" ? "未設定" : String(value)}</dd>
     </div>
   );
+}
+
+function GuidedAffiliateField({field,fallbackLabel,value,onChange}){
+  const guide=AFFILIATE_FIELD_GUIDANCE[field],label=guide?.label||fallbackLabel,description=guide?fieldDescription(field):undefined;
+  const choices=field==="rewardType"?["UNKNOWN","FIXED","PERCENTAGE","TIERED","OTHER"]:field==="listingPolicy"?["UNKNOWN","OK","PARTIAL","NG"]:field==="listingVerificationStatus"?["UNKNOWN","NOT_CONFIRMED","CONFIRMED","NONE_CONFIRMED"]:field==="sourceType"?["OWNER_MANUAL","ASP_SCREENSHOT","ASP_PDF","ASP_PAGE"]:null;
+  const multiline=["conversionConditions","rejectionConditions","prPoints","listingNgWords","listingNgWordsRaw","complianceNotes","sourceNotes","ownerNotes"].includes(field);
+  return <FormField label={label} description={description}>{choices?<Select value={value||"UNKNOWN"} onChange={e=>onChange(e.target.value)}>{choices.map(code=><option key={code} value={code}>{OWNER_LABELS[code]||({ASP_SCREENSHOT:"ASPスクリーンショット",ASP_PDF:"ASP PDF",ASP_PAGE:"ASP案件ページ"}[code])||code}</option>)}</Select>:multiline?<Textarea rows={field==="listingNgWords"?3:4} value={value||""} onChange={e=>onChange(e.target.value)}/>:<Input type={["epc","approvalRate","revisitWindowDays","confirmationDays"].includes(field)?"number":"text"} min={["epc","approvalRate","revisitWindowDays","confirmationDays"].includes(field)?"0":undefined} max={field==="approvalRate"?"100":undefined} value={value??""} onChange={e=>onChange(e.target.value)}/>}</FormField>
+}
+
+const fileToInlineData=(file)=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error("FILE_READ_FAILED"));reader.onload=()=>resolve({mimeType:file.type,data:String(reader.result).split(",")[1]||""});reader.readAsDataURL(file)});
+const sameValue=(a,b)=>JSON.stringify(a??null)===JSON.stringify(b??null);
+function AffiliateAttachmentIntake({program,onExtract,onLoadDraft,onSaveDraft,onApplyToForm}){
+  const[files,setFiles]=useState([]),[result,setResult]=useState(null),[selected,setSelected]=useState({}),[status,setStatus]=useState(""),[draftVersion,setDraftVersion]=useState(0);
+  useEffect(()=>{let active=true;onLoadDraft(program.id).then(draft=>{if(!active||!draft)return;setDraftVersion(Number(draft.draft_version||0));const saved=draft.draft_payload?.affiliate_attachment_extraction;if(saved){setResult(saved);setSelected(Object.fromEntries((saved.fields||[]).filter(x=>!x.conflict).map(x=>[x.field,true])))}}).catch(()=>{});return()=>{active=false}},[program.id,onLoadDraft]);
+  const extract=async()=>{setStatus("資料を安全に読み取っています…");try{const encoded=await Promise.all(files.map(fileToInlineData)),next=await onExtract({files:encoded,currentProgram:program});const fields=(next.fields||[]).map(item=>({...item,conflict:item.conflict||((program[item.field]!=null&&program[item.field]!=="")&&!sameValue(program[item.field],item.value))}));const normalized={...next,fields};setResult(normalized);setSelected(Object.fromEntries(fields.filter(x=>!x.conflict).map(x=>[x.field,true])));setStatus("抽出候補を確認してください。まだcanonical dataは変更されていません")}catch(error){setStatus(`読み取りを完了できませんでした: ${error.message}`)}};
+  const applyDraft=async()=>{const values={};for(const item of result.fields||[])if(selected[item.field]&&!item.conflict)values[item.field]=item.value;if(values.rewardDetails){values.rewardAmount=values.rewardDetails.amount??"";values.rewardCurrency=values.rewardDetails.currency||"JPY";values.rewardRate=values.rewardDetails.rate??"";values.rewardNotes=values.rewardDetails.notes||"";delete values.rewardDetails}if(Array.isArray(values.listingNgWords))values.listingNgWords=values.listingNgWords.join("\n");const payload={affiliate_attachment_extraction:{...result,accepted_fields:Object.keys(values),accepted_at:new Date().toISOString(),canonicalApplied:false,raw_file_content_stored:false,paid_ai_jpy:0,external_execution:"LOCKED"},proposed_changes:values};const saved=await onSaveDraft(program.id,{expectedDraftVersion:draftVersion,baseProgramUpdatedAt:program.updatedAt,draftPayload:payload});setDraftVersion(Number(saved?.draft_version||draftVersion+1));onApplyToForm(values);setStatus("抽出候補をDraftへ保存し、編集フォームへ反映しました。canonical保存にはOwnerの「変更を保存」が必要です")};
+  const extracted=result?.fields?.filter(x=>x.confidence==="HIGH"&&!x.conflict).length||0,review=result?.fields?.filter(x=>x.conflict||x.confidence!=="HIGH").length||0,missing=result?.missing?.length||0;
+  return <Card className="av2-attachment-intake"><SectionHeader title="資料から入力" description="画像・スクリーンショット・PDFから見える事実だけを候補化します。AI output ≠ Evidence。"/><FormField label="Affiliate資料" description="PNG / JPEG / WebP / PDF、最大4件・各2.5MB"><Input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" multiple onChange={e=>setFiles([...e.target.files].slice(0,4))}/></FormField><Button type="button" disabled={!files.length} onClick={extract}>AIで候補を抽出（FREE）</Button>{result?<><div className="av2-extraction-summary"><strong>抽出済み: {extracted}項目</strong><strong>要確認: {review}項目</strong><strong>未取得: {missing}項目</strong></div><div className="av2-extraction-list">{result.fields.map(item=><article key={item.field} className={item.conflict?"is-conflict":""}><header><strong>{fieldLabel(item.field)}</strong><Badge label={item.conflict?"CONFLICT DETECTED":item.confidence}/></header><p><span>現在:</span> {program[item.field]==null||program[item.field]===""?"未入力":String(program[item.field])}</p><p><span>候補:</span> {typeof item.value==="object"?JSON.stringify(item.value):String(item.value)}</p><small>Source: {item.sources?.join(" / ")||"資料"}</small><label><input type="checkbox" checked={Boolean(selected[item.field])} disabled={item.conflict} onChange={e=>setSelected(v=>({...v,[item.field]:e.target.checked}))}/> Draftへ適用</label>{item.conflict?<small>既存値と異なるため自動選択しません。Ownerが編集フォームで確認してください。</small>:null}</article>)}</div><div className="av2-action-row"><Button type="button" variant="secondary" onClick={()=>setSelected(Object.fromEntries(result.fields.filter(x=>!x.conflict).map(x=>[x.field,true])))}>競合なしをすべて選択</Button><Button type="button" onClick={applyDraft}>選択項目をDraftへ適用</Button></div></>:null}{status?<p role="status" className="av2-save-notice">{status}</p>:null}<p className="av2-boundary">Raw fileはKEVIRIO DBへ保存しません · Actual Revenue / Evidence / Conversionは作成しません · External Execution LOCKED</p></Card>
 }

@@ -7,9 +7,9 @@ export function assembleLiveOperationalContext({query="",feature="assistant",ope
   const items=[
     ...operational.map(row=>({kind:row.object_type,title:row.title,state:row.state,attention:row.attention_state,dueAt:row.due_at,truth:"OWNER_STATED",id:row.id})),
     ...personal.map(row=>({kind:row.record_type,title:row.title,state:row.lifecycle_status,truth:"OWNER_STATED",id:row.id})),
-    ...affiliate.map(row=>({kind:"AFFILIATE",title:row.program_name,state:row.program_status,attention:row.next_action?"NEEDS_ATTENTION":null,dueAt:row.next_action_due_at,truth:"CANONICAL",id:row.id})),
+    ...affiliate.map(row=>({kind:"AFFILIATE",title:row.program_name,state:row.program_status,attention:row.next_action?"NEEDS_ATTENTION":null,dueAt:row.next_action_due_at,truth:"CANONICAL",id:row.id,details:[`EPC=${row.epc??"UNKNOWN"}`,`approval_rate=${row.approval_rate??"UNKNOWN"}`,`cookie_days=${row.revisit_window_days??"UNKNOWN"}`,`conversion=${row.conversion_conditions||"UNKNOWN"}`,`rejection=${row.rejection_conditions||"UNKNOWN"}`,`listing_verification=${row.listing_ng_words_verification_status||"UNKNOWN"}`,`source_verified_at=${row.source_verified_at||"UNKNOWN"}`].join("; ")})),
   ];
   const terms=queryTerms(query),ranked=items.map(item=>({...item,score:relevance(item,terms)})).sort((a,b)=>b.score-a.score||String(b.dueAt||"").localeCompare(String(a.dueAt||""))).slice(0,16);
-  const lines=ranked.map(item=>`- ${safe(item.kind,64)} | ${safe(item.title)} | state=${safe(item.state,64)||"UNKNOWN"} | attention=${safe(item.attention,64)||"NONE"} | due=${safe(item.dueAt,64)||"NONE"} | truth=${item.truth}`);
+  const lines=ranked.map(item=>`- ${safe(item.kind,64)} | ${safe(item.title)} | state=${safe(item.state,64)||"UNKNOWN"} | attention=${safe(item.attention,64)||"NONE"} | due=${safe(item.dueAt,64)||"NONE"} | truth=${item.truth}${item.details?` | ${safe(item.details,900)}`:""}`);
   return Object.freeze({feature:safe(feature,64),itemCount:ranked.length,text:[`Feature: ${safe(feature,64)}`,"Policy: minimal authorized metadata; AI output is NOT_EVIDENCE; Forecast is not Actual; External Execution LOCKED; Paid AI JPY 0.",`Relevant live operational records (${ranked.length}):`,...(lines.length?lines:["- none available"])].join("\n").slice(0,6000)});
 }

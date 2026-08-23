@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPersistentAssistantRepository } from "../../repositories/assistantConversationRepository.js";
 import { resolvePersonalWorkspace } from "../../repositories/personalWorkspaceRepository.js";
 import { AI_AREA_CAPABILITIES } from "../../services/aiRealOperations.js";
@@ -19,7 +19,9 @@ const titleFrom = text => { const compact = text.replace(/\s+/g, " ").trim(); re
 
 export default function NextDurableAssistant({ client }) {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const requestedFeature = params.get("feature");
+  const requestedProgramId = params.get("programId");
   const feature = AI_AREA_CAPABILITIES[requestedFeature] ? requestedFeature : "assistant";
   const repository = useMemo(() => createPersistentAssistantRepository(client), [client]);
   const [threads, setThreads] = useState([]);
@@ -28,6 +30,7 @@ export default function NextDurableAssistant({ client }) {
   const [input, setInput] = useState(params.get("prompt") || "");
   const [workspaceId, setWorkspaceId] = useState(null);
   const [state, setState] = useState({ loading: true, sending: false, error: null });
+  const [operationalAction, setOperationalAction] = useState(null);
   const endRef = useRef(null);
 
   const reloadThreads = useCallback(async preferredId => {
@@ -60,10 +63,10 @@ export default function NextDurableAssistant({ client }) {
   const createThread = async (seed = "新しい会話") => { const id = await repository.createThread(titleFrom(seed)); await reloadThreads(id); setMessages([]); return id; };
   const requestAssistant = async (activeThread, sourceMessageId, text) => {
     const { data } = await client.auth.getSession();
-    const response = await fetch("/api/ai", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${data?.session?.access_token || ""}` }, body: JSON.stringify({ action: "assistantRespond", workspaceId, threadId: activeThread, sourceMessageId, feature, text }) });
+    const response = await fetch("/api/ai", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${data?.session?.access_token || ""}` }, body: JSON.stringify({ action: "assistantRespond", workspaceId, threadId: activeThread, sourceMessageId, feature, programId:requestedProgramId, text }) });
     const result = await response.json();
     if (!response.ok || !result.ok) throw Object.assign(new Error(result.reasonCode || "GEMINI_UNAVAILABLE"), { reasonCode: result.reasonCode });
-    await reloadMessages(activeThread); await reloadThreads(activeThread);
+    await reloadMessages(activeThread); await reloadThreads(activeThread); setOperationalAction(result.operationalAction || null); return result;
   };
   const submit = async () => {
     const text = input.trim(); if (!text || state.sending || !workspaceId) return;
@@ -91,6 +94,7 @@ export default function NextDurableAssistant({ client }) {
     catch { setState(value => ({ ...value, error: "会話をアーカイブできませんでした。" })); }
   };
   const latestAssistant = [...messages].reverse().find(item => item.role === "ASSISTANT");
+  const currentAction = operationalAction || latestAssistant?.audit_metadata?.operational_action || null;
 
   return <main className="next-workspace assistant-2">
     <header className="next-header"><div><span>KEVIRIO PRACTICAL INTELLIGENCE</span><h1>AI秘書</h1><p>会話を引き継ぎ、判断と次の一手を一緒に整理します。</p></div><div className="next-header__state"><span className="next-state next-state--ready">Gemini · LIVE AI</span><small>FREE · Paid AI ¥0 · External Execution LOCKED</small></div></header>
@@ -100,6 +104,7 @@ export default function NextDurableAssistant({ client }) {
         <div className="assistant-2__toolbar"><span>{threads.find(item => item.id === threadId)?.title || "新しい会話"}</span>{threadId ? <button className="next-link" onClick={archive}>アーカイブ</button> : null}</div>
         <div className="assistant-2__messages" aria-live="polite">{messages.length ? messages.map(message => <article key={message.id} data-role={message.role} data-content-length={message.content_text.length} data-provider-raw-length={message.audit_metadata?.provider_raw_length ?? undefined} data-api-received-length={message.audit_metadata?.api_received_length ?? undefined} data-finish-reason={message.audit_metadata?.finish_reason ?? undefined}><b>{message.role === "USER" ? "あなた" : "AI秘書"}</b><AssistantMarkdown content={message.content_text}/>{message.role === "ASSISTANT" && message.audit_metadata?.model_output_limited ? <p className="assistant-2__limit" role="status">回答はモデルの出力上限で終了しました。画面表示による省略ではありません。</p> : null}{message.role === "ASSISTANT" ? <small>AI_OUTPUT · NOT_EVIDENCE · {message.provider || "AI"} · {new Date(message.created_at).toLocaleString("ja-JP")}</small> : <small>OWNER_INPUT</small>}</article>) : <div className="next-empty"><b>何から始めますか？</b><p>例：「今日やることを3つに絞って」</p></div>}{state.sending ? <p role="status">考えています…</p> : null}<div ref={endRef}/></div>
         {state.error ? <div className="assistant-2__error" role="alert">{state.error}<button className="next-link" onClick={retry}>もう一度試す</button></div> : null}
+        {currentAction?.status === "CREATED" ? <div className="next-answer" role="status"><b>Content下書きを保存しました</b><p>{currentAction.specialist} がL2準備し、timelineへ記録しました。公開・外部実行はしていません。</p><button className="next-primary" onClick={() => navigate(currentAction.path)}>作成した下書きを開く</button></div> : null}
         <label className="assistant-2__composer"><span>メッセージ</span><textarea value={input} maxLength={4000} onChange={event => setInput(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) submit(); }} placeholder="続きの指示も自然な言葉で入力できます"/><button className="next-primary" disabled={state.loading || state.sending || !input.trim()} onClick={submit}>{state.sending ? "生成中…" : "送信"}</button></label>
         {latestAssistant ? <div className="next-actions"><button className="next-link" onClick={() => navigator.clipboard?.writeText(latestAssistant.content_text)}>全文をコピー</button><button className="next-link" onClick={retry}>再生成</button></div> : null}
       </section>
