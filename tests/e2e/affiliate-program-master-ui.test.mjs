@@ -6,6 +6,10 @@ const source = readFileSync(
   new URL("../../src/components/affiliate-v2/AffiliateProgramMaster.jsx", import.meta.url),
   "utf8",
 );
+const styles = readFileSync(
+  new URL("../../src/components/affiliate-v2/AffiliateProgramMaster.css", import.meta.url),
+  "utf8",
+);
 
 test("Affiliate Program Master exposes practical canonical detail", () => {
   for (const label of ["Program名", "広告主名", "ASP", "カテゴリ", "報酬種別", "報酬詳細", "EPC", "承認率", "Program ID", "Affiliate URL", "掲載ポリシー", "NGワード", "掲載条件確認状態", "情報源種別", "情報確認日時"])
@@ -32,4 +36,10 @@ test("M027 and M030 fields use durable draft and protected optimistic callbacks"
     assert.ok(source.includes(value), value);
   assert.match(source, /expectedDraftVersion:\s*version/);
   assert.match(source, /expectedBusinessVersion:\s*program\.businessVersion/);
+});
+
+test("Affiliate Program Master constrains mobile grid tracks and wraps its boundary", () => {
+  assert.match(styles, /\.av2-program-master\{[^}]*grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(styles, /\.av2-program-master>\.av2-boundary\{[^}]*overflow-wrap:anywhere/);
+  assert.match(styles, /\.av2-program-stats\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 });
