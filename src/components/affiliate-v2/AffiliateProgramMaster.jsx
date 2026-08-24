@@ -48,16 +48,16 @@ const completeness = (p) =>
       12) *
       100,
   );
-const missing = (p) =>
+export const missingResearchRequired = (p) =>
   [
     !p.rewardSummary && "報酬概要",
-    p.epc == null && "EPC",
-    p.approvalRate == null && "承認率",
     !p.conversionConditions && "成果条件",
     !p.rejectionConditions && "否認条件",
     p.listingVerificationStatus !== "CONFIRMED" && "掲載条件の確認",
     !p.sourceVerifiedAt && "情報の確認日時",
   ].filter(Boolean);
+export const missingResearchRecommended = (p) =>
+  [p.epc == null && "EPC", p.approvalRate == null && "承認率"].filter(Boolean);
 
 export default function AffiliateProgramMaster(props) {
   const { programs = [], available = true } = props;
@@ -492,6 +492,8 @@ function Detail({
   onSaveDraft,
   onUpdateOperational,
   onExtractAttachments,
+  onStartResearch,
+  onLoadResearch,
 }) {
   const [tab, setTab] = useState("overview"),
     [notice, setNotice] = useState(null),
@@ -500,7 +502,8 @@ function Detail({
       program.affiliateLinkStatus === "NOT_REGISTERED"
         ? "ACTIVE"
         : program.affiliateLinkStatus,
-    ),[intakeOpen,setIntakeOpen]=useState(false);
+    ),[intakeOpen,setIntakeOpen]=useState(false),
+    [researchState,setResearchState]=useState({status:"idle",persisted:null});
   const [edit, setEdit] = useState(
     Object.fromEntries([
       ["aspName", program.aspName],
@@ -570,7 +573,10 @@ function Detail({
     if(!confirm("依存履歴がない場合だけ完全に削除します。続けますか？"))return;
     try{const result=await onDeleteSafe(program.id,{expectedUpdatedAt:program.updatedAt,expectedBusinessVersion:program.businessVersion,idempotencyKey:`affiliate:delete:${program.id}:v${program.businessVersion}`});if(result?.deleted)onClose();else setNotice(`削除不可: ${result?.classification||"PROTECTED_HISTORY"}`)}catch{setNotice("削除判定に失敗しました。データは変更されていません")}
   };
-  const miss = missing(program);
+  const miss = missingResearchRequired(program);
+  const recommendedMiss = missingResearchRecommended(program);
+  useEffect(()=>{let active=true;if(!onLoadResearch)return()=>{};onLoadResearch(program.id).then(persisted=>{if(active)setResearchState({status:"idle",persisted})}).catch(()=>{});return()=>{active=false}},[program.id,onLoadResearch]);
+  const startResearch=async()=>{setResearchState(current=>({...current,status:"running",error:null}));try{const result=await onStartResearch(program);const persisted=await onLoadResearch(program.id);setResearchState({status:"complete",result,persisted})}catch(error){setResearchState(current=>({...current,status:"failed",error:error?.message||"RESEARCH_EXECUTION_FAILED"}))}};
   return (
     <section className="av2-program-detail">
       <div className="av2-program-detail__header">
@@ -614,9 +620,10 @@ function Detail({
       <div className="av2-readiness">
         <strong>情報充足度 {completeness(program)}%</strong>
         <span>
-          Research readiness: {miss.length ? `${miss.length}項目不足` : "READY"}
+          Research Ready: {miss.length ? "NO" : "YES"}
         </span>
-        {miss.length ? <small>不足: {miss.join("、")}</small> : null}
+        {miss.length ? <small>必須情報 {miss.length}件未確認: {miss.join("、")}</small> : null}
+        {recommendedMiss.length ? <small>任意情報 {recommendedMiss.length}件未確認: {recommendedMiss.join("、")}。未確認のため分析精度が下がる可能性があります</small> : null}
       </div>
       <p><a className="next-link" href={`/assistant?feature=affiliate&programId=${encodeURIComponent(program.id)}&prompt=${encodeURIComponent("この案件でResearch開始前に足りない項目だけ教えて")}`}>AI秘書にこの案件について聞く</a></p>
       <nav className="av2-tabs">
@@ -734,6 +741,11 @@ function Detail({
               ? `Research開始前に確認: ${miss.join("、")}`
               : "RESEARCH READY"}
           </p>
+          {recommendedMiss.length?<p>任意情報 {recommendedMiss.length}件未確認: {recommendedMiss.join("、")}。未確認のため分析精度が下がる可能性があります。</p>:null}
+          <Button type="button" disabled={miss.length>0||researchState.status==="running"} onClick={startResearch}>{researchState.status==="running"?"Research実行中…":"AIでResearchを開始"}</Button>
+          {researchState.status==="complete"?<p role="status">Research結果を保存し、このProgramへリンクしました。</p>:null}
+          {researchState.status==="failed"?<p role="alert">Researchを開始できませんでした: {researchState.error}</p>:null}
+          {researchState.persisted?.linkedCount>0?<p>保存済みResearch: {researchState.persisted.linkedCount}件 · reload後もProgram link維持</p>:null}
         </Card>
       ) : null}
       {tab === "content" ? (
