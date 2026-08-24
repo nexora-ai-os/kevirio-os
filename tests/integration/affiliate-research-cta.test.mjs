@@ -26,6 +26,7 @@ test("Affiliate Research uses exact server-retrieved Program and existing M028 M
   assert.match(api, /epc:program\.epc==null\?"UNKNOWN"/);
   assert.match(api, /approval_rate:program\.approval_rate==null\?"UNKNOWN"/);
   assert.match(api, /truthClass:"AI_RECOMMENDATION"/);
+  assert.match(api, /boundedContext,workspaceId:body\.workspaceId,feature:"affiliate-research"/);
   assert.match(api, /evidence_status:"NOT_EVIDENCE"/);
   assert.match(api, /paidAiJpy:0/);
   assert.match(api, /externalExecution:"LOCKED"/);
