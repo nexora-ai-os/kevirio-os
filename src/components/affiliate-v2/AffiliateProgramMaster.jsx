@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { restoreAffiliateProposedChanges } from "./affiliateDraftRestore.js";
+import { projectAffiliateResearchFinding } from "./affiliateResearchProjection.js";
 import {
   Badge,
   Button,
@@ -503,7 +504,8 @@ function Detail({
         ? "ACTIVE"
         : program.affiliateLinkStatus,
     ),[intakeOpen,setIntakeOpen]=useState(false),
-    [researchState,setResearchState]=useState({status:"idle",persisted:null});
+    [researchState,setResearchState]=useState({status:"idle",persisted:null}),
+    [selectedResearchId,setSelectedResearchId]=useState(null);
   const [edit, setEdit] = useState(
     Object.fromEntries([
       ["aspName", program.aspName],
@@ -575,6 +577,7 @@ function Detail({
   };
   const miss = missingResearchRequired(program);
   const recommendedMiss = missingResearchRecommended(program);
+  const researchResults=(researchState.persisted?.results||[]).map(projectAffiliateResearchFinding),selectedResearch=researchResults.find(item=>item.id===selectedResearchId)||null;
   useEffect(()=>{let active=true;if(!onLoadResearch)return()=>{};onLoadResearch(program.id).then(persisted=>{if(active)setResearchState({status:"idle",persisted})}).catch(()=>{});return()=>{active=false}},[program.id,onLoadResearch]);
   const startResearch=async()=>{setResearchState(current=>({...current,status:"running",error:null}));try{const result=await onStartResearch(program);const persisted=await onLoadResearch(program.id);setResearchState({status:"complete",result,persisted})}catch(error){setResearchState(current=>({...current,status:"failed",error:error?.message||"RESEARCH_EXECUTION_FAILED"}))}};
   return (
@@ -746,6 +749,8 @@ function Detail({
           {researchState.status==="complete"?<p role="status">Research結果を保存し、このProgramへリンクしました。</p>:null}
           {researchState.status==="failed"?<p role="alert">Researchを開始できませんでした: {researchState.error}</p>:null}
           {researchState.persisted?.linkedCount>0?<p>保存済みResearch: {researchState.persisted.linkedCount}件 · reload後もProgram link維持</p>:null}
+          {researchResults.length?<div className="av2-research-results"><h3>保存済みResearch</h3>{researchResults.map(item=><article key={item.id}><p><strong>{item.type}</strong> · {item.executedAt?new Date(item.executedAt).toLocaleString("ja-JP"):"日時未記録"}</p><p>Source: {item.source} · {item.truthClass} · Confidence: {item.confidence==null?"Unknown":`${Math.round(item.confidence*100)}%`}</p><p>{item.summary}</p><Button type="button" variant="secondary" onClick={()=>setSelectedResearchId(item.id)}>Researchを開く</Button></article>)}</div>:<p>保存済みResearchはありません。</p>}
+          {selectedResearch?<article className="av2-research-detail"><h3>Research Detail</h3><dl className="av2-data-grid"><Data label="調査目的" value={selectedResearch.purpose}/><Data label="Findings" value={selectedResearch.findings}/><Data label="Target / Audience" value={selectedResearch.targetAudience}/><Data label="Market need" value={selectedResearch.marketNeed}/><Data label="Competitor" value={selectedResearch.competitor}/><Data label="Opportunity" value={selectedResearch.opportunity}/><Data label="Risks" value={selectedResearch.risks}/><Data label="Recommended angle" value={selectedResearch.recommendedAngle}/><Data label="Recommended channel" value={selectedResearch.recommendedChannel}/><Data label="Next action" value={selectedResearch.nextAction}/><Data label="Sources / Provenance" value={JSON.stringify(selectedResearch.provenance)}/><Data label="Fact vs inference" value={selectedResearch.factVsInference}/></dl><p>次工程: Strategy作成に必要なApplicationが未接続のため、このResearchから直接Strategyは作成できません。</p></article>:null}
         </Card>
       ) : null}
       {tab === "content" ? (

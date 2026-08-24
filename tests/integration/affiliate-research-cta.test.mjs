@@ -34,3 +34,19 @@ test("Affiliate Research uses exact server-retrieved Program and existing M028 M
   assert.match(experience, /targetType:"AFFILIATE_PROGRAM",targetId:program\.id,relationType:"CREATED_FOR"/);
   assert.match(experience, /loadGlobalIntelligence/);
 });
+
+test("Affiliate Research exposes linked stored findings and no fake Strategy mutation", async () => {
+  const [ui, experience] = await Promise.all([
+    read("src/components/affiliate-v2/AffiliateProgramMaster.jsx"),
+    read("src/components/affiliate-v2/AffiliateV2Experience.jsx"),
+  ]);
+  assert.match(experience, /findingIds=new Set\(links\.map\(link=>link\.from_id\)\)/);
+  assert.match(experience, /results=data\.findings\.filter\(finding=>findingIds\.has\(finding\.id\)\)/);
+  assert.match(ui, /保存済みResearch/);
+  assert.match(ui, /Researchを開く/);
+  assert.match(ui, /Research Detail/);
+  assert.match(ui, /Sources \/ Provenance/);
+  assert.match(ui, /Fact vs inference/);
+  assert.match(ui, /Applicationが未接続/);
+  assert.doesNotMatch(ui, /このResearchから戦略を作る/);
+});
