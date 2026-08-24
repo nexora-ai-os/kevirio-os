@@ -96,13 +96,16 @@ export default async function handler(req, res) {
       client.from("ai_memory_records").select("memory_kind,content_text,confidence,updated_at").eq("workspace_id", body.workspaceId).eq("owner_user_id", ownerId).eq("status", "ACTIVE").order("updated_at", { ascending: false }).limit(8),
       client.from("operational_objects").select("id,object_type,title,state,attention_state,due_at").eq("workspace_id",body.workspaceId).eq("owner_user_id",ownerId).neq("lifecycle_status","ARCHIVED").order("updated_at",{ascending:false}).limit(40),
       client.from("personal_operational_records").select("id,record_type,title,lifecycle_status").eq("workspace_id",body.workspaceId).eq("owner_user_id",ownerId).neq("lifecycle_status","DELETED").order("updated_at",{ascending:false}).limit(40),
-      client.from("affiliate_program_master").select("id,program_name,program_status,next_action,next_action_due_at,epc,approval_rate,revisit_window_days,conversion_conditions,rejection_conditions,listing_ng_words_verification_status,source_verified_at").eq("workspace_id",body.workspaceId).match(body.programId?{id:body.programId}:{}).order("updated_at",{ascending:false}).limit(body.programId?1:40),
+      client.from("affiliate_program_master").select("id,program_name,program_status,next_action,next_action_due_at,reward_summary,epc,approval_rate,revisit_window_days,confirmation_days,conversion_conditions,rejection_conditions,listing_policy,listing_ng_words_verification_status,source_verified_at").eq("workspace_id",body.workspaceId).match(body.programId?{id:body.programId}:{}).order("updated_at",{ascending:false}).limit(body.programId?1:40),
     ]);
     if (messageResult.error || memoryResult.error) return res.status(503).json({ ok: false, reasonCode: "ASSISTANT_CONTEXT_UNAVAILABLE" });
+    if(body.programId&&(affiliateResult.error||affiliateResult.data?.length!==1))return res.status(404).json({ok:false,reasonCode:"AFFILIATE_PROGRAM_CONTEXT_NOT_FOUND"});
     const recent = (messageResult.data || []).reverse().map((item) => `${item.role} [${item.truth_class}]: ${String(item.content_text).slice(0, 1200)}`).join("\n");
     const memories = (memoryResult.data || []).map((item) => `${item.memory_kind}: ${String(item.content_text).slice(0, 700)}`).join("\n");
-    const liveContext=assembleLiveOperationalContext({query:body.text,feature:body.feature,operational:operationalResult.error?[]:operationalResult.data,personal:personalResult.error?[]:personalResult.data,affiliate:affiliateResult.error?[]:affiliateResult.data});
-    const boundedContext = [`Rolling summary:\n${threadResult.data.rolling_summary || "none"}`, `Recent messages:\n${recent || "none"}`, `Active personal memory:\n${memories || "none"}`,`Live operational context:\n${liveContext.text}`].join("\n\n").slice(0, 20000);
+    const liveContext=assembleLiveOperationalContext({query:body.text,feature:body.feature,operational:operationalResult.error?[]:operationalResult.data,personal:personalResult.error?[]:personalResult.data,affiliate:affiliateResult.error?[]:affiliateResult.data,explicitAffiliateProgramId:body.programId||null});
+    const boundedContext = liveContext.hasExplicitAffiliateProgram
+      ? [`Priority context:\n${liveContext.text}`,"Conversation context: intentionally excluded because an explicit canonical Affiliate Program reference is active."].join("\n\n")
+      : [`Live operational context:\n${liveContext.text}`,`Rolling summary:\n${threadResult.data.rolling_summary || "none"}`, `Recent messages:\n${recent || "none"}`, `Active personal memory:\n${memories || "none"}`].join("\n\n").slice(0, 20000);
     const result = await executeGeminiFreeRequest({ ...body, boundedContext, explicitOwnerAction: true }, { credential: process.env.GEMINI_API_KEY });
     if (!result.ok) {
       const statusCode = result.reasonCode === "GEMINI_QUOTA_EXHAUSTED" ? 429 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : 502;

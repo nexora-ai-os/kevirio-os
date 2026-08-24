@@ -8,6 +8,18 @@ export const AFFILIATE_PROGRAM_PRACTICAL_FIELDS = Object.freeze(["aspName","prog
 
 const text = (value) => value == null ? null : String(value).trim();
 
+export function normalizeAffiliateApprovalRate(value) {
+  if (value == null) return null;
+  const normalized = String(value).trim();
+  if (!normalized || /^(?:unknown|未確認|未取得)$/i.test(normalized)) return null;
+  const numericText = normalized.endsWith("%") ? normalized.slice(0, -1).trim() : normalized;
+  const rate = Number(numericText);
+  if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+    throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_approval_rate", object: "affiliate_program_master" });
+  }
+  return rate;
+}
+
 export function normalizeAffiliateLink(input = {}) {
   const affiliateUrl = text(input.affiliateUrl);
   if (!affiliateUrl) return Object.freeze({ affiliateUrl: null, linkStatus: "NOT_REGISTERED" });
@@ -31,7 +43,7 @@ export function normalizeAffiliateProgramUpdate(input = {}) {
 export function normalizeAffiliateProgramPracticalUpdate(input={}){
   const expectedUpdatedAt=String(input.expectedUpdatedAt||"").trim();
   if(!expectedUpdatedAt||Number.isNaN(new Date(expectedUpdatedAt).valueOf())||!Number.isInteger(Number(input.expectedBusinessVersion))||Number(input.expectedBusinessVersion)<1)throw new AffiliateV2Error("VALIDATION_FAILED",{operation:"practical_version_required",object:"affiliate_program_master"});
-  const changes={};for(const field of AFFILIATE_PROGRAM_PRACTICAL_FIELDS)if(Object.prototype.hasOwnProperty.call(input.changes||{},field)){const key=field==="listingVerificationStatus"?"listing_ng_words_verification_status":field.replace(/[A-Z]/g,l=>`_${l.toLowerCase()}`);const value=input.changes[field];changes[key]=typeof value==="string"?value.trim():value}
+  const changes={};for(const field of AFFILIATE_PROGRAM_PRACTICAL_FIELDS)if(Object.prototype.hasOwnProperty.call(input.changes||{},field)){const key=field==="listingVerificationStatus"?"listing_ng_words_verification_status":field.replace(/[A-Z]/g,l=>`_${l.toLowerCase()}`);const value=field==="approvalRate"?normalizeAffiliateApprovalRate(input.changes[field]):input.changes[field];changes[key]=typeof value==="string"?value.trim():value}
   if(!Object.keys(changes).length)throw new AffiliateV2Error("VALIDATION_FAILED",{operation:"practical_changes_required",object:"affiliate_program_master"});
   return Object.freeze({expectedUpdatedAt,expectedBusinessVersion:Number(input.expectedBusinessVersion),changes:Object.freeze(changes)});
 }

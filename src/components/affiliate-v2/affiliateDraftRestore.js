@@ -1,3 +1,5 @@
+import { normalizeAffiliateApprovalRate } from "../../domain/affiliateProgramMaster.js";
+
 const EDITABLE_FIELDS = new Set([
   "aspName", "programId", "programName", "advertiserName", "category",
   "rewardType", "rewardSummary", "rewardAmount", "rewardCurrency", "rewardRate",
@@ -23,6 +25,9 @@ export function restoreAffiliateProposedChanges(draftPayload) {
   }
   if (Array.isArray(restored.listingNgWords)) {
     restored.listingNgWords = restored.listingNgWords.join("\n");
+  }
+  if (Object.prototype.hasOwnProperty.call(restored, "approvalRate")) {
+    restored.approvalRate = normalizeAffiliateApprovalRate(restored.approvalRate);
   }
 
   return restored;
