@@ -22,7 +22,7 @@ do $$ begin
 end $$;
 reset role;
 do $$ begin
- if (select count(*) from public.revenue_records where affiliate_revenue_candidate_id=(select candidate_id from _m032_test))<>1 then raise exception 'm032_actual_duplicate';end if;
+ if (select count(*) from public.affiliate_actual_revenue_extensions where candidate_id=(select candidate_id from _m032_test))<>1 then raise exception 'm032_actual_duplicate';end if;
 end $$;
 select jsonb_build_object('result','M032_EXECUTABLE_RECOVERY_PASS','publication','EXECUTED_EXTERNALLY','performance_rows',1,'candidate','CONFIRMED_ACTUAL','evidence','VERIFIED','actual_rows',1,'duplicate_actual',false,'browser_direct_dml','DENIED','paid_ai_jpy',0,'external_execution','LOCKED','transaction_rolled_back',true) verification;
 rollback;

@@ -1,16 +1,6 @@
 begin;
 do $$ begin if exists(select 1 from public.affiliate_revenue_candidates where status='CONFIRMED_ACTUAL') then raise exception 'm032_accepted_actual_freeze_export_required';end if;end $$;
-drop trigger if exists revenue_records_workspace_integrity on public.revenue_records;
-create trigger revenue_records_workspace_integrity before insert on public.revenue_records for each row execute function public.enforce_revenue_workspace_integrity();
-drop trigger if exists revenue_records_approval_snapshot on public.revenue_records;
-create trigger revenue_records_approval_snapshot before insert on public.revenue_records for each row execute function public.enforce_actual_revenue_approval_snapshot();
-alter table public.revenue_records drop constraint if exists revenue_records_origin_contract;
-alter table public.revenue_records drop column if exists origin_type;
-alter table public.revenue_records drop column if exists affiliate_revenue_candidate_id;
-alter table public.revenue_records alter column brand_id set not null;
-alter table public.revenue_records alter column campaign_id set not null;
-alter table public.revenue_records alter column evidence_candidate_id set not null;
-drop function if exists public.confirm_affiliate_actual_revenue(uuid,bigint,uuid,text),public.attach_affiliate_revenue_evidence(uuid,bigint,text,text,bigint,text,timestamptz,jsonb,text),public.create_affiliate_revenue_candidate(uuid,text,bigint,text,text,text,timestamptz,timestamptz,jsonb,text),public.record_affiliate_cycle_performance(uuid,bigint,timestamptz,bigint,bigint,bigint,bigint,bigint,text,text,text),public.save_affiliate_cycle_publication(uuid,bigint,uuid,uuid,uuid,uuid,text,text,timestamptz,text,text),public.m032_owner_cycle_context(uuid,uuid,uuid,uuid),public.enforce_m032_revenue_record_origin(),public.enforce_m032_actual_revenue_snapshot();
-drop table public.affiliate_revenue_evidence,public.affiliate_revenue_candidates,public.affiliate_cycle_performance,public.affiliate_cycle_publications;
+drop function if exists public.confirm_affiliate_actual_revenue(uuid,bigint,uuid,text),public.attach_affiliate_revenue_evidence(uuid,bigint,text,text,bigint,text,timestamptz,jsonb,text),public.create_affiliate_revenue_candidate(uuid,text,bigint,text,text,text,timestamptz,timestamptz,jsonb,text),public.record_affiliate_cycle_performance(uuid,bigint,timestamptz,bigint,bigint,bigint,bigint,bigint,text,text,text),public.save_affiliate_cycle_publication(uuid,bigint,uuid,uuid,uuid,uuid,text,text,timestamptz,text,text),public.m032_owner_cycle_context(uuid,uuid,uuid,uuid);
+drop table public.affiliate_actual_revenue_extensions,public.affiliate_revenue_evidence,public.affiliate_revenue_candidates,public.affiliate_cycle_performance,public.affiliate_cycle_publications;
 drop function if exists public.m032_audit_cycle_change();
 commit;
