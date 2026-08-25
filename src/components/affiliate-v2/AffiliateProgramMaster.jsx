@@ -494,6 +494,9 @@ function Detail({
   onUpdateOperational,
   onExtractAttachments,
   onStartResearch,
+  onPrepareStrategy,
+  onReviewStrategy,
+  onConfirmStrategy,
   onLoadResearch,
 }) {
   const [tab, setTab] = useState("overview"),
@@ -505,7 +508,9 @@ function Detail({
         : program.affiliateLinkStatus,
     ),[intakeOpen,setIntakeOpen]=useState(false),
     [researchState,setResearchState]=useState({status:"idle",persisted:null}),
-    [selectedResearchId,setSelectedResearchId]=useState(null);
+    [selectedResearchId,setSelectedResearchId]=useState(null),
+    [strategyState,setStrategyState]=useState({status:"idle",draft:null,record:null,error:null}),
+    [selectedStrategyId,setSelectedStrategyId]=useState(null);
   const [edit, setEdit] = useState(
     Object.fromEntries([
       ["aspName", program.aspName],
@@ -578,8 +583,11 @@ function Detail({
   const miss = missingResearchRequired(program);
   const recommendedMiss = missingResearchRecommended(program);
   const researchResults=(researchState.persisted?.results||[]).map(projectAffiliateResearchFinding),selectedResearch=researchResults.find(item=>item.id===selectedResearchId)||null;
+  const strategies=researchState.persisted?.strategies||[],selectedStrategy=strategies.find(item=>item.id===selectedStrategyId)||null;
   useEffect(()=>{let active=true;if(!onLoadResearch)return()=>{};onLoadResearch(program.id).then(persisted=>{if(active)setResearchState({status:"idle",persisted})}).catch(()=>{});return()=>{active=false}},[program.id,onLoadResearch]);
   const startResearch=async()=>{setResearchState(current=>({...current,status:"running",error:null}));try{const result=await onStartResearch(program);const persisted=await onLoadResearch(program.id);setResearchState({status:"complete",result,persisted})}catch(error){setResearchState(current=>({...current,status:"failed",error:error?.message||"RESEARCH_EXECUTION_FAILED"}))}};
+  const prepareStrategy=async()=>{setStrategyState({status:"preparing",draft:null,record:null,error:null});try{const result=await onPrepareStrategy(program,selectedResearch.id);setStrategyState({status:"review",draft:result.draft,record:result.strategy,error:null})}catch(error){setStrategyState({status:"failed",draft:null,record:null,error:error?.message||"AFFILIATE_STRATEGY_PREPARE_FAILED"})}};
+  const confirmStrategy=async()=>{setStrategyState(current=>({...current,status:"saving",error:null}));try{const reviewed=await onReviewStrategy(strategyState.record.strategy_id,strategyState.record.strategy_version,strategyState.draft);await onConfirmStrategy(strategyState.record.strategy_id,reviewed.strategy_version);const persisted=await onLoadResearch(program.id);setResearchState(current=>({...current,persisted}));setSelectedStrategyId(strategyState.record.strategy_id);setStrategyState(current=>({...current,status:"saved"}))}catch(error){setStrategyState(current=>({...current,status:"failed",error:error?.message||"AFFILIATE_STRATEGY_SAVE_FAILED"}))}};
   return (
     <section className="av2-program-detail">
       <div className="av2-program-detail__header">
@@ -749,8 +757,12 @@ function Detail({
           {researchState.status==="complete"?<p role="status">Research結果を保存し、このProgramへリンクしました。</p>:null}
           {researchState.status==="failed"?<p role="alert">Researchを開始できませんでした: {researchState.error}</p>:null}
           {researchState.persisted?.linkedCount>0?<p>保存済みResearch: {researchState.persisted.linkedCount}件 · reload後もProgram link維持</p>:null}
-          {researchResults.length?<div className="av2-research-results"><h3>保存済みResearch</h3>{researchResults.map(item=><article key={item.id}><p><strong>{item.type}</strong> · {item.executedAt?new Date(item.executedAt).toLocaleString("ja-JP"):"日時未記録"}</p><p>Source: {item.source} · {item.truthClass} · Confidence: {item.confidence==null?"Unknown":`${Math.round(item.confidence*100)}%`}</p><p>{item.summary}</p><Button type="button" variant="secondary" onClick={()=>setSelectedResearchId(item.id)}>Researchを開く</Button></article>)}</div>:<p>保存済みResearchはありません。</p>}
-          {selectedResearch?<article className="av2-research-detail"><h3>Research Detail</h3><dl className="av2-data-grid"><Data label="調査目的" value={selectedResearch.purpose}/><Data label="Findings" value={selectedResearch.findings}/><Data label="Target / Audience" value={selectedResearch.targetAudience}/><Data label="Market need" value={selectedResearch.marketNeed}/><Data label="Competitor" value={selectedResearch.competitor}/><Data label="Opportunity" value={selectedResearch.opportunity}/><Data label="Risks" value={selectedResearch.risks}/><Data label="Recommended angle" value={selectedResearch.recommendedAngle}/><Data label="Recommended channel" value={selectedResearch.recommendedChannel}/><Data label="Next action" value={selectedResearch.nextAction}/><Data label="Sources / Provenance" value={JSON.stringify(selectedResearch.provenance)}/><Data label="Fact vs inference" value={selectedResearch.factVsInference}/></dl><p>次工程: Strategy作成に必要なApplicationが未接続のため、このResearchから直接Strategyは作成できません。</p></article>:null}
+          {researchResults.length?<div className="av2-research-results"><h3>保存済みResearch</h3>{researchResults.map(item=><article key={item.id}><p><strong>{item.type}</strong> · {item.executedAt?new Date(item.executedAt).toLocaleString("ja-JP"):"日時未記録"}</p><p>Source: {item.source} · {item.truthClass} · Confidence: {item.confidence==null?"Unknown":`${Math.round(item.confidence*100)}%`}</p><p>{item.summary}</p><Button type="button" variant="secondary" onClick={()=>{setSelectedResearchId(item.id);setStrategyState({status:"idle",draft:null,record:null,error:null})}}>Researchを開く</Button></article>)}</div>:<p>保存済みResearchはありません。</p>}
+          {selectedResearch?<article className="av2-research-detail"><h3>Research Detail</h3><dl className="av2-data-grid"><Data label="調査目的" value={selectedResearch.purpose}/><Data label="Findings" value={selectedResearch.findings}/><Data label="Target / Audience" value={selectedResearch.targetAudience}/><Data label="Market need" value={selectedResearch.marketNeed}/><Data label="Competitor" value={selectedResearch.competitor}/><Data label="Opportunity" value={selectedResearch.opportunity}/><Data label="Risks" value={selectedResearch.risks}/><Data label="Recommended angle" value={selectedResearch.recommendedAngle}/><Data label="Recommended channel" value={selectedResearch.recommendedChannel}/><Data label="Next action" value={selectedResearch.nextAction}/><Data label="Sources / Provenance" value={JSON.stringify(selectedResearch.provenance)}/><Data label="Fact vs inference" value={selectedResearch.factVsInference}/></dl><Button type="button" disabled={strategyState.status==="preparing"||strategyState.status==="saving"} onClick={prepareStrategy}>{strategyState.status==="preparing"?"Strategy draft生成中…":"このResearchから戦略を作る"}</Button></article>:null}
+          {strategyState.draft?<article className="av2-research-detail"><h3>Strategy Draft · Owner Review</h3><StrategyData strategy={strategyState.draft}/><p>AI_INFERENCE · NOT_EVIDENCE · External Execution LOCKED</p><Button type="button" disabled={strategyState.status==="saving"} onClick={confirmStrategy}>{strategyState.status==="saving"?"canonical保存中…":"Owner確認してcanonical保存"}</Button></article>:null}
+          {strategyState.error?<p role="alert">Strategy処理を完了できませんでした: {strategyState.error}</p>:null}
+          {strategies.length?<div className="av2-research-results"><h3>保存済みStrategy</h3>{strategies.map(item=><article key={item.id}><p><strong>{item.status}</strong> · version {item.version}</p><Button type="button" variant="secondary" onClick={()=>setSelectedStrategyId(item.id)}>Strategyを開く</Button></article>)}</div>:null}
+          {selectedStrategy?<article className="av2-research-detail"><h3>Canonical Strategy</h3><StrategyData strategy={{targetAudience:selectedStrategy.target_audience,corePositioning:selectedStrategy.core_positioning,valueProposition:selectedStrategy.value_proposition,keyPain:selectedStrategy.key_pain,keyMessage:selectedStrategy.key_message,recommendedAngle:selectedStrategy.recommended_angle,recommendedChannels:selectedStrategy.recommended_channels,contentDirection:selectedStrategy.content_direction,risks:selectedStrategy.risks,nextAction:selectedStrategy.next_action}}/><p>Program link: {selectedStrategy.affiliate_program_id===program.id?"exact":"INVALID"} · Research: {selectedStrategy.source_research_id}</p></article>:null}
         </Card>
       ) : null}
       {tab === "content" ? (
@@ -819,6 +831,7 @@ function Detail({
     </section>
   );
 }
+function StrategyData({strategy={}}){return <dl className="av2-data-grid">{[["Target audience",strategy.targetAudience],["Core positioning",strategy.corePositioning],["Value proposition",strategy.valueProposition],["Key pain",strategy.keyPain],["Key message",strategy.keyMessage],["Recommended angle",strategy.recommendedAngle],["Recommended channels",strategy.recommendedChannels],["Content direction",strategy.contentDirection],["Risks",strategy.risks],["Next action",strategy.nextAction]].map(([label,value])=><Data key={label} label={label} value={Array.isArray(value)?value.join(" / "):value}/>)}</dl>}
 function Data({ label, value }) {
   return (
     <div>

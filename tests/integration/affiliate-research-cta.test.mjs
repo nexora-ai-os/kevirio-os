@@ -35,7 +35,7 @@ test("Affiliate Research uses exact server-retrieved Program and existing M028 M
   assert.match(experience, /loadGlobalIntelligence/);
 });
 
-test("Affiliate Research exposes linked stored findings and no fake Strategy mutation", async () => {
+test("Affiliate Research exposes linked findings and canonical M031 Strategy handoff", async () => {
   const [ui, experience] = await Promise.all([
     read("src/components/affiliate-v2/AffiliateProgramMaster.jsx"),
     read("src/components/affiliate-v2/AffiliateV2Experience.jsx"),
@@ -47,6 +47,8 @@ test("Affiliate Research exposes linked stored findings and no fake Strategy mut
   assert.match(ui, /Research Detail/);
   assert.match(ui, /Sources \/ Provenance/);
   assert.match(ui, /Fact vs inference/);
-  assert.match(ui, /Applicationが未接続/);
-  assert.doesNotMatch(ui, /このResearchから戦略を作る/);
+  assert.match(ui, /このResearchから戦略を作る/);
+  assert.match(ui, /Owner確認してcanonical保存/);
+  assert.match(experience, /affiliateStrategyPrepare/);
+  assert.doesNotMatch(experience, /save_canonical_domain_object[^\n]*APPLICATION/);
 });

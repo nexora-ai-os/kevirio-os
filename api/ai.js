@@ -92,6 +92,22 @@ export default async function handler(req, res) {
     const observedAt=new Date().toISOString();
     return res.status(200).json({ok:true,programId:program.id,source:{canonicalUrl:sourceUrl,sourceName:`${program.advertiser_name} official source`,sourceDomain:new URL(sourceUrl).hostname.toLowerCase(),sourceType:"OFFICIAL_COMPANY",reliabilityClass:"MEDIUM",costClass:"FREE_CONFIRMED",limitations:"Owner-confirmed canonical Program source; this execution analyzes canonical Program data and does not independently promote the source to Evidence."},finding:{domain:"OPPORTUNITY",market:program.category||null,countryCode:"JP",languageCode:"ja",observedAt,freshnessExpiresAt:new Date(Date.now()+7*86400000).toISOString(),statement:generated.text,truthClass:"AI_RECOMMENDATION",confidence:0.6,provenance:{program_id:program.id,program_updated_at:program.updated_at,source_url:sourceUrl,analysis_basis:"CANONICAL_AFFILIATE_PROGRAM",truth_class:"AI_OUTPUT",evidence_status:"NOT_EVIDENCE",epc:program.epc==null?"UNKNOWN":"CANONICAL",approval_rate:program.approval_rate==null?"UNKNOWN":"CANONICAL",paid_ai_jpy:0,external_execution:"LOCKED"}},finishReason:generated.finishReason,paidAiJpy:0,paidFallbackCalls:0,externalExecution:"LOCKED"});
   }
+  if (body.action === "affiliateStrategyPrepare") {
+    const verified=await resolveVerifiedOwnerWorkspaceContext(req,body.workspaceId);
+    if(!verified.ok)return res.status(403).json(normalizedApiFailure({reasonCode:verified.reasonCode}));
+    if(body.paidAi===true||body.externalExecution===true)return res.status(403).json({ok:false,reasonCode:"STRATEGY_POLICY_DENIED",paidAiJpy:0,externalExecution:"LOCKED"});
+    const client=createSupabaseServerClient();if(!client)return res.status(503).json({ok:false,reasonCode:"STRATEGY_SERVER_UNAVAILABLE"});
+    const [programResult,findingResult,linkResult]=await Promise.all([
+      client.from("affiliate_program_master").select("id,program_name,advertiser_name,category,reward_summary,target_audience,conversion_conditions,rejection_conditions,pr_points").eq("workspace_id",body.workspaceId).eq("id",body.programId).maybeSingle(),
+      client.from("research_findings").select("id,statement,truth_class,confidence,provenance").eq("workspace_id",body.workspaceId).eq("owner_user_id",verified.context.ownerId).eq("id",body.findingId).eq("status","ACTIVE").maybeSingle(),
+      client.from("operational_object_links").select("id").eq("workspace_id",body.workspaceId).eq("owner_user_id",verified.context.ownerId).eq("from_type","GLOBAL_OPPORTUNITY").eq("from_id",body.findingId).eq("to_type","AFFILIATE_PROGRAM").eq("to_id",body.programId).eq("relation_type","CREATED_FOR").maybeSingle()
+    ]);
+    if(programResult.error||findingResult.error||linkResult.error||!programResult.data||!findingResult.data||!linkResult.data)return res.status(404).json({ok:false,reasonCode:"AFFILIATE_STRATEGY_CONTEXT_NOT_FOUND",paidAiJpy:0,externalExecution:"LOCKED"});
+    const generated=await generateAffiliateStrategyDraft({program:programResult.data,finding:findingResult.data},{credential:process.env.GEMINI_API_KEY});if(!generated.ok)return res.status(generated.reasonCode==="PROVIDER_CREDENTIAL_REQUIRED"?503:502).json(generated);
+    const payload={target_audience:generated.draft.targetAudience,core_positioning:generated.draft.corePositioning,value_proposition:generated.draft.valueProposition,key_pain:generated.draft.keyPain,key_message:generated.draft.keyMessage,recommended_angle:generated.draft.recommendedAngle,recommended_channels:generated.draft.recommendedChannels,content_direction:generated.draft.contentDirection,risks:generated.draft.risks,next_action:generated.draft.nextAction,provenance:{program_id:body.programId,research_id:body.findingId,provider:"gemini",truth_class:"AI_OUTPUT",evidence_status:"NOT_EVIDENCE"},inference_metadata:{truth_class:"AI_INFERENCE",evidence_status:"NOT_EVIDENCE"}};
+    const saved=await client.rpc("prepare_affiliate_strategy",{p_owner_user_id:verified.context.ownerId,p_program_id:body.programId,p_research_id:body.findingId,p_payload:payload,p_idempotency_key:`affiliate-strategy:${body.programId}:${body.findingId}`});if(saved.error)return res.status(502).json({ok:false,reasonCode:"AFFILIATE_STRATEGY_PERSIST_FAILED",paidAiJpy:0,externalExecution:"LOCKED"});
+    return res.status(200).json({ok:true,draft:generated.draft,strategy:saved.data?.[0],provider:"gemini",cost:"FREE",finishReason:generated.finishReason,paidAiJpy:0,externalExecution:"LOCKED"});
+  }
   if (body.action === "assistantRespond") {
     const verified = await resolveVerifiedOwnerWorkspaceContext(req, body.workspaceId);
     if (!verified.ok) return res.status(403).json(normalizedApiFailure({ reasonCode: verified.reasonCode }));
@@ -223,3 +239,4 @@ import { executeGeminiFreeRequest } from "../server/geminiFreeGateway.js";
 import { assembleLiveOperationalContext } from "../server/assistantContextBroker.js";
 import { providerRequiresClarification, resolveAssistantOperationalIntent } from "../server/assistantOperationalIntent.js";
 import { extractAffiliateProgramFromAttachments } from "../server/affiliateAttachmentExtraction.js";
+import { generateAffiliateStrategyDraft } from "../server/affiliateStrategyGeneration.js";
