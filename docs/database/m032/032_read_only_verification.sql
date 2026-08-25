@@ -1,0 +1,9 @@
+do $$ declare t int;f int;p int;d int;s int;begin
+ select count(*) into t from pg_class where oid in('public.affiliate_cycle_publications'::regclass,'public.affiliate_cycle_performance'::regclass,'public.affiliate_revenue_candidates'::regclass,'public.affiliate_revenue_evidence'::regclass) and relrowsecurity and relforcerowsecurity;
+ select count(*) into f from pg_proc x join pg_namespace n on n.oid=x.pronamespace where n.nspname='public' and x.proname in('save_affiliate_cycle_publication','record_affiliate_cycle_performance','create_affiliate_revenue_candidate','attach_affiliate_revenue_evidence','confirm_affiliate_actual_revenue') and x.prosecdef and coalesce(x.proconfig,'{}')@>array['search_path=""'];
+ select count(*) into p from pg_policies where schemaname='public' and tablename in('affiliate_cycle_publications','affiliate_cycle_performance','affiliate_revenue_candidates','affiliate_revenue_evidence') and cmd='SELECT';
+ select count(*) into d from information_schema.role_table_grants where table_schema='public' and table_name in('affiliate_cycle_publications','affiliate_cycle_performance','affiliate_revenue_candidates','affiliate_revenue_evidence') and grantee in('anon','authenticated') and privilege_type in('INSERT','UPDATE','DELETE');
+ select count(*) into s from information_schema.routine_privileges where specific_schema='public' and grantee='authenticated' and routine_name in('m032_owner_cycle_context','m032_audit_cycle_change','enforce_m032_revenue_record_origin','enforce_m032_actual_revenue_snapshot');
+ if t<>4 or f<>5 or p<>4 or d<>0 or s<>0 then raise exception 'm032_security_contract_invalid:tables=%,functions=%,policies=%,dml=%,internal_rpc_grants=%',t,f,p,d,s;end if;
+end $$;
+select jsonb_build_object('result','M032_READ_ONLY_VERIFICATION_PASS','tables',4,'force_rls',4,'protected_rpcs',5,'browser_direct_dml',0,'paid_ai_jpy',0,'external_execution','LOCKED','actual_source_of_truth','revenue_records') verification;

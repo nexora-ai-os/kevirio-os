@@ -1867,6 +1867,12 @@ A new or revised ADR is required for material changes to authentication, workspa
 
 No additional foundation governance document is authorized by this closure; update these records instead.
 
+## Proposed M032 revision — Affiliate-origin Actual Revenue
+
+Status: PROPOSED — OWNER PRODUCTION APPROVAL REQUIRED.
+
+ADR-006 continues to require one Evidence-first Actual Revenue source of truth. M032 proposes an Affiliate-origin path into the existing `revenue_records` table without manufacturing Work, Opportunity, Application, Campaign, or legacy Evidence objects. Affiliate publication, performance, candidate, and evidence records remain pre-Actual supporting records. Only an authenticated Owner confirmation protected by exact Workspace ownership, verified matching Evidence, optimistic versioning, idempotency, and audit metadata may create the unique Affiliate-origin `revenue_records` row. AI output is never Evidence; Unknown is never zero; External Execution remains locked. Existing legacy Campaign-origin revenue rows and their verification path remain valid and unchanged in meaning.
+
 ## V1.1 Affiliate Intelligence candidate note (Owner acceptance pending)
 
 Status: PROPOSED / NOT ACCEPTED
