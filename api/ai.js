@@ -108,6 +108,20 @@ export default async function handler(req, res) {
     const saved=await client.rpc("prepare_affiliate_strategy",{p_owner_user_id:verified.context.ownerId,p_program_id:body.programId,p_research_id:body.findingId,p_payload:payload,p_idempotency_key:`affiliate-strategy:${body.programId}:${body.findingId}`});if(saved.error)return res.status(502).json({ok:false,reasonCode:"AFFILIATE_STRATEGY_PERSIST_FAILED",paidAiJpy:0,externalExecution:"LOCKED"});
     return res.status(200).json({ok:true,draft:generated.draft,strategy:saved.data?.[0],provider:"gemini",cost:"FREE",finishReason:generated.finishReason,paidAiJpy:0,externalExecution:"LOCKED"});
   }
+  if(body.action==="affiliateContentPrepare"){
+    const verified=await resolveVerifiedOwnerWorkspaceContext(req,body.workspaceId);
+    if(!verified.ok)return res.status(403).json(normalizedApiFailure({reasonCode:verified.reasonCode}));
+    if(body.paidAi===true||body.externalExecution===true)return res.status(403).json({ok:false,reasonCode:"CONTENT_POLICY_DENIED",paidAiJpy:0,externalExecution:"LOCKED"});
+    const allowed=new Set(["THREADS","INSTAGRAM_POST","CAROUSEL_CONCEPT","NOTE_ARTICLE","SHORT_VIDEO_SCRIPT","GENERIC_SOCIAL"]);if(!allowed.has(body.contentType))return res.status(400).json({ok:false,reasonCode:"CONTENT_TYPE_INVALID"});
+    const client=createSupabaseServerClient();if(!client)return res.status(503).json({ok:false,reasonCode:"CONTENT_SERVER_UNAVAILABLE"});
+    const [programResult,strategyResult]=await Promise.all([
+      client.from("affiliate_program_master").select("id,program_name,advertiser_name,category,reward_summary,conversion_conditions,rejection_conditions,listing_policy,listing_ng_words,affiliate_url").eq("workspace_id",body.workspaceId).eq("id",body.programId).maybeSingle(),
+      client.from("affiliate_strategies").select("id,affiliate_program_id,source_research_id,status,target_audience,core_positioning,value_proposition,key_pain,key_message,recommended_angle,recommended_channels,content_direction,risks,next_action,version").eq("workspace_id",body.workspaceId).eq("owner_user_id",verified.context.ownerId).eq("id",body.strategyId).eq("affiliate_program_id",body.programId).eq("status","CONFIRMED").maybeSingle()
+    ]);
+    if(programResult.error||strategyResult.error||!programResult.data||!strategyResult.data)return res.status(404).json({ok:false,reasonCode:"AFFILIATE_CONTENT_CONTEXT_NOT_FOUND",paidAiJpy:0,externalExecution:"LOCKED"});
+    const generated=await generateAffiliateContent({program:programResult.data,strategy:strategyResult.data,contentType:body.contentType},{credential:process.env.GEMINI_API_KEY});if(!generated.ok)return res.status(generated.reasonCode==="PROVIDER_CREDENTIAL_REQUIRED"?503:502).json(generated);
+    return res.status(200).json({...generated,programId:body.programId,strategyId:body.strategyId,researchId:strategyResult.data.source_research_id});
+  }
   if (body.action === "assistantRespond") {
     const verified = await resolveVerifiedOwnerWorkspaceContext(req, body.workspaceId);
     if (!verified.ok) return res.status(403).json(normalizedApiFailure({ reasonCode: verified.reasonCode }));
@@ -240,3 +254,4 @@ import { assembleLiveOperationalContext } from "../server/assistantContextBroker
 import { providerRequiresClarification, resolveAssistantOperationalIntent } from "../server/assistantOperationalIntent.js";
 import { extractAffiliateProgramFromAttachments } from "../server/affiliateAttachmentExtraction.js";
 import { generateAffiliateStrategyDraft } from "../server/affiliateStrategyGeneration.js";
+import { generateAffiliateContent } from "../server/affiliateContentGeneration.js";

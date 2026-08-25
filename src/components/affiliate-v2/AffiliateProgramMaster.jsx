@@ -498,6 +498,9 @@ function Detail({
   onReviewStrategy,
   onConfirmStrategy,
   onLoadResearch,
+  onPrepareContent,
+  onLoadContent,
+  onSaveContent,
 }) {
   const [tab, setTab] = useState("overview"),
     [notice, setNotice] = useState(null),
@@ -766,12 +769,10 @@ function Detail({
         </Card>
       ) : null}
       {tab === "content" ? (
+        <>
+        <AffiliateContentCycle program={program} strategies={strategies} onPrepare={onPrepareContent} onLoad={onLoadContent} onSave={onSaveContent}/>
         <Card>
-          <SectionHeader
-            title="Content plan"
-            description="外部公開は自動実行しません。"
-          />
-          <p>{program.contentPlan || "コンテンツ計画が未設定です。"}</p>
+          <SectionHeader title="Affiliate link" description="商品URLとAffiliate tracking URLを混同しません。"/>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -805,6 +806,7 @@ function Detail({
             <Button type="submit">Affiliate URLを保存</Button>
           </form>
         </Card>
+        </>
       ) : null}
       {tab === "performance" ? (
         <Card>
@@ -832,6 +834,18 @@ function Detail({
   );
 }
 function StrategyData({strategy={}}){return <dl className="av2-data-grid">{[["Target audience",strategy.targetAudience],["Core positioning",strategy.corePositioning],["Value proposition",strategy.valueProposition],["Key pain",strategy.keyPain],["Key message",strategy.keyMessage],["Recommended angle",strategy.recommendedAngle],["Recommended channels",strategy.recommendedChannels],["Content direction",strategy.contentDirection],["Risks",strategy.risks],["Next action",strategy.nextAction]].map(([label,value])=><Data key={label} label={label} value={Array.isArray(value)?value.join(" / "):value}/>)}</dl>}
+const CONTENT_TYPES=[["THREADS","Threads"],["INSTAGRAM_POST","Instagram投稿"],["CAROUSEL_CONCEPT","カルーセル案"],["NOTE_ARTICLE","note / 記事"],["SHORT_VIDEO_SCRIPT","ショート動画台本"],["GENERIC_SOCIAL","汎用SNS"]];
+function AffiliateContentCycle({program,strategies,onPrepare,onLoad,onSave}){
+  const[records,setRecords]=useState([]),[record,setRecord]=useState(null),[contentType,setContentType]=useState("THREADS"),[draft,setDraft]=useState(null),[status,setStatus]=useState("idle");
+  const confirmed=strategies.find(x=>x.status==="CONFIRMED")||null;
+  useEffect(()=>{let active=true;onLoad?.(program.id).then(rows=>{if(!active)return;setRecords(rows);const latest=rows[0]||null;setRecord(latest);if(latest)setDraft(latest.payload)}).catch(()=>setStatus("load_failed"));return()=>{active=false}},[program.id,onLoad]);
+  const prepare=async()=>{if(!confirmed)return;setStatus("generating");try{const result=await onPrepare(program,confirmed.id,contentType);setDraft({workflow:"AFFILIATE_REAL_CYCLE",title:result.draft.title,content_type:contentType,body:result.draft.body,cta:result.draft.cta,asset_checklist:result.draft.assetChecklist,recommended_timing:result.draft.recommendedTiming,execution_checklist:result.draft.executionChecklist,affiliate_program_id:program.id,affiliate_strategy_id:result.strategyId,affiliate_research_id:result.researchId,review_status:"OWNER_REVIEW",execution:{state:"DRAFT",platform:contentType,final_content:result.draft.body,cta:result.draft.cta,affiliate_destination_url:program.affiliateUrl||null,pr_disclosure_reminder:"広告・PR表記とASP規約をOwnerが公開前に確認",external_url:null,published_at:null},performance:{clicks:null,conversions:null,pending_reward:null,confirmed_reward:null,rejected_reward:null,truth_class:"UNKNOWN"},analytics:{recommendation:"WAITING_FOR_REAL_EXTERNAL_RESULT",truth_class:"AI_INFERENCE"},improvement:null,truth_class:"AI_OUTPUT",evidence_status:"NOT_EVIDENCE",paid_ai_jpy:0,external_execution:"LOCKED"});setStatus("review")}catch{setStatus("failed")}};
+  const save=async(lifecycleStatus="DRAFT")=>{setStatus("saving");try{await onSave({record,payload:draft,lifecycleStatus});const rows=await onLoad(program.id);setRecords(rows);setRecord(rows[0]||null);setDraft(rows[0]?.payload||draft);setStatus("saved")}catch(error){setStatus(error?.message?.includes("stale")?"stale":"failed")}};
+  const set=(key,value)=>setDraft(current=>({...current,[key]:value}));
+  const setExecution=(key,value)=>setDraft(current=>({...current,execution:{...current.execution,[key]:value}}));
+  const setPerformance=(key,value)=>setDraft(current=>({...current,performance:{...current.performance,[key]:value===""?null:Number(value)}}));
+  return <Card className="av2-content-cycle"><SectionHeader title="Strategy → Content" description="CONFIRMED StrategyからOwner確認可能なcanonical Contentを作ります。外部公開は手動です。"/>{!confirmed?<p role="alert">CONFIRMED Strategyが必要です。</p>:<><FormField label="Content種別"><Select value={contentType} onChange={e=>setContentType(e.target.value)}>{CONTENT_TYPES.map(([value,label])=><option key={value} value={value}>{label}</option>)}</Select></FormField><Button type="button" disabled={status==="generating"} onClick={prepare}>{status==="generating"?"生成中…":"コンテンツを作る"}</Button></>}{draft?<><p className="av2-boundary">AI_OUTPUT · NOT_EVIDENCE · Paid AI ¥0 · External Execution LOCKED</p><FormField label="タイトル"><Input value={draft.title||""} onChange={e=>set("title",e.target.value)}/></FormField><FormField label="本文"><Textarea rows={12} value={draft.body||""} onChange={e=>{set("body",e.target.value);setExecution("final_content",e.target.value)}}/></FormField><FormField label="CTA"><Input value={draft.cta||""} onChange={e=>{set("cta",e.target.value);setExecution("cta",e.target.value)}}/></FormField><div className="av2-action-row"><Button type="button" onClick={()=>save("DRAFT")}>Owner確認内容をcanonical保存</Button></div><hr/><SectionHeader title="公開準備" description="KEVIRIOは外部公開しません。Ownerが手動公開した事実だけを記録します。"/><div className="av2-data-grid"><FormField label="Platform"><Input value={draft.execution?.platform||""} onChange={e=>setExecution("platform",e.target.value)}/></FormField><FormField label="公開状態"><Select value={draft.execution?.state||"DRAFT"} onChange={e=>setExecution("state",e.target.value)}>{["DRAFT","READY_FOR_REVIEW","APPROVED_FOR_MANUAL_EXECUTION","EXECUTED_EXTERNALLY","FAILED","ARCHIVED"].map(x=><option key={x}>{x}</option>)}</Select></FormField><FormField label="手動公開URL"><Input type="url" value={draft.execution?.external_url||""} onChange={e=>setExecution("external_url",e.target.value||null)}/></FormField><FormField label="手動公開日時"><Input type="datetime-local" value={draft.execution?.published_at?String(draft.execution.published_at).slice(0,16):""} onChange={e=>setExecution("published_at",e.target.value?new Date(e.target.value).toISOString():null)}/></FormField></div><Button type="button" onClick={()=>save("ACTIVE")}>公開準備・手動実行記録を保存</Button><hr/><SectionHeader title="Performance" description="Unknownと0を区別し、Ownerが把握した値だけを記録します。"/><div className="av2-data-grid">{[["clicks","クリック"],["conversions","成果"],["pending_reward","未確定報酬"],["confirmed_reward","確定報酬"],["rejected_reward","否認報酬"]].map(([key,label])=><FormField key={key} label={label}><Input type="number" min="0" value={draft.performance?.[key]??""} onChange={e=>setPerformance(key,e.target.value)}/></FormField>)}</div><Button type="button" onClick={()=>save("ACTIVE")}>Performanceを保存</Button><p><strong>Revenue path:</strong> {draft.performance?.confirmed_reward==null?"WAITING_FOR_REAL_EXTERNAL_RESULT":"Revenue Candidate準備可能（Actualにはしません）"}</p><p><strong>改善:</strong> {draft.analytics?.recommendation||"未記録"} · AI inference</p><p>Exact links: Program {draft.affiliate_program_id===program.id?"PASS":"INVALID"} · Strategy {draft.affiliate_strategy_id} · Research {draft.affiliate_research_id}</p></>:null}{status==="failed"?<p role="alert">保存または生成に失敗しました。canonical dataは部分更新されていません。</p>:null}{status==="stale"?<p role="alert">別端末の更新を検出しました。再読み込みしてください。</p>:null}{records.length?<p>保存済みContent {records.length}件 · version {record?.version}</p>:null}</Card>
+}
 function Data({ label, value }) {
   return (
     <div>
