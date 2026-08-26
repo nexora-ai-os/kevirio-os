@@ -62,12 +62,21 @@ export const missingResearchRecommended = (p) =>
   [p.epc == null && "EPC", p.approvalRate == null && "承認率"].filter(Boolean);
 
 export default function AffiliateProgramMaster(props) {
-  const { programs = [], available = true } = props;
-  const [selectedId, setSelectedId] = useState(null),
+  const { programs = [], available = true, selectedProgramId = null, onSelectedProgramChange } = props;
+  const routeSelectedProgramId = selectedProgramId || new URLSearchParams(window.location.search).get("programId");
+  const [selectedId, setSelectedId] = useState(routeSelectedProgramId),
     [query, setQuery] = useState(""),
     [state, setState] = useState("ALL"),
     [registering, setRegistering] = useState(false),
     [helpOpen,setHelpOpen]=useState(false);
+  useEffect(() => setSelectedId(routeSelectedProgramId), [routeSelectedProgramId]);
+  const selectProgram = (id) => {
+    setSelectedId(id);
+    if (onSelectedProgramChange) return onSelectedProgramChange(id);
+    const url = id ? `/affiliate-intelligence?programId=${encodeURIComponent(id)}` : "/affiliate-intelligence";
+    window.history.pushState({}, "", url);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
   const selected = programs.find((p) => p.id === selectedId);
   const rows = useMemo(
     () =>
@@ -85,7 +94,7 @@ export default function AffiliateProgramMaster(props) {
       <Detail
         {...props}
         program={selected}
-        onClose={() => setSelectedId(null)}
+        onClose={() => selectProgram(null)}
       />
     );
   return (
@@ -148,7 +157,7 @@ export default function AffiliateProgramMaster(props) {
           <button
             className="av2-program-card"
             key={p.id}
-            onClick={() => setSelectedId(p.id)}
+            onClick={() => selectProgram(p.id)}
           >
             <span className="av2-program-card__top">
               <Badge
@@ -523,10 +532,6 @@ function Detail({
   const linkSaveState = linkSaving ? OWNER_SAVE_STATE.SAVING : linkSaveOutcome;
   useOwnerEditGuard(`affiliate-link-${program.id}`, linkSaveState);
   useEffect(() => {
-    const progress = { overview: "Program確認", edit: "条件編集", research: "Research", content: "Content・公開準備", performance: "実績確認" }[tab] || "Program確認";
-    window.dispatchEvent(new CustomEvent("kevirio:active-work", { detail: { title: program.programName, state: `Affiliate Program / ${tab}`, progress, next: linkDirty ? "Affiliate URLを保存" : "現在の工程を確認", blocker: linkDirty ? "未保存のAffiliate URL" : "なし", objectId: program.id } }));
-  }, [program.id, program.programName, tab, linkDirty]);
-  useEffect(() => {
     if (linkDirty || linkSaving) return;
     setUrl(program.affiliateUrl || "");
     setLinkStatus(program.affiliateLinkStatus === "NOT_REGISTERED" ? "ACTIVE" : program.affiliateLinkStatus);
@@ -604,6 +609,13 @@ function Detail({
   const recommendedMiss = missingResearchRecommended(program);
   const researchResults=(researchState.persisted?.results||[]).map(projectAffiliateResearchFinding),selectedResearch=researchResults.find(item=>item.id===selectedResearchId)||null;
   const strategies=researchState.persisted?.strategies||[],selectedStrategy=strategies.find(item=>item.id===selectedStrategyId)||null;
+  useEffect(() => {
+    const progress = { overview: "Program確認", edit: "条件編集", research: "Research", content: "Content・公開準備", performance: "実績確認" }[tab] || "Program確認";
+    const strategyConfirmed = strategies.some((item) => item.status === "CONFIRMED");
+    const completed = ["Program登録", miss.length === 0 && "Research必須情報確認", researchResults.length > 0 && "Research", strategyConfirmed && "Strategy"].filter(Boolean);
+    const next = linkDirty ? "Affiliate URLを保存" : strategyConfirmed ? "Contentと手動公開準備を確認" : researchResults.length > 0 ? "ResearchからStrategyを確認" : miss.length === 0 ? "AIでResearchを開始" : "Research必須情報を確認";
+    window.dispatchEvent(new CustomEvent("kevirio:active-work", { detail: { title: program.programName, state: `Affiliate Program / ${tab}`, progress, completed: completed.join(" → "), next, blocker: linkDirty ? "未保存のAffiliate URL" : miss.length ? `Research必須情報 ${miss.length}件` : "なし", objectId: program.id } }));
+  }, [program.id, program.programName, tab, linkDirty, miss.length, researchResults.length, strategies]);
   useEffect(()=>{let active=true;if(!onLoadResearch)return()=>{};onLoadResearch(program.id).then(persisted=>{if(active)setResearchState({status:"idle",persisted})}).catch(()=>{});return()=>{active=false}},[program.id,onLoadResearch]);
   const startResearch=async()=>{setResearchState(current=>({...current,status:"running",error:null}));try{const result=await onStartResearch(program);const persisted=await onLoadResearch(program.id);setResearchState({status:"complete",result,persisted})}catch(error){setResearchState(current=>({...current,status:"failed",error:error?.message||"RESEARCH_EXECUTION_FAILED"}))}};
   const prepareStrategy=async()=>{setStrategyState({status:"preparing",draft:null,record:null,error:null});try{const result=await onPrepareStrategy(program,selectedResearch.id);setStrategyState({status:"review",draft:result.draft,record:result.strategy,error:null})}catch(error){setStrategyState({status:"failed",draft:null,record:null,error:error?.message||"AFFILIATE_STRATEGY_PREPARE_FAILED"})}};

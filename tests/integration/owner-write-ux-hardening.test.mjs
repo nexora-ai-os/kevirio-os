@@ -30,7 +30,7 @@ test("operational guide stores only a navigation pointer and derives Affiliate w
     read("src/components/OperationalGuideLayer.jsx"),
     read("src/components/affiliate-v2/AffiliateProgramMaster.jsx"),
   ]);
-  for (const label of ["ACTIVE WORK", "CURRENT STATE", "WORKFLOW PROGRESS", "NEXT RECOMMENDED ACTION", "BLOCKER / MISSING", "SAVE STATE"]) assert.match(guide, new RegExp(label));
+  for (const label of ["ACTIVE WORK", "CURRENT STATE", "WORKFLOW PROGRESS", "COMPLETED STEPS", "NEXT RECOMMENDED ACTION", "BLOCKER / MISSING", "SAVE STATE"]) assert.match(guide, new RegExp(label));
   assert.match(guide, /const pointer = \{ path: .* label: .* at:/);
   assert.doesNotMatch(guide, /localStorage\.setItem\([^\n]+(?:payload|secret|access_token)/);
   assert.match(affiliate, /kevirio:active-work/);

@@ -26,6 +26,7 @@ export default function OperationalGuideLayer() {
     title: currentActive?.title || pageLabel(location.pathname),
     state: currentActive?.state || (location.pathname === "/home" ? "今日の業務を確認中" : "canonical dataを確認中"),
     progress: currentActive?.progress || "現在の画面",
+    completed: currentActive?.completed || "未確認",
     next: save ? "入力を保存または破棄してから移動" : currentActive?.next || "画面内のprimary actionを確認",
     blocker: save?.detail || (save ? "保存未完了" : currentActive?.blocker || "なし"),
   }), [currentActive, location.pathname, save]);
@@ -33,7 +34,7 @@ export default function OperationalGuideLayer() {
   return <aside className={`kv-operational-guide ${open ? "kv-operational-guide--open" : ""}`} aria-label="Operational Guide">
     <button type="button" className="kv-operational-guide__toggle" aria-expanded={open} onClick={() => setOpen((value) => !value)}>作業ガイド</button>
     <div className="kv-operational-guide__body">
-      <div><small>ACTIVE WORK</small><strong>{model.title}</strong></div><div><small>CURRENT STATE</small><span>{model.state}</span></div><div><small>WORKFLOW PROGRESS</small><span>{model.progress}</span></div><div><small>NEXT RECOMMENDED ACTION</small><span>{model.next}</span></div><div><small>BLOCKER / MISSING</small><span>{model.blocker}</span></div><div><small>SAVE STATE</small><span>{save ? save.state : "SAVED"}</span></div>
+      <div><small>ACTIVE WORK</small><strong>{model.title}</strong></div><div><small>CURRENT STATE</small><span>{model.state}</span></div><div><small>WORKFLOW PROGRESS</small><span>{model.progress}</span></div><div><small>COMPLETED STEPS</small><span>{model.completed}</span></div><div><small>NEXT RECOMMENDED ACTION</small><span>{model.next}</span></div><div><small>BLOCKER / MISSING</small><span>{model.blocker}</span></div><div><small>SAVE STATE</small><span>{save ? save.state : "SAVED"}</span></div>
       {location.pathname === "/home" && resume?.path ? <button type="button" onClick={goResume}>前回の作業を続ける：{resume.label}</button> : null}
     </div>
   </aside>;
