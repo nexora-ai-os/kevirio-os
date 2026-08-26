@@ -131,6 +131,15 @@ export default async function handler(req, res) {
     const threadId = String(body.threadId || "");
     const threadResult = await client.from("ai_conversation_threads").select("id,workspace_id,owner_user_id,rolling_summary,status").eq("id", threadId).eq("workspace_id", body.workspaceId).eq("owner_user_id", ownerId).eq("status", "ACTIVE").maybeSingle();
     if (threadResult.error || !threadResult.data) return res.status(404).json({ ok: false, reasonCode: "AI_THREAD_NOT_FOUND" });
+    let affiliateCycle = null;
+    if (body.programId) {
+      try {
+        affiliateCycle = await loadAffiliateCycleAssistantContext(client, { workspaceId: body.workspaceId, ownerId, programId: body.programId });
+      } catch (error) {
+        const reasonCode = error?.message === "AFFILIATE_PROGRAM_CONTEXT_NOT_FOUND" ? error.message : "AFFILIATE_CYCLE_CONTEXT_UNAVAILABLE";
+        return res.status(reasonCode === "AFFILIATE_PROGRAM_CONTEXT_NOT_FOUND" ? 404 : 503).json({ ok: false, reasonCode, paidAiJpy: 0, paidFallbackCalls: 0, externalExecution: "LOCKED" });
+      }
+    }
     const operationalIntent = resolveAssistantOperationalIntent(body.text);
     if (operationalIntent.action === "CLARIFY") {
       const clarification = "投稿の下書きを作成します。テーマ、伝えたい内容、または対象商品を1つだけ教えてください。";
@@ -152,9 +161,12 @@ export default async function handler(req, res) {
     const memories = (memoryResult.data || []).map((item) => `${item.memory_kind}: ${String(item.content_text).slice(0, 700)}`).join("\n");
     const liveContext=assembleLiveOperationalContext({query:body.text,feature:body.feature,operational:operationalResult.error?[]:operationalResult.data,personal:personalResult.error?[]:personalResult.data,affiliate:affiliateResult.error?[]:affiliateResult.data,explicitAffiliateProgramId:body.programId||null});
     const boundedContext = liveContext.hasExplicitAffiliateProgram
-      ? [`Priority context:\n${liveContext.text}`,"Conversation context: intentionally excluded because an explicit canonical Affiliate Program reference is active."].join("\n\n")
+      ? [`Priority context:\n${liveContext.text}`,affiliateCycle?`Canonical Affiliate Cycle:\n${formatAffiliateCycleContext(affiliateCycle)}`:null,"Conversation context: intentionally excluded because an explicit canonical Affiliate Program reference is active."].filter(Boolean).join("\n\n")
       : [`Live operational context:\n${liveContext.text}`,`Rolling summary:\n${threadResult.data.rolling_summary || "none"}`, `Recent messages:\n${recent || "none"}`, `Active personal memory:\n${memories || "none"}`].join("\n\n").slice(0, 20000);
-    const result = await executeGeminiFreeRequest({ ...body, boundedContext, explicitOwnerAction: true }, { credential: process.env.GEMINI_API_KEY });
+    const deterministicCycleReply = affiliateCycle && isAffiliateCycleStatusQuery(body.text) ? buildAffiliateCycleReply(affiliateCycle, body.text) : null;
+    const result = deterministicCycleReply
+      ? { ok: true, text: deterministicCycleReply, provider: "deterministic-local", model: "canonical-affiliate-cycle-v1", rawLength: deterministicCycleReply.length, finishReason: "STOP", modelOutputLimited: false, paidFallbackCalls: 0, externalExecution: false }
+      : await executeGeminiFreeRequest({ ...body, boundedContext, explicitOwnerAction: true }, { credential: process.env.GEMINI_API_KEY });
     if (!result.ok) {
       const statusCode = result.reasonCode === "GEMINI_QUOTA_EXHAUSTED" ? 429 : result.reasonCode === "PROVIDER_CREDENTIAL_REQUIRED" ? 503 : 502;
       return res.status(statusCode).json(result);
@@ -176,7 +188,7 @@ export default async function handler(req, res) {
       operationalAction = { status: "NEEDS_CLARIFICATION", intent: "CREATE", missing: "content_facts" };
     }
     const requestId = globalThis.crypto?.randomUUID?.() || `gemini-${Date.now()}`;
-    const persisted = await client.rpc("append_ai_assistant_message", { p_owner_user_id: ownerId, p_thread_id: threadId, p_content: result.text, p_provider: "gemini", p_model: result.model, p_provider_request_id: requestId, p_provenance: { source: "GEMINI_FREE", truth_class: "AI_OUTPUT", evidence_status: "NOT_EVIDENCE" }, p_audit_metadata: { feature: body.feature, paid_ai_jpy: 0, external_execution: "LOCKED", provider_raw_length: result.rawLength, api_received_length: apiReceivedLength, finish_reason: result.finishReason, model_output_limited: result.modelOutputLimited, operational_action: operationalAction } });
+    const persisted = await client.rpc("append_ai_assistant_message", { p_owner_user_id: ownerId, p_thread_id: threadId, p_content: result.text, p_provider: result.provider || "gemini", p_model: result.model, p_provider_request_id: requestId, p_provenance: { source: deterministicCycleReply ? "CANONICAL_AFFILIATE_CYCLE" : "GEMINI_FREE", truth_class: "AI_OUTPUT", evidence_status: "NOT_EVIDENCE" }, p_audit_metadata: { feature: body.feature, paid_ai_jpy: 0, external_execution: "LOCKED", provider_raw_length: result.rawLength, api_received_length: apiReceivedLength, finish_reason: result.finishReason, model_output_limited: result.modelOutputLimited, operational_action: operationalAction, affiliate_program_id: affiliateCycle?.program.id || null } });
     if (persisted.error) return res.status(503).json({ ok: false, reasonCode: "ASSISTANT_RESPONSE_PERSIST_FAILED" });
     const stored = await client.from("ai_conversation_messages").select("content_text").eq("id", persisted.data).eq("owner_user_id", ownerId).maybeSingle();
     const dbStoredLength = stored.data?.content_text?.length ?? null;
@@ -255,3 +267,4 @@ import { providerRequiresClarification, resolveAssistantOperationalIntent } from
 import { extractAffiliateProgramFromAttachments } from "../server/affiliateAttachmentExtraction.js";
 import { generateAffiliateStrategyDraft } from "../server/affiliateStrategyGeneration.js";
 import { generateAffiliateContent } from "../server/affiliateContentGeneration.js";
+import { buildAffiliateCycleReply, formatAffiliateCycleContext, isAffiliateCycleStatusQuery, loadAffiliateCycleAssistantContext } from "../server/affiliateCycleAssistantContext.js";
