@@ -17,8 +17,25 @@ export function createAffiliateProgramMasterRepository(client) {
     async saveAffiliateLink(workspaceId, id, input) {
       if (!workspaceId || !id) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "link_identity_required", object: "affiliate_program_master" });
       const normalized = normalizeAffiliateLink(input);
-      try { const { data, error } = await client.rpc("save_affiliate_program_master_link", { p_workspace_id: workspaceId, p_program_master_id: id, p_affiliate_url: normalized.affiliateUrl, p_link_status: normalized.linkStatus }); if (error) throw error; return data; }
-      catch (error) { throw mapRepositoryError(error, { operation: "save_link", object: "affiliate_program_master" }); }
+      try {
+        const current = await this.getProgram(workspaceId, id);
+        const expectedUpdatedAt = String(input.expectedUpdatedAt || "").trim();
+        const expectedBusinessVersion = Number(input.expectedBusinessVersion);
+        if (!expectedUpdatedAt || Number.isNaN(new Date(expectedUpdatedAt).valueOf()) || !Number.isInteger(expectedBusinessVersion)) {
+          throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "link_version_required", object: "affiliate_program_master" });
+        }
+        if (current.updatedAt !== expectedUpdatedAt || current.businessVersion !== expectedBusinessVersion) {
+          throw new AffiliateV2Error("CONFLICT", { operation: "save_link", object: "affiliate_program_master" });
+        }
+        const { error } = await client.rpc("save_affiliate_program_master_link", { p_workspace_id: workspaceId, p_program_master_id: id, p_affiliate_url: normalized.affiliateUrl, p_link_status: normalized.linkStatus });
+        if (error) throw error;
+        return await this.getProgram(workspaceId, id);
+      }
+      catch (error) {
+        const mapped = mapRepositoryError(error, { operation: "save_link", object: "affiliate_program_master" });
+        console.error("[affiliate-link-save] failed", { code: mapped.code, operation: mapped.context.operation, object: mapped.context.object });
+        throw mapped;
+      }
     },
     async registerProgram(input) {
       const fields = ["aspName", "programId", "advertiserName", "programName"];

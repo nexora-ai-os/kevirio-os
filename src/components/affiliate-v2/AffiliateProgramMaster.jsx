@@ -486,6 +486,7 @@ function Detail({
   program,
   onClose,
   onSaveLink,
+  onRefresh,
   onUpdate,
   onUpdatePractical,
   onDeleteSafe,
@@ -506,6 +507,8 @@ function Detail({
   const [tab, setTab] = useState("overview"),
     [notice, setNotice] = useState(null),
     [url, setUrl] = useState(program.affiliateUrl || ""),
+    [linkDirty, setLinkDirty] = useState(false),
+    [linkSaving, setLinkSaving] = useState(false),
     [linkStatus, setLinkStatus] = useState(
       program.affiliateLinkStatus === "NOT_REGISTERED"
         ? "ACTIVE"
@@ -515,6 +518,11 @@ function Detail({
     [selectedResearchId,setSelectedResearchId]=useState(null),
     [strategyState,setStrategyState]=useState({status:"idle",draft:null,record:null,error:null}),
     [selectedStrategyId,setSelectedStrategyId]=useState(null);
+  useEffect(() => {
+    if (linkDirty || linkSaving) return;
+    setUrl(program.affiliateUrl || "");
+    setLinkStatus(program.affiliateLinkStatus === "NOT_REGISTERED" ? "ACTIVE" : program.affiliateLinkStatus);
+  }, [program.id, program.affiliateUrl, program.affiliateLinkStatus, linkDirty, linkSaving]);
   const [edit, setEdit] = useState(
     Object.fromEntries([
       ["aspName", program.aspName],
@@ -778,11 +786,32 @@ function Detail({
           <form
             onSubmit={async (e) => {
               e.preventDefault();
+              if (linkSaving) return;
+              setLinkSaving(true);
               try {
-                await onSaveLink(program.id, { affiliateUrl: url, linkStatus });
+                const saved = await onSaveLink(program.id, {
+                  affiliateUrl: url,
+                  linkStatus,
+                  expectedUpdatedAt: program.updatedAt,
+                  expectedBusinessVersion: program.businessVersion,
+                });
+                setUrl(saved.affiliateUrl || "");
+                setLinkStatus(saved.affiliateLinkStatus === "NOT_REGISTERED" ? "ACTIVE" : saved.affiliateLinkStatus);
+                setLinkDirty(false);
                 setNotice("Affiliate URLを保存しました");
-              } catch {
-                setNotice("Affiliate URLを保存できません");
+              } catch (error) {
+                if (error?.code === "CONFLICT") {
+                  setNotice("他の更新が先に保存されました。入力内容は保持しています。最新状態を確認して、もう一度保存してください。");
+                  await onRefresh?.().catch(() => {});
+                } else if (error?.code === "VALIDATION_FAILED") {
+                  setNotice("Affiliate tracking URLの形式またはURL状態を確認してください。入力内容は保持されています。");
+                } else if (["AUTH_REQUIRED", "OWNER_REQUIRED", "WORKSPACE_FORBIDDEN"].includes(error?.code)) {
+                  setNotice("保存権限を確認できませんでした。入力内容は保持されています。再認証後にもう一度保存してください。");
+                } else {
+                  setNotice("Affiliate URLを保存できませんでした。入力内容は保持されています。時間をおいて再試行してください。");
+                }
+              } finally {
+                setLinkSaving(false);
               }
             }}
           >
@@ -791,13 +820,13 @@ function Detail({
                 <Input
                   type="url"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={(e) => { setUrl(e.target.value); setLinkDirty(true); }}
                 />
               </FormField>
               <FormField label="URL状態">
                 <Select
                   value={linkStatus}
-                  onChange={(e) => setLinkStatus(e.target.value)}
+                  onChange={(e) => { setLinkStatus(e.target.value); setLinkDirty(true); }}
                 >
                   <option>ACTIVE</option>
                   <option>PAUSED</option>
@@ -805,7 +834,7 @@ function Detail({
                 </Select>
               </FormField>
             </div>
-            <Button type="submit">Affiliate URLを保存</Button>
+            <Button type="submit" disabled={linkSaving}>{linkSaving ? "保存中…" : "Affiliate URLを保存"}</Button>
           </form>
         </Card>
         </>

@@ -22,6 +22,10 @@ test("Affiliate URL editor is owner callback scoped and omits full URLs from car
   assert.match(source, /onSaveLink\(program\.id/);
   const cards = source.slice(source.indexOf("av2-program-card-grid"), source.indexOf("function Registration"));
   assert.doesNotMatch(cards, /affiliateUrl/);
+  assert.match(source, /setLinkDirty\(true\)/);
+  assert.match(source, /disabled=\{linkSaving\}/);
+  assert.match(source, /入力内容は保持しています/);
+  assert.match(source, /expectedUpdatedAt:\s*program\.updatedAt/);
 });
 
 test("Affiliate Program Master exposes edit pause resume archive delete and exact snapshots", () => {
