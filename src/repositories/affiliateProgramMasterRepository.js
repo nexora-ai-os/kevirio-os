@@ -33,7 +33,15 @@ export function createAffiliateProgramMasterRepository(client) {
       }
       catch (error) {
         const mapped = mapRepositoryError(error, { operation: "save_link", object: "affiliate_program_master" });
-        console.error("[affiliate-link-save] failed", { code: mapped.code, operation: mapped.context.operation, object: mapped.context.object });
+        console.error("[affiliate-link-save] failed", JSON.stringify({
+          code: mapped.code,
+          operation: mapped.context.operation,
+          object: mapped.context.object,
+          databaseCode: String(error?.code || "UNKNOWN").slice(0, 40),
+          databaseMessage: String(error?.message || "UNKNOWN").slice(0, 500),
+          databaseDetails: String(error?.details || "").slice(0, 500),
+          databaseHint: String(error?.hint || "").slice(0, 500),
+        }));
         throw mapped;
       }
     },
