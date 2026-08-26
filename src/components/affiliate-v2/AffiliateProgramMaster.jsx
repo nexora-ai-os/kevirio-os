@@ -13,6 +13,7 @@ import {
 } from "../../design-system/index.js";
 import { listingComplianceLabel, normalizeAffiliateApprovalRate } from "../../domain/affiliateProgramMaster.js";
 import { AFFILIATE_FIELD_GUIDANCE, OWNER_LABELS, fieldDescription, fieldLabel } from "../../domain/affiliateFieldGuidance.js";
+import { OWNER_SAVE_STATE, SaveState, useOwnerEditGuard } from "../../app/ownerEditGuard.jsx";
 import "./AffiliateProgramMaster.css";
 
 const ASP = [
@@ -509,6 +510,7 @@ function Detail({
     [url, setUrl] = useState(program.affiliateUrl || ""),
     [linkDirty, setLinkDirty] = useState(false),
     [linkSaving, setLinkSaving] = useState(false),
+    [linkSaveOutcome, setLinkSaveOutcome] = useState(OWNER_SAVE_STATE.SAVED),
     [linkStatus, setLinkStatus] = useState(
       program.affiliateLinkStatus === "NOT_REGISTERED"
         ? "ACTIVE"
@@ -518,6 +520,12 @@ function Detail({
     [selectedResearchId,setSelectedResearchId]=useState(null),
     [strategyState,setStrategyState]=useState({status:"idle",draft:null,record:null,error:null}),
     [selectedStrategyId,setSelectedStrategyId]=useState(null);
+  const linkSaveState = linkSaving ? OWNER_SAVE_STATE.SAVING : linkSaveOutcome;
+  useOwnerEditGuard(`affiliate-link-${program.id}`, linkSaveState);
+  useEffect(() => {
+    const progress = { overview: "Program確認", edit: "条件編集", research: "Research", content: "Content・公開準備", performance: "実績確認" }[tab] || "Program確認";
+    window.dispatchEvent(new CustomEvent("kevirio:active-work", { detail: { title: program.programName, state: `Affiliate Program / ${tab}`, progress, next: linkDirty ? "Affiliate URLを保存" : "現在の工程を確認", blocker: linkDirty ? "未保存のAffiliate URL" : "なし", objectId: program.id } }));
+  }, [program.id, program.programName, tab, linkDirty]);
   useEffect(() => {
     if (linkDirty || linkSaving) return;
     setUrl(program.affiliateUrl || "");
@@ -788,6 +796,7 @@ function Detail({
               e.preventDefault();
               if (linkSaving) return;
               setLinkSaving(true);
+              setLinkSaveOutcome(OWNER_SAVE_STATE.SAVING);
               try {
                 const saved = await onSaveLink(program.id, {
                   affiliateUrl: url,
@@ -798,16 +807,21 @@ function Detail({
                 setUrl(saved.affiliateUrl || "");
                 setLinkStatus(saved.affiliateLinkStatus === "NOT_REGISTERED" ? "ACTIVE" : saved.affiliateLinkStatus);
                 setLinkDirty(false);
+                setLinkSaveOutcome(OWNER_SAVE_STATE.SAVED);
                 setNotice("Affiliate URLを保存しました");
               } catch (error) {
                 if (error?.code === "CONFLICT") {
+                  setLinkSaveOutcome(OWNER_SAVE_STATE.CONFLICT);
                   setNotice("他の更新が先に保存されました。入力内容は保持しています。最新状態を確認して、もう一度保存してください。");
                   await onRefresh?.().catch(() => {});
                 } else if (error?.code === "VALIDATION_FAILED") {
+                  setLinkSaveOutcome(OWNER_SAVE_STATE.SAVE_FAILED);
                   setNotice("Affiliate tracking URLの形式またはURL状態を確認してください。入力内容は保持されています。");
                 } else if (["AUTH_REQUIRED", "OWNER_REQUIRED", "WORKSPACE_FORBIDDEN"].includes(error?.code)) {
+                  setLinkSaveOutcome(OWNER_SAVE_STATE.SAVE_FAILED);
                   setNotice("保存権限を確認できませんでした。入力内容は保持されています。再認証後にもう一度保存してください。");
                 } else {
+                  setLinkSaveOutcome(OWNER_SAVE_STATE.SAVE_FAILED);
                   setNotice("Affiliate URLを保存できませんでした。入力内容は保持されています。時間をおいて再試行してください。");
                 }
               } finally {
@@ -820,13 +834,13 @@ function Detail({
                 <Input
                   type="url"
                   value={url}
-                  onChange={(e) => { setUrl(e.target.value); setLinkDirty(true); }}
+                  onChange={(e) => { setUrl(e.target.value); setLinkDirty(true); setLinkSaveOutcome(OWNER_SAVE_STATE.UNSAVED); }}
                 />
               </FormField>
               <FormField label="URL状態">
                 <Select
                   value={linkStatus}
-                  onChange={(e) => { setLinkStatus(e.target.value); setLinkDirty(true); }}
+                  onChange={(e) => { setLinkStatus(e.target.value); setLinkDirty(true); setLinkSaveOutcome(OWNER_SAVE_STATE.UNSAVED); }}
                 >
                   <option>ACTIVE</option>
                   <option>PAUSED</option>
@@ -835,6 +849,7 @@ function Detail({
               </FormField>
             </div>
             <Button type="submit" disabled={linkSaving}>{linkSaving ? "保存中…" : "Affiliate URLを保存"}</Button>
+            <SaveState state={linkSaveState} detail={linkDirty ? "入力内容は保存完了までこの画面で保持されます。" : ""}/>
           </form>
         </Card>
         </>
