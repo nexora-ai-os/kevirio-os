@@ -49,8 +49,9 @@ export function mapRepositoryError(error, context={}) {
   if(code==="PGRST116") return new AffiliateV2Error("NOT_FOUND",context);
   if(code==="23505") return new AffiliateV2Error(message.includes("idempotency")?"IDEMPOTENCY_CONFLICT":"CONFLICT",context);
   if(message.includes("owner_authentication_required")) return new AffiliateV2Error("AUTH_REQUIRED",context);
-  if(message.includes("workspace_owner_access_denied")||message.includes("canonical_personal_workspace_owner_required")) return new AffiliateV2Error("WORKSPACE_FORBIDDEN",context);
-  if(message.includes("affiliate_program_stale_update")) return new AffiliateV2Error("CONFLICT",context);
+  if(message.includes("workspace_owner_access_denied")||message.includes("canonical_personal_workspace_owner_required")||message.includes("personal_owner_required")) return new AffiliateV2Error("WORKSPACE_FORBIDDEN",context);
+  if(message.includes("affiliate_program_stale_update")||message.includes("m030_stale_update")||message.includes("m033_stale_link_update")) return new AffiliateV2Error("CONFLICT",context);
+  if(message.includes("affiliate_url_invalid")||message.includes("affiliate_link_status_invalid")||message.includes("link_request_invalid")) return new AffiliateV2Error("VALIDATION_FAILED",context);
   if(message.includes("could not find")||message.includes("rpc")) return new AffiliateV2Error("RPC_UNAVAILABLE",context);
   return new AffiliateV2Error("DATABASE_ERROR",context);
 }

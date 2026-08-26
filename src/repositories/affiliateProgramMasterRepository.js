@@ -27,7 +27,7 @@ export function createAffiliateProgramMasterRepository(client) {
         if (current.updatedAt !== expectedUpdatedAt || current.businessVersion !== expectedBusinessVersion) {
           throw new AffiliateV2Error("CONFLICT", { operation: "save_link", object: "affiliate_program_master" });
         }
-        const { error } = await client.rpc("save_affiliate_program_master_link", { p_workspace_id: workspaceId, p_program_master_id: id, p_affiliate_url: normalized.affiliateUrl, p_link_status: normalized.linkStatus });
+        const { error } = await client.rpc("save_affiliate_program_master_link", { p_workspace_id: workspaceId, p_program_master_id: id, p_affiliate_url: normalized.affiliateUrl, p_link_status: normalized.linkStatus, p_expected_updated_at: expectedUpdatedAt, p_expected_business_version: expectedBusinessVersion });
         if (error) throw error;
         return await this.getProgram(workspaceId, id);
       }

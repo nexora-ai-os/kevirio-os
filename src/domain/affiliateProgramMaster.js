@@ -23,9 +23,10 @@ export function normalizeAffiliateApprovalRate(value) {
 export function normalizeAffiliateLink(input = {}) {
   const affiliateUrl = text(input.affiliateUrl);
   if (!affiliateUrl) return Object.freeze({ affiliateUrl: null, linkStatus: "NOT_REGISTERED" });
+  if (affiliateUrl.length > 2000 || /[\s\u0000-\u001f\u007f]/u.test(affiliateUrl)) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_url", object: "affiliate_program_master" });
   let parsed;
   try { parsed = new URL(affiliateUrl); } catch { throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_url", object: "affiliate_program_master" }); }
-  if (!['http:', 'https:'].includes(parsed.protocol)) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_url_scheme", object: "affiliate_program_master" });
+  if (!['http:', 'https:'].includes(parsed.protocol) || !parsed.hostname) throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_url_scheme", object: "affiliate_program_master" });
   const linkStatus = text(input.linkStatus) || "ACTIVE";
   if (!AFFILIATE_LINK_STATES.includes(linkStatus) || linkStatus === "NOT_REGISTERED" || linkStatus === "INVALID") throw new AffiliateV2Error("VALIDATION_FAILED", { operation: "invalid_affiliate_link_status", object: "affiliate_program_master" });
   return Object.freeze({ affiliateUrl, linkStatus });
