@@ -26,12 +26,14 @@ test("canonical and Affiliate editors report to the shared write boundary", asyn
 });
 
 test("operational guide stores only a navigation pointer and derives Affiliate work state", async () => {
-  const [guide, affiliate] = await Promise.all([
+  const [guide, affiliate, shell] = await Promise.all([
     read("src/components/OperationalGuideLayer.jsx"),
     read("src/components/affiliate-v2/AffiliateProgramMaster.jsx"),
+    read("src/app/shell/shell.css"),
   ]);
   for (const label of ["ACTIVE WORK", "CURRENT STATE", "WORKFLOW PROGRESS", "COMPLETED STEPS", "NEXT RECOMMENDED ACTION", "BLOCKER / MISSING", "SAVE STATE"]) assert.match(guide, new RegExp(label));
   assert.match(guide, /const pointer = \{ path: .* label: .* at:/);
   assert.doesNotMatch(guide, /localStorage\.setItem\([^\n]+(?:payload|secret|access_token)/);
   assert.match(affiliate, /kevirio:active-work/);
+  assert.doesNotMatch(shell, /@media\(min-width:1100px\)[^\n]+kv-operational-guide__toggle\{display:none\}/);
 });
